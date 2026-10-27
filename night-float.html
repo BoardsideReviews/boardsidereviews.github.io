@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IM Night Float | Boardside Reviews</title>
+<meta name="description" content="A free internal medicine night float simulator. Answer overnight pages, work up patients, make the call, and collect teaching pearls.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%20role%3D%22img%22%20aria-label%3D%22Boardside%20Reviews%20mark%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Boardside Reviews: IM Night Float. Pager amber on a 3 AM dark. */
+:root{
+  --ink:#0d1422; --panel:#151f31; --panel2:#1c2942; --line:#2b3b59;
+  --fg:#e6ebf2; --muted:#94a2b9; --amber:#f0b54a; --amber-ink:#1d1504; --lcd:#1a1608;
+  --ok:#5cc394; --fair:#8fb3e8; --crit:#ee6b5d;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:var(--fg);font:16px/1.5 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink)}
+.wrap{max-width:680px;margin:0 auto}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:.01em;text-wrap:balance;margin:0}
+.label{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--ink);border-bottom:1px solid var(--line);
+  margin:0 calc(-1*max(16px,env(safe-area-inset-left,0px))) 0 calc(-1*max(16px,env(safe-area-inset-right,0px)));
+  padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.bar .wrap{display:flex;align-items:center;gap:14px}
+.clock{font-family:var(--mono);font-weight:600;font-size:26px;color:var(--amber);font-variant-numeric:tabular-nums;line-height:1}
+.prog{flex:1;min-width:0}
+.track{height:4px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-top:6px}
+.track i{display:block;height:100%;background:var(--amber)}
+.score{text-align:right}
+.score b{font-family:var(--mono);font-size:20px;display:block;line-height:1.1}
+
+/* start */
+.hero{padding-top:28px;display:grid;gap:22px}
+.hero h1{font-size:clamp(56px,16vw,96px);line-height:.88;text-transform:uppercase}
+.hero h1 span{color:var(--amber)}
+.sub{color:var(--muted);font-size:17px;max-width:46ch}
+.pager{background:#2a2f38;border-radius:18px;padding:14px;box-shadow:inset 0 -3px 0 #1d2128}
+.lcd{background:var(--lcd);border-radius:8px;padding:14px 16px;font-family:var(--mono);color:var(--amber);font-size:14px;line-height:1.55;min-height:96px;
+  text-shadow:0 0 6px rgba(240,181,74,.35)}
+.lcd .dim{opacity:.55}
+.blink{animation:bl 1.1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+.modes{display:grid;gap:10px}
+.mode{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.mode:hover{border-color:var(--amber)}
+.mode h3{font-size:24px}
+.mode p{margin:2px 0 0;color:var(--muted);font-size:15px}
+.mode .go{font-family:var(--display);font-weight:700;background:var(--amber);color:var(--amber-ink);border-radius:8px;padding:8px 14px;letter-spacing:.06em;white-space:nowrap}
+ol.how{margin:0;padding-left:22px;display:grid;gap:6px;color:var(--fg)}
+ol.how li::marker{font-family:var(--mono);color:var(--amber)}
+.fine{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+
+/* board */
+.sec{margin-top:22px;display:grid;gap:10px}
+.sechead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.page{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;width:100%}
+.page:hover{border-color:#40557d}
+.page .room{font-family:var(--mono);font-weight:600;font-size:15px}
+.page .time{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.page .msg{grid-column:1/-1;color:var(--fg);font-size:15px;min-width:0}
+.page.done{opacity:.6}
+.chip{font-family:var(--display);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:6px;white-space:nowrap;justify-self:end}
+.c-new{background:var(--amber);color:var(--amber-ink)}
+.c-prog{background:var(--panel2);color:var(--fair)}
+.c-rrt{background:var(--crit);color:#1d0805}
+.c-done{background:transparent;color:var(--ok);border:1px solid var(--ok)}
+.quiet{background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:18px;display:grid;gap:12px;justify-items:start}
+.btn{background:var(--amber);color:var(--amber-ink);border:0;border-radius:10px;padding:11px 16px;font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.05em;text-transform:uppercase}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+
+/* case */
+.back{background:none;border:0;color:var(--muted);padding:14px 0 0;font-family:var(--display);font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:14px}
+.chead{margin-top:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.chead h2{font-size:30px;line-height:1}
+.who{color:var(--muted);margin-top:4px}
+.bubble{margin-top:14px;background:var(--panel2);border-radius:4px 14px 14px 14px;padding:12px 14px}
+.bubble .label{display:block;margin-bottom:2px}
+.rrt{margin-top:12px;border:1px solid var(--crit);color:var(--crit);border-radius:10px;padding:10px 12px;font-weight:600}
+.vitals{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;margin-top:14px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.vitals div{background:var(--panel);padding:8px 6px;text-align:center;min-width:0}
+.vitals .label{font-size:11px}
+.vitals b{display:block;font-family:var(--mono);font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hx{margin-top:12px;color:var(--muted);font-size:15px}
+.orders{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.order{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.order:hover:not(:disabled){border-color:var(--amber)}
+.order:disabled{opacity:.4;cursor:default}
+.order .mono{font-size:12px;color:var(--amber)}
+.log{display:grid;gap:8px}
+.res{background:var(--panel);border-radius:10px;padding:10px 12px;border:1px solid var(--line)}
+.res .top{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.res .top span:first-child{font-weight:600}
+.res p{margin:4px 0 0;font-size:15px}
+.flag{font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.f-key{color:var(--ok)} .f-low{color:var(--crit)} .f-ok{color:var(--muted)}
+.q{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px}
+.q h3{font-family:var(--body);font-weight:600;font-size:17px;letter-spacing:0}
+.opt{text-align:left;background:var(--panel2);border:1px solid transparent;border-radius:10px;padding:12px;font-size:15px}
+.opt:hover{border-color:var(--amber)}
+.ans{border-radius:10px;padding:12px;border:1px solid var(--line);font-size:15px}
+.ans .pick{font-weight:600}
+.ans p{margin:6px 0 0;color:var(--fg)}
+.s-best{border-color:var(--ok)} .s-best .flag{color:var(--ok)}
+.s-ok{border-color:var(--fair)} .s-ok .flag{color:var(--fair)}
+.s-bad{border-color:var(--crit)} .s-bad .flag{color:var(--crit)}
+.att{background:transparent;border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--fg);text-align:left}
+.attq{font-style:italic;color:var(--fair);border-left:2px solid var(--fair);padding-left:12px}
+.pearls{background:var(--lcd);border:1px solid #3a3115;border-radius:12px;padding:16px;display:grid;gap:8px}
+.pearls h3{color:var(--amber);font-size:22px}
+.pearls ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.dx{font-family:var(--display);font-size:20px;font-weight:600}
+
+/* debrief */
+.big{font-family:var(--mono);font-size:56px;font-weight:600;color:var(--amber);line-height:1}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:var(--panel);border-radius:10px;padding:10px}
+.stat b{font-family:var(--mono);font-size:22px;display:block}
+details.dcase{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+details.dcase summary{cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center;list-style:none}
+details.dcase summary::-webkit-details-marker{display:none}
+details.dcase ul{margin:10px 0 0;padding-left:18px;display:grid;gap:6px;font-size:15px}
+
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;display:grid;gap:6px;width:min(420px,calc(100% - 32px))}
+.t{background:var(--amber);color:var(--amber-ink);border-radius:10px;padding:10px 14px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.4);animation:in .25s ease-out}
+.t.crit{background:var(--crit);color:#1d0805}
+@keyframes in{from{transform:translateY(8px);opacity:.3}}
+@media (prefers-reduced-motion:reduce){.blink,.t{animation:none}}
+@media (max-width:420px){.vitals b{font-size:12px}.orders{grid-template-columns:1fr}}
+
+.site{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-block:14px 0}
+.site a{color:var(--fg);text-decoration:none;display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:16px}
+.site a svg{width:34px;height:34px;display:block}
+.site .crumb{font-family:var(--body);font-weight:500;font-size:14px;color:var(--muted)}
+.site .crumb:hover{color:var(--amber)}
+a.btn{text-decoration:none;display:inline-block}
+.promo{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+.promo div{display:grid;gap:4px;min-width:0;flex:1 1 260px}
+.promo b{font-family:var(--display);font-size:19px}
+.promo span{color:var(--muted);font-size:15px}
+</style>
+</head>
+<body>
+
+<header class="site wrap"><a href="/" aria-label="Boardside Reviews home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Boardside Reviews mark"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg><span>Boardside Reviews</span></a><a class="crumb" href="/#games">Gamified Learning</a></header>
+<div class="bar" id="bar" hidden><div class="wrap">
+  <div class="clock" id="clock">19:00</div>
+  <div class="prog"><span class="label" id="census">Census</span><div class="track"><i id="trk" style="width:0"></i></div></div>
+  <div class="score"><span class="label">Score</span><b id="score">0</b></div>
+</div></div>
+<main class="wrap" id="app"></main>
+<div id="toast" aria-live="polite"></div>
+
+<script>
+const CASES=[
+{id:"hyperk",core:1,room:"4B-12",who:"68M · ESRD on HD (MWF)",arrive:15,dl:45,dx:"Hyperkalemia with ECG changes",
+ nurse:"Routine K came back 6.9. He missed dialysis today. Says he feels a little weak.",
+ hx:"Admitted for left leg cellulitis. Anuric. Last dialysis Monday.",
+ v:{T:"36.8",HR:"56",BP:"148/82",RR:"16",SpO2:"97% RA"},
+ work:[
+  {l:"12-lead ECG",m:10,v:"key",r:"Sinus bradycardia 56. Peaked T waves V2–V4. QRS 128 ms (baseline 96)."},
+  {l:"Bedside exam",m:5,v:"key",r:"Alert, mild proximal weakness. Left arm AV fistula with good thrill. No edema."},
+  {l:"Repeat K, no tourniquet",m:40,v:"ok",r:"K 6.8, not hemolyzed. Confirms it, but the ECG already told you to act."},
+  {l:"Venous blood gas",m:15,v:"ok",r:"pH 7.31, HCO3 18."},
+  {l:"Renal ultrasound",m:60,v:"low",r:"Small echogenic kidneys. Known ESRD; changes nothing tonight."}],
+ steps:[
+  {q:"ECG changes are present. What do you give first?",o:[
+   {t:"Calcium gluconate 1 g IV over 2–3 min, repeat if the ECG is unchanged",s:"best",f:"Calcium stabilizes the cardiac membrane within minutes. It does not lower K, so shifting and removal come next."},
+   {t:"Regular insulin 10 units IV with D50",s:"ok",f:"Shifting is needed, but with a widened QRS the myocardium needs protection first. Calcium, then insulin."},
+   {t:"Sodium polystyrene 30 g PO and recheck in 4 h",s:"bad",f:"Too slow and unreliable for an emergency, with a risk of bowel necrosis."},
+   {t:"Furosemide 80 mg IV",s:"bad",f:"He is anuric. Loop diuretics only help if the kidneys make urine."}]},
+  {q:"He is stabilized and shifted. Definitive plan?",o:[
+   {t:"Call nephrology for urgent dialysis tonight",s:"best",f:"Dialysis is the only real removal route when anuric. Insulin's effect wears off in 2–4 h."},
+   {t:"Patiromer now, dialysis at the next scheduled session",s:"ok",f:"Binders help, but with QRS widening tonight he needs dialysis tonight."},
+   {t:"Repeat insulin and dextrose every 4 h until Monday",s:"bad",f:"Insulin only moves K into cells. Total body K stays high, and repeated doses risk hypoglycemia."}]}],
+ att:"ECG changes mean calcium first. Then shift, then get him dialyzed. Call renal tonight, not at 7.",
+ pearls:["Calcium protects the heart but does not lower K. Onset 1–3 min, lasts 30–60 min.","In ESRD, consider 5 units of insulin instead of 10 and check glucose hourly for 4–6 h.","Chase pseudohyperkalemia (hemolysis, fist clenching, thrombocytosis) only when the ECG is normal."]},
+
+{id:"sepsis",core:1,room:"6W-22",who:"74F · pyelonephritis, HTN",arrive:40,dl:45,dx:"Septic shock from obstructed pyelonephritis",
+ nurse:"BP 82/46, was 128/70 at 4 PM. She's sleepier. Got her evening lisinopril and amlodipine an hour ago.",
+ hx:"Admitted this afternoon with right pyelonephritis on ceftriaxone. Urine culture pending.",
+ v:{T:"38.9",HR:"118",BP:"82/46",RR:"24",SpO2:"94% RA"},
+ work:[
+  {l:"Bedside exam",m:5,v:"key",r:"Drowsy, oriented ×2. Cap refill 4 s, mottled knees. Right CVA tenderness. Lungs clear."},
+  {l:"Lactate",m:20,v:"key",r:"Lactate 4.1 mmol/L."},
+  {l:"Blood cultures ×2",m:10,v:"key",r:"Drawn from two sites before changing antibiotics."},
+  {l:"Review MAR",m:5,v:"key",r:"Lisinopril 20 mg and amlodipine 10 mg at 19:00. Ceftriaxone 1 g at 15:00."},
+  {l:"Renal ultrasound",m:20,v:"key",r:"Moderate right hydronephrosis with a 9 mm proximal ureteral stone."},
+  {l:"Procalcitonin",m:30,v:"low",r:"12 ng/mL. You already knew she was septic."}],
+ steps:[
+  {q:"MAP is 58. First move?",o:[
+   {t:"30 mL/kg balanced crystalloid, hold antihypertensives, broaden antibiotics after cultures",s:"best",f:"Hypotension with lactate ≥4 is septic shock. Fluids, early antibiotics, and stop the BP meds."},
+   {t:"Start norepinephrine now, no fluid",s:"ok",f:"Early pressors are reasonable, but she is dry and hypoperfused. Give the fluid too."},
+   {t:"Recheck BP in 1 h. Probably her BP meds",s:"bad",f:"Fever, tachycardia, lactate 4 and confusion. This is shock, and an hour matters."}]},
+  {q:"After 2 L, MAP 62. Ultrasound shows an obstructing 9 mm stone with hydronephrosis.",o:[
+   {t:"Start norepinephrine, ICU consult, urgent urology or IR decompression tonight",s:"best",f:"An infected obstructed kidney is a urologic emergency. Antibiotics fail without drainage."},
+   {t:"Another 3 L of fluid before any pressor",s:"ok",f:"Fluid responsiveness falls off. Reassess with exam or POCUS rather than reflexively adding liters."},
+   {t:"Continue antibiotics, urology in the morning",s:"bad",f:"Source control can't wait for rounds. Undrained pus drives ongoing shock."}]}],
+ att:"Infected and obstructed is a drainage problem. Get urology or IR on the phone now and start pressors.",
+ pearls:["Infected + obstructed kidney = emergency decompression (stent or nephrostomy).","Peripheral norepinephrine through a good proximal IV is reasonable short-term while central access is arranged.","Hold antihypertensives at the first sign of sepsis. The evening dose can unmask shock."]},
+
+{id:"stemi",core:1,room:"5N-08",who:"61M · T2DM, smoker",arrive:95,dl:30,dx:"Inferior STEMI with RV involvement",
+ nurse:"He has chest pressure, 8/10, started 15 min ago. He's sweaty.",
+ hx:"Day 2 for right leg cellulitis. T2DM, HLD, 40 pack-years.",
+ v:{T:"37.1",HR:"54",BP:"98/60",RR:"20",SpO2:"95% RA"},
+ work:[
+  {l:"12-lead ECG",m:5,v:"key",r:"ST elevation II, III, aVF (III > II). Reciprocal ST depression in aVL."},
+  {l:"Right-sided ECG",m:5,v:"key",r:"1.5 mm ST elevation in V4R. RV involvement."},
+  {l:"Bedside exam",m:5,v:"key",r:"Diaphoretic. JVP elevated. Lungs clear."},
+  {l:"Portable CXR",m:20,v:"ok",r:"No acute process."},
+  {l:"Wait for troponin",m:60,v:"low",r:"hs-troponin 48 ng/L. An hour spent on a test that doesn't change STEMI management."}],
+ steps:[
+  {q:"Inferior ST elevation. Next?",o:[
+   {t:"Activate the STEMI team, aspirin 325 mg chewed, call cardiology",s:"best",f:"Time is myocardium. The ECG makes the diagnosis."},
+   {t:"Nitroglycerin 0.4 mg SL for the pain",s:"bad",f:"With RV involvement he is preload dependent. Nitrates can crash his pressure."},
+   {t:"Trend troponin and repeat the ECG in 1 h",s:"bad",f:"STEMI is an ECG diagnosis. Waiting delays reperfusion."}]},
+  {q:"Waiting for the cath team, BP drifts to 84/52. Lungs clear, JVP up.",o:[
+   {t:"500 mL IV fluid bolus, avoid nitrates and diuretics",s:"best",f:"RV infarct: a stiff, stunned RV needs filling pressure."},
+   {t:"Furosemide 40 mg IV for the high JVP",s:"bad",f:"High JVP with clear lungs is RV failure, not volume overload."},
+   {t:"Morphine 4 mg IV for comfort",s:"bad",f:"Morphine drops preload and BP, and slows absorption of oral P2Y12 inhibitors."}]}],
+ att:"Inferior STEMI, get a V4R. If it's RV, no nitro, give volume. Activate the lab.",
+ pearls:["Inferior STEMI: always get V4R. ST elevation ≥1 mm means RV involvement.","Hypotension + high JVP + clear lungs in inferior MI = RV infarct. Volume, no nitrates or diuretics.","Never wait for troponin when the ECG shows STEMI."]},
+
+{id:"hypogly",core:1,room:"3E-15",who:"82F · CKD 4, T2DM",arrive:150,dl:30,dx:"Sulfonylurea hypoglycemia in CKD",
+ nurse:"POC glucose 42. She is very drowsy and hard to wake.",
+ hx:"Admitted for a CHF exacerbation. Poor appetite, ate about a quarter of her meals.",
+ v:{T:"36.5",HR:"96",BP:"134/70",RR:"16",SpO2:"96% RA"},
+ work:[
+  {l:"Repeat POC glucose",m:5,v:"key",r:"38 mg/dL."},
+  {l:"Check IV access",m:5,v:"key",r:"Working 20G in the left forearm."},
+  {l:"Review MAR",m:5,v:"key",r:"Glipizide 10 mg at 08:00. Insulin glargine 12 units at 21:00."},
+  {l:"Hemoglobin A1c",m:20,v:"low",r:"6.1%. Useful for the day team, not tonight."},
+  {l:"CT head",m:45,v:"low",r:"No acute findings. Fix the glucose first."}],
+ steps:[
+  {q:"She has IV access and can't swallow safely.",o:[
+   {t:"D50 25 g IV push now",s:"best",f:"Fastest correction. Recheck in 15 min."},
+   {t:"Glucagon 1 mg IM",s:"ok",f:"Right with no IV. You have a line, and IV dextrose is faster."},
+   {t:"Juice by mouth",s:"bad",f:"A drowsy patient can aspirate. Nothing by mouth until she's awake."}]},
+  {q:"She wakes up, glucose 168. Plan for the rest of the night?",o:[
+   {t:"Stop glipizide, reduce basal insulin, start a D10 infusion, glucose hourly; octreotide if it recurs",s:"best",f:"Glipizide plus CKD means prolonged hypoglycemia. Expect it to come back."},
+   {t:"Give another amp of D50 to be safe",s:"bad",f:"Big dextrose boluses trigger more insulin release from sulfonylurea-stimulated beta cells."},
+   {t:"Recheck glucose with morning labs",s:"bad",f:"Rebound hypoglycemia is likely within hours."}]}],
+ att:"Sulfonylurea in CKD will drop again. Drip, hourly checks, and octreotide if she rebounds.",
+ pearls:["Sulfonylurea hypoglycemia in CKD can last 24–72 h. Admit-level monitoring.","Octreotide blocks insulin release and treats recurrent sulfonylurea hypoglycemia.","In malnourished or alcohol-use patients, give thiamine with dextrose."]},
+
+{id:"afib",core:1,room:"5N-19",who:"79F · pneumonia, HTN",arrive:205,dl:60,dx:"New AF with RVR, driven by sepsis",
+ nurse:"Tele shows HR 150s, irregular. She feels her heart racing but is otherwise okay.",
+ hx:"Day 1 for right lower lobe pneumonia. No prior AF. Echo 2025: EF 60%.",
+ v:{T:"38.6",HR:"152",BP:"118/72",RR:"22",SpO2:"93% 2L"},
+ work:[
+  {l:"12-lead ECG",m:5,v:"key",r:"Atrial fibrillation with RVR, rate 148. No ST changes."},
+  {l:"Volume exam",m:5,v:"key",r:"Dry mucous membranes, flat neck veins, crackles at the right base. Little PO today."},
+  {l:"BMP and Mg",m:20,v:"key",r:"K 3.2, Mg 1.5, Cr 1.3 (baseline 0.9)."},
+  {l:"TSH",m:30,v:"low",r:"1.8. Fine to send, rarely the answer tonight."},
+  {l:"Stat echo",m:60,v:"low",r:"Not available overnight. Last year's EF is enough to choose a drug."}],
+ steps:[
+  {q:"Stable BP, febrile, dry. Approach?",o:[
+   {t:"Treat the drivers: fluids, antipyretic, replete K and Mg; then metoprolol or diltiazem if still >110",s:"best",f:"New AF in sepsis is often a symptom. Many slow down once the trigger is treated."},
+   {t:"Amiodarone 150 mg IV bolus",s:"ok",f:"A reasonable second line, but it can chemically cardiovert AF of unknown duration."},
+   {t:"Synchronized cardioversion now",s:"bad",f:"She is stable and onset is unknown. Cardioversion without anticoagulation risks stroke."}]},
+  {q:"Rate 98 after fluids and metoprolol. CHA₂DS₂-VASc 4. Anticoagulation?",o:[
+   {t:"Start anticoagulation if bleeding risk allows; day team to revisit long-term",s:"best",f:"AF triggered by acute illness recurs often. Score 4 carries real stroke risk."},
+   {t:"None. It was just the pneumonia",s:"ok",f:"Reasonable to debate, but recurrence after secondary AF is common. Don't dismiss it."},
+   {t:"Aspirin 81 mg instead",s:"bad",f:"Aspirin doesn't meaningfully prevent AF stroke and still causes bleeding."}]}],
+ att:"She's stable. Treat the fever and volume, fix her lytes, then rate control.",
+ pearls:["New AF in sepsis: treat fever, volume, and electrolytes first.","Avoid diltiazem when EF <40%. Use a beta-blocker, amiodarone, or digoxin.","Unstable (hypotension, ischemia, shock) = synchronized cardioversion."]},
+
+{id:"htn",core:1,room:"3E-02",who:"71M · COPD exacerbation",arrive:250,dl:90,dx:"Asymptomatic elevated blood pressure",
+ nurse:"BP 192/104. He's comfortable. Do you want to give something?",
+ hx:"Home amlodipine and losartan held in the ED for soft BP. On prednisone 40 mg.",
+ v:{T:"36.9",HR:"88",BP:"192/104",RR:"18",SpO2:"92% 2L"},
+ work:[
+  {l:"Symptoms and focused exam",m:5,v:"key",r:"No headache, chest pain, or vision change. Neuro exam normal."},
+  {l:"Review MAR",m:5,v:"key",r:"Home meds held since admission. Pain 7/10 from a rib fracture after a coughing fit, no analgesia since 15:00."},
+  {l:"Bladder scan",m:5,v:"ok",r:"150 mL. Not the cause."},
+  {l:"ECG and troponin",m:60,v:"low",r:"Unchanged. Low yield without symptoms."},
+  {l:"Urinalysis",m:20,v:"low",r:"Unremarkable."}],
+ steps:[
+  {q:"No end-organ damage. What do you do?",o:[
+   {t:"Treat the pain, resume home amlodipine, recheck in 1–2 h",s:"best",f:"Fix the cause, give the home med, and let it come down gradually."},
+   {t:"Labetalol 20 mg IV push",s:"bad",f:"IV push for asymptomatic inpatient HTN is linked to hypotension and AKI, and a beta-blocker in a COPD flare isn't ideal."},
+   {t:"Hydralazine 10 mg IV",s:"bad",f:"Unpredictable drops and reflex tachycardia, with no benefit when there's no end-organ damage."}]}],
+ att:"Is he symptomatic? No? Then treat his pain and give him his amlodipine. Don't push IV meds.",
+ pearls:["Asymptomatic high BP is not an emergency. Look for pain, anxiety, retention, withdrawal, held meds, steroids.","IV antihypertensives for asymptomatic inpatients are associated with harm without benefit.","Hypertensive emergency needs end-organ damage: encephalopathy, ACS, pulmonary edema, AKI, dissection."]},
+
+{id:"delirium",core:1,room:"7S-21",who:"86M · hip fracture, POD 1",arrive:300,dl:45,dx:"Delirium from urinary retention and anticholinergics",
+ nurse:"He's pulling at his IV and trying to climb out of bed. Can we get something to calm him down?",
+ hx:"Lives with his daughter, mild memory issues. Diphenhydramine 50 mg at 22:00 for sleep.",
+ v:{T:"37.2",HR:"102",BP:"156/88",RR:"18",SpO2:"95% RA"},
+ work:[
+  {l:"Bedside exam",m:5,v:"key",r:"Inattentive, disoriented to time. Lower abdomen distended and tender."},
+  {l:"Bladder scan",m:5,v:"key",r:"880 mL."},
+  {l:"Review MAR",m:5,v:"key",r:"Diphenhydramine 50 mg at 22:00. Oxycodone 10 mg ×2 today. No BM in 3 days."},
+  {l:"POC glucose",m:5,v:"ok",r:"124 mg/dL."},
+  {l:"CT head",m:45,v:"low",r:"No acute findings. The answer was lower."}],
+ steps:[
+  {q:"CAM positive. Plan?",o:[
+   {t:"Straight cath, stop diphenhydramine, bowel regimen, reorient, call his daughter; low-dose haloperidol only if unsafe",s:"best",f:"Fix the causes. Retention and anticholinergics are classic and reversible."},
+   {t:"Lorazepam 1 mg IV",s:"bad",f:"Benzodiazepines worsen delirium, except in alcohol or benzo withdrawal."},
+   {t:"Four-point restraints until morning",s:"bad",f:"Restraints increase agitation, injury, and delirium duration."}]}],
+ att:"Old man, new confusion, post-op. Scan his bladder and look at his MAR before you sedate anyone.",
+ pearls:["Hunt the cause: retention, constipation, pain, hypoxia, infection, drugs.","Diphenhydramine is on the Beers list. Avoid anticholinergics in older adults.","Antipsychotics don't treat delirium. They are for safety when other measures fail."]},
+
+{id:"fn",core:1,room:"8N-05",who:"34F · AML, induction day 12",arrive:360,dl:40,dx:"Neutropenic fever",
+ nurse:"New fever, 38.4. She has a PICC. Looks okay, just tired.",
+ hx:"Day 12 of 7+3. On levofloxacin and acyclovir prophylaxis.",
+ v:{T:"38.4",HR:"108",BP:"108/66",RR:"18",SpO2:"97% RA"},
+ work:[
+  {l:"Blood cultures (peripheral + PICC)",m:10,v:"key",r:"Drawn from a peripheral vein and each PICC lumen."},
+  {l:"Exam incl. line, mouth, perianal inspection",m:5,v:"key",r:"PICC site clean. Mild mucositis. No skin breakdown."},
+  {l:"CBC with differential",m:20,v:"key",r:"WBC 0.3, ANC 100. Hgb 7.9, Plt 14."},
+  {l:"Portable CXR",m:20,v:"ok",r:"Clear."},
+  {l:"Digital rectal exam",m:5,v:"low",r:"Avoid in neutropenia; risk of bacteremia. Inspection is enough."}],
+ steps:[
+  {q:"ANC 100 and febrile. Antibiotics?",o:[
+   {t:"Cefepime 2 g IV within 60 min of the fever, after cultures",s:"best",f:"Antipseudomonal beta-lactam, fast. Every hour of delay raises mortality."},
+   {t:"Cefepime plus vancomycin",s:"ok",f:"Vancomycin is for line infection, skin infection, pneumonia, MRSA colonization, or instability. Not routine."},
+   {t:"Wait for cultures before antibiotics",s:"bad",f:"Neutropenic fever is treated empirically. Waiting can be fatal."}]}],
+ att:"Cultures and cefepime inside the hour. Don't add vanc unless she has a reason.",
+ pearls:["Fever + ANC <500: antipseudomonal beta-lactam within 60 min.","If she's on fluoroquinolone prophylaxis, don't treat with a quinolone.","No rectal exams or rectal temperatures in neutropenia."]},
+
+{id:"aws",core:0,room:"7S-03",who:"48M · acute pancreatitis",arrive:400,dl:45,dx:"Severe alcohol withdrawal",
+ nurse:"He's shaking, sweating, and says there are bugs on the wall. Last drink 2 days ago.",
+ hx:"Admitted yesterday with alcohol-associated pancreatitis. Drinks a pint of vodka a day.",
+ v:{T:"37.9",HR:"122",BP:"168/98",RR:"22",SpO2:"96% RA"},
+ work:[
+  {l:"CIWA-Ar score",m:5,v:"key",r:"CIWA 26: tremor, diaphoresis, tactile and visual hallucinations, anxiety."},
+  {l:"POC glucose",m:5,v:"key",r:"102 mg/dL."},
+  {l:"Mg and phos",m:20,v:"key",r:"Mg 1.2, phos 1.8."},
+  {l:"Ammonia",m:20,v:"low",r:"28. Normal, and not the question."},
+  {l:"CT head",m:45,v:"low",r:"No acute findings. No trauma, focal deficit, or seizure, so low yield."}],
+ steps:[
+  {q:"CIWA 26 with hallucinations. Treatment?",o:[
+   {t:"Symptom-triggered benzodiazepine per CIWA, IV thiamine, replete Mg and phos",s:"best",f:"Benzodiazepines treat withdrawal and prevent seizures. Thiamine prevents Wernicke."},
+   {t:"Haloperidol 5 mg IV",s:"bad",f:"Doesn't treat withdrawal and lowers the seizure threshold."},
+   {t:"Restraints and observation",s:"bad",f:"Untreated withdrawal can progress to seizures and DTs."}]},
+  {q:"He's needed lorazepam 12 mg over 3 h and is still CIWA 22.",o:[
+   {t:"ICU consult; escalate with phenobarbital or a benzo infusion",s:"best",f:"Escalating needs mean resistant withdrawal. ICU level of care."},
+   {t:"Dexmedetomidine as the only agent",s:"ok",f:"An adjunct for autonomic symptoms. It doesn't protect against seizures."},
+   {t:"Same dose every hour, reassess on rounds",s:"bad",f:"He's heading toward DTs. Waiting is the risk."}]}],
+ att:"Load him, give thiamine, fix his mag. If he's eating benzos, call the unit.",
+ pearls:["Timeline: tremor 6–24 h, seizures 12–48 h, DTs 48–96 h after the last drink.","Give thiamine before or with glucose in at-risk patients.","Escalating benzo needs = resistant withdrawal: ICU and phenobarbital."]},
+
+{id:"pe",core:0,room:"4B-30",who:"57F · POD 2 total knee",arrive:440,dl:45,dx:"Acute PE after knee replacement",
+ nurse:"Sudden shortness of breath. Sat 86% on room air, now 92% on 4 L.",
+ hx:"Right total knee arthroplasty 2 days ago. Missed this morning's enoxaparin.",
+ v:{T:"37.4",HR:"116",BP:"124/78",RR:"26",SpO2:"92% 4L"},
+ work:[
+  {l:"Bedside exam",m:5,v:"key",r:"Lungs clear. Right calf swollen and tender. No JVD."},
+  {l:"CT pulmonary angiogram",m:60,v:"key",r:"Right lower lobe segmental and subsegmental PE. RV/LV 0.8."},
+  {l:"Portable CXR",m:20,v:"ok",r:"Clear. Hypoxia with a clear film should push you toward PE."},
+  {l:"12-lead ECG",m:5,v:"ok",r:"Sinus tachycardia 116. Nonspecific T inversions V1–V3."},
+  {l:"Troponin and BNP",m:45,v:"ok",r:"Both normal."},
+  {l:"D-dimer",m:30,v:"low",r:"4.2. Expected after surgery; it can't help you here."}],
+ steps:[
+  {q:"Segmental PE, normotensive, normal RV size. Treatment?",o:[
+   {t:"Heparin infusion after confirming surgical bleeding risk with ortho",s:"best",f:"Unfractionated heparin is easy to stop if the wound bleeds. Low-risk PE."},
+   {t:"IVC filter instead of anticoagulation",s:"bad",f:"Filters are for when anticoagulation is contraindicated."},
+   {t:"Systemic alteplase",s:"bad",f:"Lysis is for high-risk PE with sustained hypotension, and she's 2 days post-op."}]}],
+ att:"Hypoxic with a clear chest after a knee? That's a clot until proven otherwise. Scan her.",
+ pearls:["Hypoxia with a clear CXR: think PE.","D-dimer is useless post-op. Go to imaging when suspicion is high.","Thrombolysis is for high-risk PE (sustained hypotension). RV strain without hypotension = watch closely."]},
+
+{id:"gib",core:0,room:"6W-11",who:"66M · alcohol cirrhosis",arrive:480,dl:30,dx:"Variceal upper GI bleed",
+ nurse:"He vomited about a cup of bright red blood. HR 118.",
+ hx:"Admitted for hepatic encephalopathy, now resolved. MELD 18.",
+ v:{T:"36.7",HR:"118",BP:"96/60",RR:"20",SpO2:"96% RA"},
+ work:[
+  {l:"Two large-bore IVs",m:5,v:"key",r:"Two 18G antecubital lines placed."},
+  {l:"CBC and INR",m:20,v:"key",r:"Hgb 7.6 (was 10.1). Plt 72. INR 1.8."},
+  {l:"Type and crossmatch",m:10,v:"key",r:"2 units crossmatched."},
+  {l:"Bedside exam",m:5,v:"key",r:"Ascites, spider angiomata, melena on the pad."},
+  {l:"NG lavage",m:15,v:"low",r:"Not recommended. Uncomfortable and doesn't change the plan."}],
+ steps:[
+  {q:"Probable variceal bleed. Bundle?",o:[
+   {t:"Octreotide, ceftriaxone 1 g, PPI until EGD, GI for EGD within 12 h, transfuse to Hgb 7",s:"best",f:"That's the bundle. Each piece has outcome data."},
+   {t:"Transfuse to Hgb 10 and give FFP for the INR",s:"bad",f:"Liberal transfusion raises portal pressure and rebleeding. INR doesn't reflect bleeding risk in cirrhosis."},
+   {t:"IV PPI alone, GI in the morning",s:"bad",f:"Varices need octreotide, antibiotics, and early endoscopy."}]},
+  {q:"He vomits again and becomes confused, gurgling.",o:[
+   {t:"Call the ICU to intubate for airway protection before EGD",s:"best",f:"Massive hematemesis with altered mental status means protect the airway."},
+   {t:"Lactulose and observe",s:"bad",f:"The airway is the problem right now."},
+   {t:"Lorazepam for agitation",s:"bad",f:"Sedation without a secured airway in active hematemesis invites aspiration."}]}],
+ att:"Cirrhotic bleeder: octreotide, ceftriaxone, restrictive transfusion, GI tonight. Watch his airway.",
+ pearls:["Ceftriaxone in cirrhotic GI bleeding lowers infection, rebleeding, and mortality.","Restrictive transfusion (Hgb 7) improves survival in upper GI bleeding.","Balloon tamponade bridges uncontrolled variceal bleeding to TIPS."]},
+
+{id:"na",core:0,room:"4B-07",who:"58F · pneumonia",arrive:530,dl:90,dx:"Hyponatremia with SIADH physiology (thiazide and SSRI)",
+ nurse:"Early labs: Na 118. She has a headache and some nausea.",
+ hx:"On HCTZ and sertraline at home. Na 124 on admission. Got 2 L normal saline in the ED.",
+ v:{T:"37.6",HR:"84",BP:"138/80",RR:"18",SpO2:"95% 2L"},
+ work:[
+  {l:"Serum osmolality",m:20,v:"key",r:"248 mOsm/kg. True hypotonic hyponatremia."},
+  {l:"Urine osm and Na",m:30,v:"key",r:"Urine osm 460, urine Na 52. Inappropriately concentrated."},
+  {l:"Volume exam",m:5,v:"key",r:"Moist mucous membranes, no edema, normal JVP. Euvolemic."},
+  {l:"Glucose",m:5,v:"ok",r:"110. No hyperglycemia correction needed."},
+  {l:"CT head",m:45,v:"low",r:"Normal. Her symptoms are mild."}],
+ steps:[
+  {q:"Mild symptoms. Na fell 6 after ED saline. Plan?",o:[
+   {t:"Hold HCTZ and sertraline, fluid restrict, Na every 4 h, cap the rise at 8 in 24 h; 3% bolus if she worsens",s:"best",f:"Treat the cause, correct slowly, and have a plan for severe symptoms."},
+   {t:"2 L normal saline",s:"bad",f:"In SIADH she excretes the salt and keeps the water. It already dropped after the ED saline."},
+   {t:"3% infusion to reach 130 by morning",s:"bad",f:"A 12-point rise risks osmotic demyelination."}]},
+  {q:"Later: Na 125 and she's urinating 400 mL/h.",o:[
+   {t:"D5W plus DDAVP to clamp the rise",s:"best",f:"She's overcorrecting via a water diuresis. Re-lower or stop the climb."},
+   {t:"Continue. She's improving",s:"bad",f:"Already +7 and climbing fast. This is how ODS happens."},
+   {t:"More 3% to keep the momentum",s:"bad",f:"The opposite of what she needs."}]}],
+ att:"Slow is safe. Hold the thiazide, restrict fluids, and watch for her peeing out free water.",
+ pearls:["Chronic hyponatremia: aim for a rise of 4–8 mEq/L in 24 h. Never exceed 10–12, or 8 if high risk (alcohol use, malnutrition, hypokalemia, liver disease).","Once the cause is removed, a water diuresis drives overcorrection. Watch urine output.","Severe symptoms (seizure, obtundation): 3% 100–150 mL bolus, may repeat, aim for a 4–6 rise."]},
+
+{id:"fall",core:0,room:"6W-29",who:"80F · UTI, AF on apixaban",arrive:570,dl:45,dx:"Subdural hematoma on apixaban",
+ nurse:"Found her on the floor by the bathroom. Bump on her forehead. She says she's fine.",
+ hx:"Admitted for UTI. AF on apixaban. Started tamsulosin yesterday.",
+ v:{T:"36.9",HR:"78",BP:"152/84",RR:"16",SpO2:"97% RA"},
+ work:[
+  {l:"Neuro exam",m:5,v:"key",r:"GCS 15, no focal deficits. 3 cm forehead hematoma."},
+  {l:"CT head without contrast",m:40,v:"key",r:"6 mm acute right subdural hematoma. No midline shift."},
+  {l:"Review MAR",m:5,v:"key",r:"Apixaban 5 mg BID, last dose 21:00. Tamsulosin 0.4 mg at 21:00."},
+  {l:"Orthostatic vitals",m:10,v:"ok",r:"152/84 lying, 118/70 standing, HR 78 → 98. Orthostatic."},
+  {l:"CT cervical spine",m:30,v:"ok",r:"No fracture."}],
+ steps:[
+  {q:"Acute SDH on apixaban, last dose 7 h ago.",o:[
+   {t:"Hold apixaban, reverse with 4-factor PCC per protocol, neurosurgery consult, hourly neuro checks",s:"best",f:"Intracranial bleeding on a factor Xa inhibitor needs reversal now. In the US, 4F-PCC is the reversal agent since andexanet left the market in December 2025."},
+   {t:"Hold apixaban, repeat CT in the morning",s:"ok",f:"Holding is right, but an intracranial bleed needs reversal tonight."},
+   {t:"Continue apixaban, she has AF",s:"bad",f:"Active intracranial hemorrhage outranks short-term stroke risk."}]}],
+ att:"Anticoagulated and hit her head? CT, even if she looks fine. If it bleeds, reverse.",
+ pearls:["Anticoagulated + head strike = CT head, even with a normal exam.","Reversal: 4F-PCC for factor Xa inhibitors (andexanet alfa was withdrawn from the US market in December 2025); idarucizumab for dabigatran.","Every inpatient fall needs a cause. New tamsulosin plus orthostasis is a usual suspect."]},
+
+{id:"flash",room:"5N-14",who:"72M · HFrEF (EF 25%), CKD 3",dl:30,dx:"Hypertensive acute pulmonary edema (SCAPE)",
+ nurse:"He's suddenly very short of breath, sitting bolt upright. Sat 84% on 2 L.",
+ hx:"Admitted for cellulitis. Got 2 L of IV fluid today for a creatinine bump. Home furosemide held.",
+ v:{T:"37.0",HR:"124",BP:"196/108",RR:"32",SpO2:"84% 2L"},
+ work:[
+  {l:"Bedside exam",m:5,v:"key",r:"Diaphoretic, using accessory muscles. Crackles to the apices, JVP 14 cm, S3."},
+  {l:"Lung ultrasound",m:10,v:"key",r:"Diffuse bilateral B-lines."},
+  {l:"Review I&O and MAR",m:5,v:"key",r:"2 L lactated Ringer's today, net +2.4 L. Furosemide held since admission."},
+  {l:"Portable CXR",m:20,v:"ok",r:"Bilateral perihilar edema with cephalization."},
+  {l:"12-lead ECG",m:5,v:"ok",r:"Sinus tachycardia. LBBB, unchanged from prior."},
+  {l:"BNP",m:45,v:"low",r:"2,400 pg/mL. The bedside exam had already made the diagnosis."}],
+ steps:[
+  {q:"Hypertensive pulmonary edema. First moves?",o:[
+   {t:"Sit upright, BiPAP, high-dose nitroglycerin titrated to BP, IV furosemide",s:"best",f:"Nitrates cut preload and afterload within minutes. NIV lowers work of breathing and the need for intubation."},
+   {t:"IV furosemide alone, recheck in 1 h",s:"ok",f:"Diuresis helps but is slow and doesn't treat the afterload driving this. Add nitrates and NIV."},
+   {t:"Metoprolol 5 mg IV for the tachycardia",s:"bad",f:"The tachycardia is compensatory. A beta-blocker bolus in acute decompensated HFrEF can precipitate cardiogenic shock."}]},
+  {q:"30 min later on BiPAP: BP 168/92, but he's drowsier and pulling at the mask. ABG pH 7.18, PaCO2 68.",o:[
+   {t:"Call the ICU for intubation",s:"best",f:"Rising CO2 and falling mental status despite NIV mean NIV is failing."},
+   {t:"Increase BiPAP pressures and recheck the ABG in 2 h",s:"bad",f:"Delaying intubation when NIV is failing increases harm."},
+   {t:"Lorazepam so he tolerates the mask",s:"bad",f:"Sedating a hypercapnic patient on NIV without a secured airway can stop his breathing."}]}],
+ att:"That's SCAPE. Nitro, lots of it, and BiPAP. If he gets sleepy on the mask, tube him.",
+ pearls:["SCAPE (sympathetic crashing acute pulmonary edema): treat afterload with high-dose nitroglycerin plus NIV.","NIV failure: worsening mental status, rising PaCO2, or inability to protect the airway or tolerate the mask.","Check I&O. Fluid given for a creatinine bump is a common trigger in HFrEF."]},
+
+{id:"dka",room:"3E-21",who:"24F · type 1 diabetes",dl:45,dx:"Diabetic ketoacidosis with hypokalemia",
+ nurse:"Glucose 486. She's vomiting and breathing fast.",
+ hx:"Admitted this afternoon for gastroenteritis. Her insulin pump came off yesterday and she hasn't taken basal insulin since.",
+ v:{T:"37.4",HR:"124",BP:"102/64",RR:"30",SpO2:"99% RA"},
+ work:[
+  {l:"BMP",m:20,v:"key",r:"Na 132, K 3.1, Cl 96, HCO3 9, BUN 28, Cr 1.3. Anion gap 27."},
+  {l:"Venous blood gas",m:15,v:"key",r:"pH 7.08, pCO2 22."},
+  {l:"Beta-hydroxybutyrate",m:30,v:"key",r:"6.8 mmol/L."},
+  {l:"Bedside exam",m:5,v:"key",r:"Dry mucosa, Kussmaul breathing, mild diffuse abdominal tenderness without peritonitis."},
+  {l:"Lipase",m:30,v:"low",r:"Mildly elevated. Common in DKA and doesn't change tonight's plan."},
+  {l:"CT abdomen",m:60,v:"low",r:"Unremarkable. Abdominal pain in DKA usually improves as the acidosis clears."}],
+ steps:[
+  {q:"DKA with K 3.1. First steps?",o:[
+   {t:"IV fluids and potassium now; start the insulin infusion once K is above 3.5",s:"best",f:"Insulin drives K into cells. Starting at 3.1 risks dangerous hypokalemia and arrhythmia."},
+   {t:"Insulin infusion 0.1 units/kg/h right away",s:"bad",f:"With K below 3.5, insulin waits until potassium is repleted (2024 consensus)."},
+   {t:"Sodium bicarbonate for pH 7.08",s:"bad",f:"Bicarbonate isn't recommended unless pH is below 7.0, and it worsens hypokalemia."}]},
+  {q:"Four hours in: K 4.2, glucose 230, gap 18, insulin infusion running.",o:[
+   {t:"Continue the insulin infusion and add dextrose to the fluids",s:"best",f:"Add dextrose once glucose is under 250 so insulin can keep clearing ketones."},
+   {t:"Stop the insulin infusion; glucose is nearly normal",s:"bad",f:"The gap is still open. Stopping insulin lets ketoacidosis rebound."},
+   {t:"Switch to a subcutaneous sliding scale now",s:"bad",f:"Transition only after DKA resolves, with basal insulin given 1–2 h before stopping the infusion."}]}],
+ att:"Potassium first. No insulin until she's above 3.5. Then don't stop the drip until the ketones clear.",
+ pearls:["Hold insulin until K is above 3.5 (2024 ADA/EASD/JBDS/AACE/DTS consensus).","Add dextrose at glucose <250 mg/dL and keep insulin running until ketoacidosis resolves.","Give subcutaneous basal insulin 1–2 h before stopping the infusion to prevent rebound DKA."]},
+
+{id:"ana",room:"6W-04",who:"45F · diabetic foot infection",dl:15,dx:"Anaphylaxis to piperacillin-tazobactam",
+ nurse:"Her first dose of pip-tazo started 10 minutes ago. Now hives, swollen lips, and she's wheezing.",
+ hx:"No documented drug allergies. Admitted today.",
+ v:{T:"37.0",HR:"128",BP:"84/50",RR:"28",SpO2:"90% RA"},
+ work:[
+  {l:"Stop the infusion",m:2,v:"key",r:"Pip-tazo stopped, IV line kept open."},
+  {l:"Airway and skin exam",m:3,v:"key",r:"Diffuse urticaria, lip and tongue swelling, diffuse wheeze. Voice still normal."},
+  {l:"Serum tryptase",m:10,v:"ok",r:"Sent. Best drawn within a few hours of onset; supports the diagnosis later."},
+  {l:"Portable CXR",m:20,v:"low",r:"Unremarkable. Treatment shouldn't wait for imaging."}],
+ steps:[
+  {q:"Hypotension, wheeze, angioedema. First drug?",o:[
+   {t:"Epinephrine 0.5 mg IM (1 mg/mL) in the anterolateral thigh; repeat every 5–15 min as needed",s:"best",f:"Epinephrine is the only first-line treatment. Everything else is an adjunct."},
+   {t:"Diphenhydramine 50 mg IV and methylprednisolone 125 mg IV",s:"bad",f:"Neither treats airway edema or shock. Delayed epinephrine is associated with fatal anaphylaxis."},
+   {t:"Epinephrine 1 mg IV push",s:"bad",f:"That's the cardiac arrest dose. With a pulse it can cause arrhythmias and severe hypertension."}]},
+  {q:"After two IM doses and 2 L of fluid, BP is 82/48.",o:[
+   {t:"Start an epinephrine infusion and call the ICU",s:"best",f:"Refractory anaphylaxis needs titrated IV epinephrine in a monitored setting."},
+   {t:"A third IM dose and watch on the floor",s:"ok",f:"Fine as a bridge, but persistent shock after two doses needs an infusion and ICU care."},
+   {t:"Add famotidine and wait",s:"bad",f:"H2 blockers are adjuncts. She is in shock."}]}],
+ att:"IM epi in the thigh, now. Antihistamines don't fix shock.",
+ pearls:["IM epinephrine 0.01 mg/kg (max 0.5 mg in adults) in the thigh is first line. There is no absolute contraindication in anaphylaxis.","Patients on beta-blockers may be refractory to epinephrine; glucagon is an option.","Document the allergy and observe for biphasic reactions."]},
+
+{id:"opioid",room:"7S-12",who:"68M · POD 1 colectomy, CKD 3",dl:15,dx:"Opioid-induced respiratory depression",
+ nurse:"He's really hard to wake up. RR 6 and sat 85%.",
+ hx:"Hydromorphone PCA since surgery. Gabapentin added this evening for pain.",
+ v:{T:"36.8",HR:"64",BP:"108/62",RR:"6",SpO2:"85% RA"},
+ work:[
+  {l:"Bedside exam",m:3,v:"key",r:"Responds only to sternal rub. Pinpoint pupils. Shallow breathing."},
+  {l:"PCA log and MAR",m:5,v:"key",r:"18 PCA demands in 4 h. Gabapentin 300 mg at 21:00."},
+  {l:"POC glucose",m:3,v:"key",r:"132 mg/dL."},
+  {l:"Arterial blood gas",m:15,v:"ok",r:"pH 7.24, PaCO2 62."},
+  {l:"CT head",m:45,v:"low",r:"Normal. The pupils and the PCA log pointed elsewhere."}],
+ steps:[
+  {q:"Opioid toxidrome. First move?",o:[
+   {t:"Stop the PCA, bag-mask ventilate, naloxone 0.04–0.1 mg IV every 2–3 min titrated to breathing",s:"best",f:"Support ventilation, then titrate small doses to respiratory rate, not full wakefulness."},
+   {t:"Naloxone 2 mg IV push",s:"ok",f:"It will work, but a large bolus post-op can cause abrupt severe pain, hypertension, and pulmonary edema."},
+   {t:"Non-rebreather and recheck in 30 min",s:"bad",f:"Oxygen fixes the sat but not the hypoventilation. His CO2 keeps rising."}]},
+  {q:"After 0.2 mg total he's breathing 14/min. Now?",o:[
+   {t:"Continuous oximetry and capnography, repeat naloxone or start an infusion if he re-sedates, stop gabapentin, reduce opioid dosing",s:"best",f:"Naloxone wears off in 30–90 min. Hydromorphone and renally cleared gabapentin outlast it."},
+   {t:"Resume the PCA at the same settings",s:"bad",f:"Same setup, same result in an hour."},
+   {t:"Recheck him in the morning",s:"bad",f:"Re-sedation is common once naloxone wears off."}]}],
+ att:"Bag him, small doses of naloxone, kill the PCA. He'll renarcotize, so watch him.",
+ pearls:["Naloxone lasts 30–90 min; many opioids last longer. Watch for re-sedation.","In post-op or opioid-dependent patients, titrate 0.04–0.1 mg IV to respiratory rate.","Gabapentinoids plus opioids, CKD, and older age raise the risk of respiratory depression."]},
+
+{id:"stroke",room:"5N-27",who:"74F · CHF, hypertension",dl:20,dx:"Acute ischemic stroke with large vessel occlusion",
+ nurse:"She can't move her right arm and her speech is garbled. She was talking normally 30 minutes ago.",
+ hx:"Admitted for a CHF exacerbation. Not anticoagulated. No recent surgery or bleeding.",
+ v:{T:"36.9",HR:"96",BP:"178/96",RR:"18",SpO2:"96% RA"},
+ work:[
+  {l:"POC glucose",m:3,v:"key",r:"138 mg/dL. Hypoglycemia excluded."},
+  {l:"NIH Stroke Scale",m:5,v:"key",r:"NIHSS 14: right face, arm, and leg weakness, global aphasia, left gaze preference."},
+  {l:"CT head and CTA head/neck",m:25,v:"key",r:"No hemorrhage. Left M1 occlusion."},
+  {l:"12-lead ECG",m:5,v:"ok",r:"New atrial fibrillation, rate 96."},
+  {l:"MRI brain",m:60,v:"low",r:"Not the first test in a stroke code. That was an hour of brain."}],
+ steps:[
+  {q:"Deficit began about 30 min ago. First move?",o:[
+   {t:"Call a stroke code now: glucose, then CT and CTA",s:"best",f:"Time is brain. In-hospital strokes are often recognized and treated late."},
+   {t:"Aspirin 325 mg now",s:"bad",f:"Hemorrhage hasn't been excluded, and aspirin is held for 24 h after thrombolysis."},
+   {t:"IV labetalol to a systolic of 140",s:"bad",f:"Only lower to below 185/110 to allow thrombolysis. Over-lowering can extend the infarct."}]},
+  {q:"No bleed. Left M1 occlusion. 50 min from last known well, BP 178/96.",o:[
+   {t:"Thrombolysis if no contraindications, plus endovascular thrombectomy",s:"best",f:"Eligible for lysis within 4.5 h, and LVO qualifies for thrombectomy. Lysis should not delay thrombectomy."},
+   {t:"Thrombectomy only, no thrombolysis",s:"ok",f:"Appropriate if lytics are contraindicated; otherwise eligible patients get both."},
+   {t:"Start heparin for the new AF",s:"bad",f:"Early full anticoagulation in acute stroke raises hemorrhagic transformation risk. Timing is decided later."}]}],
+ att:"Call the code. Glucose, CT, CTA. Keep her BP under 185/110 but don't drop it further.",
+ pearls:["Check glucose before calling it a stroke.","Thrombolysis within 4.5 h of last known well. BP must be below 185/110 before and below 180/105 after.","Thrombectomy for large vessel occlusion can be offered up to 24 h in selected patients."]},
+
+{id:"sz",room:"4B-19",who:"52M · epilepsy, cellulitis",dl:10,dx:"Status epilepticus",
+ nurse:"He's seizing! Whole body, started about 5 minutes ago.",
+ hx:"Known epilepsy on levetiracetam. Both doses were held today because he was NPO for a procedure.",
+ v:{T:"37.8",HR:"132",BP:"168/94",RR:"8",SpO2:"88% RA"},
+ work:[
+  {l:"Side position, suction, O2",m:2,v:"key",r:"On his side, suctioned, non-rebreather on. Nothing placed in his mouth."},
+  {l:"POC glucose",m:2,v:"key",r:"96 mg/dL."},
+  {l:"Review MAR",m:3,v:"key",r:"Levetiracetam 1000 mg BID, both doses held today for NPO status."},
+  {l:"Na, Ca, Mg",m:20,v:"ok",r:"Na 137, Ca 9.1, Mg 1.9."},
+  {l:"EEG",m:60,v:"low",r:"Not available until morning. Treat now; EEG later if he doesn't wake."}],
+ steps:[
+  {q:"Seizing over 5 min, IV in place. Weight 80 kg.",o:[
+   {t:"Lorazepam 4 mg IV; repeat once in 5 min if still seizing",s:"best",f:"Benzodiazepine first, at full dose. Underdosing is the most common error."},
+   {t:"Lorazepam 1 mg IV and wait",s:"bad",f:"Too small. The dose is 0.1 mg/kg up to 4 mg."},
+   {t:"Load levetiracetam first, no benzodiazepine",s:"bad",f:"Benzodiazepines are first line. Second-line agents come next."}]},
+  {q:"Still seizing after two doses of lorazepam.",o:[
+   {t:"Levetiracetam 60 mg/kg IV (max 4500 mg), or fosphenytoin or valproate; call the ICU",s:"best",f:"These performed similarly in ESETT. Refractory status needs ICU care."},
+   {t:"A third and fourth dose of lorazepam",s:"bad",f:"Benzodiazepines lose effect as status continues. Move to a second-line agent."},
+   {t:"Wait it out; it's his usual seizure",s:"bad",f:"Over 5 min is status. Neuronal injury and complications rise with time."}]}],
+ att:"Full-dose benzo, then load a second agent. Don't drip in small doses.",
+ pearls:["Status epilepticus: 5 min or more of seizure, or repeated seizures without recovery between.","Lorazepam 0.1 mg/kg IV up to 4 mg per dose; midazolam 10 mg IM if there's no IV.","ESETT: levetiracetam, fosphenytoin, and valproate were similarly effective second-line agents."]},
+
+{id:"ama",room:"6W-17",who:"55M · community-acquired pneumonia",dl:60,dx:"Leaving against medical advice: capacity assessment",
+ nurse:"He's dressed and says he's leaving. He wants to talk to the doctor first.",
+ hx:"Day 2 on IV ceftriaxone and azithromycin, improving. Lives alone with his dog.",
+ v:{T:"37.5",HR:"92",BP:"132/80",RR:"18",SpO2:"94% RA"},
+ work:[
+  {l:"Sit down and talk with him",m:10,v:"key",r:"His dog has been alone for 2 days and no one can check on it. He would stay otherwise."},
+  {l:"Assess capacity",m:10,v:"key",r:"He explains his diagnosis, the risks of leaving including worsening infection and death, and the alternatives. His reasoning fits his values."},
+  {l:"Review labs and trend",m:5,v:"ok",r:"WBC trending down, afebrile 24 h."},
+  {l:"Psychiatry consult",m:30,v:"low",r:"Not needed. Any physician can assess capacity; psychiatry is for complex cases."}],
+ steps:[
+  {q:"He has capacity and still wants to leave.",o:[
+   {t:"Respect his choice: oral antibiotics, follow-up, return precautions, and document the capacity discussion",s:"best",f:"A patient with capacity may refuse care. Harm reduction keeps him safer than an empty discharge."},
+   {t:"Tell him insurance won't pay if he leaves AMA",s:"bad",f:"That's a myth, and it damages trust."},
+   {t:"Ask security to keep him on the unit",s:"bad",f:"Holding a patient who has capacity is unlawful restraint."}]}],
+ att:"If he has capacity, it's his call. Send him out safely with antibiotics and a way back.",
+ pearls:["Capacity: understand, appreciate, reason, and express a consistent choice. Any physician can assess it.","Capacity is decision-specific and can change.","Leaving AMA isn't the end of care: prescriptions, follow-up, and an open invitation to return."]},
+
+{id:"goc",room:"8N-14",who:"88F · metastatic pancreatic cancer",dl:60,dx:"Goals-of-care conversation at night",
+ nurse:"Her BP is soft and she's more confused. Her daughter is asking if we'll “do everything.” She's full code.",
+ hx:"Progressed on second-line chemotherapy. Oncology note: no further cancer-directed options. Bedbound most of the day.",
+ v:{T:"38.2",HR:"112",BP:"92/54",RR:"22",SpO2:"93% 2L"},
+ work:[
+  {l:"Review oncology and clinic notes",m:10,v:"key",r:"No further chemotherapy recommended. A clinic note quotes her saying she does not want to die on machines."},
+  {l:"Look for an advance directive",m:5,v:"key",r:"Scanned directive from 2024 naming her daughter as health care proxy."},
+  {l:"See the patient",m:5,v:"key",r:"Confused, unable to take part in decisions tonight."},
+  {l:"Lactate and cultures",m:20,v:"ok",r:"Lactate 3.2. Cultures sent."}],
+ steps:[
+  {q:"How do you start with her daughter?",o:[
+   {t:"Ask what she understands, share the news honestly, explore what her mother valued, then recommend",s:"best",f:"Understanding and values before options. A recommendation spares her deciding alone."},
+   {t:"List the options: CPR, intubation, pressors. Which does she want?",s:"bad",f:"A menu of procedures puts the full weight on the family and rarely reflects the patient's values."},
+   {t:"Leave it for the day team",s:"ok",f:"Sometimes reasonable, but she's declining tonight. Talking now may prevent a code she wouldn't want."}]},
+  {q:"Her daughter says her mother never wanted machines.",o:[
+   {t:"Recommend DNR/DNI, continue treatments that fit her goals, involve palliative care",s:"best",f:"Code status and treatment goals are separate. Antibiotics and comfort can continue."},
+   {t:"Make her comfort-only right away",s:"ok",f:"That may be right, but DNR doesn't mean do-not-treat. Clarify which treatments still fit her goals."},
+   {t:"Keep her full code until oncology weighs in",s:"bad",f:"The proxy has told you the patient's wishes. Waiting risks a code she wouldn't want."}]}],
+ att:"Find out what she understands and what her mom valued. Then make a recommendation. Don't hand her a menu.",
+ pearls:["Ask, tell, ask: understanding, then information, then values.","DNR is not do-not-treat.","Make a recommendation. Families often want guidance, not a menu."]},
+
+{id:"uop",room:"7S-09",who:"70M · POD 1 hip replacement, BPH",dl:60,dx:"Low urine output from a blocked catheter",
+ nurse:"Urine output only 10 mL/h for 3 hours. Foley in place. Want to give Lasix?",
+ hx:"Uncomplicated hip replacement yesterday. Foley left in overnight.",
+ v:{T:"37.2",HR:"88",BP:"128/74",RR:"16",SpO2:"96% RA"},
+ work:[
+  {l:"Bladder scan",m:5,v:"key",r:"760 mL with the Foley in place. The catheter isn't draining."},
+  {l:"Check and flush the Foley",m:5,v:"key",r:"A clot was blocking it. After flushing, 700 mL drains."},
+  {l:"Volume exam and I&O",m:5,v:"ok",r:"Slightly dry mucosa. Net +500 mL since surgery."},
+  {l:"BMP",m:20,v:"ok",r:"Cr 1.0 (baseline 0.9), K 4.3."},
+  {l:"Renal ultrasound",m:45,v:"low",r:"Distended bladder. A bladder scan would have told you this in 5 minutes."}],
+ steps:[
+  {q:"The catheter was clotted; 700 mL drained. Next?",o:[
+   {t:"Keep the catheter draining, monitor hourly output, recheck creatinine in the morning",s:"best",f:"Problem solved at the source."},
+   {t:"Furosemide 40 mg IV",s:"bad",f:"Diuretics don't fix obstruction, and post-op patients are often slightly dry."},
+   {t:"Bolus 2 L of fluid",s:"ok",f:"A small bolus is fine if he's dry, but 2 L treats the wrong problem."}]}],
+ att:"Did anyone check the Foley? Flush it before you give anything.",
+ pearls:["Low urine output with a Foley: check the catheter first.","Think pre-renal, renal, post-renal. Post-renal is the fastest to rule out.","Reflexive furosemide for low urine output treats a number, not a cause."]},
+
+{id:"sleep",room:"3E-09",who:"78F · pneumonia, mild cognitive impairment",dl:90,dx:"Inpatient insomnia in an older adult",
+ nurse:"She can't sleep and is asking for something. Can I give her Benadryl or Ativan?",
+ hx:"Day 3 for pneumonia, improving. Vitals every 4 h, nebs every 4 h, labs at 04:00.",
+ v:{T:"36.8",HR:"80",BP:"134/76",RR:"16",SpO2:"95% RA"},
+ work:[
+  {l:"Ask her why",m:5,v:"key",r:"The room is bright and noisy, and she's woken for vitals and nebs. No pain."},
+  {l:"Review overnight orders",m:5,v:"key",r:"Vitals q4h, nebulizer q4h including 02:00, labs at 04:00."},
+  {l:"CAM screen",m:5,v:"ok",r:"Negative. Not delirious."},
+  {l:"TSH",m:20,v:"low",r:"Normal. Not the cause."}],
+ steps:[
+  {q:"What do you do?",o:[
+   {t:"Cluster care, space vitals and nebs, dim lights, earplugs and eye mask; melatonin if she wants something",s:"best",f:"Fix the environment first. Melatonin has a low-risk profile."},
+   {t:"Diphenhydramine 25 mg",s:"bad",f:"Anticholinergic and on the Beers list. Raises delirium, falls, and urinary retention."},
+   {t:"Lorazepam 0.5 mg",s:"bad",f:"Benzodiazepines raise delirium, falls, and fractures in older adults."},
+   {t:"Zolpidem 5 mg",s:"bad",f:"Z-drugs carry the same fall and delirium risks in older adults."}]}],
+ att:"No Benadryl, no Ativan, no Ambien. Let her sleep and stop waking her up.",
+ pearls:["Avoid benzodiazepines, Z-drugs, and first-generation antihistamines in older adults (AGS Beers Criteria).","Most inpatient insomnia is noise, light, pain, and interruptions.","Ask whether every q4h vital and 04:00 lab is really needed."]},
+
+{id:"co2",room:"4B-25",who:"66M · COPD exacerbation",dl:30,dx:"Oxygen-associated hypercapnic respiratory failure in COPD",
+ nurse:"He's getting really sleepy. Sat was 84% so the tech put him on a non-rebreather. Now he's 99%.",
+ hx:"Severe COPD, FEV1 30%. Chronic CO2 retainer, baseline bicarbonate 34.",
+ v:{T:"37.1",HR:"104",BP:"142/86",RR:"12",SpO2:"99% NRB"},
+ work:[
+  {l:"Bedside exam",m:5,v:"key",r:"Drowsy, opens eyes to voice. Asterixis. Poor air movement, faint wheeze."},
+  {l:"Arterial blood gas",m:15,v:"key",r:"pH 7.22, PaCO2 82, PaO2 210, HCO3 33."},
+  {l:"Prior ABG",m:5,v:"ok",r:"Baseline PaCO2 about 55."},
+  {l:"Portable CXR",m:20,v:"ok",r:"Hyperinflation. No consolidation or pneumothorax."},
+  {l:"CT chest",m:45,v:"low",r:"No PE or pneumonia. Not what tonight needed."}],
+ steps:[
+  {q:"Acute-on-chronic hypercapnic acidosis. Plan?",o:[
+   {t:"Titrate O2 to SpO2 88–92%, start BiPAP, continue bronchodilators and steroids",s:"best",f:"NIV is indicated for pH <7.35 with a raised PaCO2. Excess O2 was making it worse."},
+   {t:"Keep the non-rebreather; the sat is perfect",s:"bad",f:"A sat of 99% in a CO2 retainer is a warning, not a goal."},
+   {t:"Take the oxygen off",s:"bad",f:"Hypoxemia is more dangerous than hypercapnia. Titrate, don't remove."}]}],
+ att:"Turn his oxygen down to 88–92 and put him on BiPAP. Recheck a gas in an hour.",
+ pearls:["Target SpO2 88–92% in patients at risk of hypercapnia.","NIV for COPD exacerbation with pH <7.35 and raised PaCO2 lowers intubation and mortality.","Over-oxygenation raises CO2 mostly through worse V/Q matching and the Haldane effect, not only loss of hypoxic drive."]},
+
+{id:"ca",room:"8N-22",who:"63F · multiple myeloma",dl:60,dx:"Severe hypercalcemia of malignancy",
+ nurse:"Calcium came back 14.6. She's more confused tonight and has been vomiting.",
+ hx:"Newly diagnosed multiple myeloma. Albumin 3.8.",
+ v:{T:"36.9",HR:"104",BP:"108/66",RR:"16",SpO2:"97% RA"},
+ work:[
+  {l:"Bedside exam",m:5,v:"key",r:"Dry mucous membranes. Drowsy but arousable. No focal deficits."},
+  {l:"BMP",m:20,v:"key",r:"Ca 14.6, Cr 1.8 (baseline 1.0), K 3.6."},
+  {l:"Ionized calcium",m:20,v:"ok",r:"1.92 mmol/L. True hypercalcemia."},
+  {l:"12-lead ECG",m:5,v:"ok",r:"Sinus tachycardia, short QT."},
+  {l:"PTH and PTHrP",m:30,v:"low",r:"Sent; results in days. Treatment can't wait."}],
+ steps:[
+  {q:"Severe, symptomatic, and dry. Plan?",o:[
+   {t:"IV isotonic fluids, calcitonin 4 units/kg, and a bisphosphonate or denosumab",s:"best",f:"Fluids restore calcium excretion, calcitonin works in hours, and bone-directed therapy takes 2–4 days."},
+   {t:"Fluids alone, recheck in the morning",s:"ok",f:"Fluids come first, but at 14.6 with symptoms add calcitonin and bone-directed therapy."},
+   {t:"Furosemide 40 mg IV to push calcium out",s:"bad",f:"Loop diuretics before volume repletion worsen dehydration and AKI. Reserve for volume overload."}]}],
+ att:"Fill her up, calcitonin tonight, and start bone-directed therapy. Mind her kidneys for the dose.",
+ pearls:["Calcitonin works within hours, but tachyphylaxis sets in after about 48 h.","Bisphosphonates take 2–4 days; adjust for renal function or consider denosumab.","Steroids help in myeloma, lymphoma, and granulomatous disease."]},
+
+{id:"angio",room:"5N-03",who:"60M · hypertension, CKD",dl:15,dx:"ACE inhibitor angioedema",
+ nurse:"His tongue and lips are swelling. He sounds muffled. No hives, no itching.",
+ hx:"On lisinopril for 4 years. Admitted for cellulitis. No new medications.",
+ v:{T:"37.0",HR:"98",BP:"152/88",RR:"22",SpO2:"95% RA"},
+ work:[
+  {l:"Airway exam",m:3,v:"key",r:"Enlarged tongue, swollen floor of mouth, muffled voice. No stridor yet. No urticaria."},
+  {l:"Call anesthesia and ENT",m:5,v:"key",r:"Both on the way. Difficult airway cart at the bedside."},
+  {l:"Review medications",m:3,v:"key",r:"Lisinopril 20 mg daily for 4 years. Nothing new."},
+  {l:"Serum tryptase",m:10,v:"ok",r:"Sent. Usually normal in bradykinin-mediated angioedema."},
+  {l:"CT neck",m:40,v:"low",r:"Sending an evolving airway to CT is dangerous."}],
+ steps:[
+  {q:"Bradykinin-mediated angioedema with voice change. Priority?",o:[
+   {t:"Plan the airway early with anesthesia and ENT (awake fiberoptic preferred), stop lisinopril for good, ICU",s:"best",f:"Swelling can progress fast. Airway first."},
+   {t:"IM epinephrine and observe",s:"ok",f:"Reasonable if anaphylaxis is possible, but it often doesn't help ACE inhibitor angioedema. Don't let it delay airway planning."},
+   {t:"Diphenhydramine and methylprednisolone, observe on the floor",s:"bad",f:"Bradykinin-mediated swelling usually doesn't respond to antihistamines or steroids."}]}],
+ att:"This isn't histamine. Get anesthesia to the bedside now and plan an awake intubation.",
+ pearls:["ACE inhibitor angioedema can appear after years on the drug.","No urticaria and a normal tryptase point to bradykinin, not histamine.","Never restart an ACE inhibitor after angioedema."]},
+
+{id:"hit",room:"6W-08",who:"64M · bowel resection, POD 7",dl:90,dx:"Heparin-induced thrombocytopenia with thrombosis",
+ nurse:"Platelets dropped to 72 from 210 on admission. His left leg is newly swollen.",
+ hx:"Subcutaneous heparin prophylaxis since surgery 7 days ago. No other new medications.",
+ v:{T:"37.3",HR:"96",BP:"136/80",RR:"18",SpO2:"96% RA"},
+ work:[
+  {l:"4Ts score",m:5,v:"key",r:"8 of 8: fall >50% (2), onset day 5–10 (2), new thrombosis (2), no other cause (2). High probability."},
+  {l:"Left leg duplex",m:30,v:"key",r:"Acute left femoral-popliteal DVT."},
+  {l:"PF4/heparin antibody",m:10,v:"key",r:"Sent. Results tomorrow. Don't wait for it."},
+  {l:"Peripheral smear",m:20,v:"ok",r:"No schistocytes, no platelet clumping."}],
+ steps:[
+  {q:"High 4Ts score with a new DVT. What now?",o:[
+   {t:"Stop all heparin including flushes; start a non-heparin anticoagulant such as argatroban",s:"best",f:"HIT is prothrombotic. Stopping heparin isn't enough."},
+   {t:"Stop heparin and start warfarin",s:"bad",f:"Warfarin in acute HIT can cause venous limb gangrene. Start it only after platelets recover, overlapping a non-heparin agent."},
+   {t:"Switch to enoxaparin",s:"bad",f:"Low molecular weight heparin cross-reacts with HIT antibodies."},
+   {t:"Transfuse platelets",s:"bad",f:"Avoid unless bleeding or before a high-risk procedure."}]}],
+ att:"High 4Ts and a clot. Stop every drop of heparin and start argatroban. Don't wait for the antibody.",
+ pearls:["Typical HIT: platelet fall >50% 5–10 days after heparin exposure. Thrombosis, not bleeding, is the danger.","Treat on clinical suspicion with a non-heparin anticoagulant: argatroban, bivalirudin, fondaparinux, or a DOAC in selected patients (ASH 2018).","Don't start warfarin until platelets recover."]},
+
+{id:"trxn",room:"3E-27",who:"71F · upper GI bleed",dl:15,dx:"Acute hemolytic transfusion reaction",
+ nurse:"15 minutes into her blood transfusion she has a fever, back pain, and her BP dropped.",
+ hx:"Second unit of PRBCs for Hgb 6.8. Shares a room with another patient getting blood tonight.",
+ v:{T:"39.1",HR:"126",BP:"86/50",RR:"24",SpO2:"94% RA"},
+ work:[
+  {l:"Stop the transfusion",m:2,v:"key",r:"Stopped. Line kept open with normal saline."},
+  {l:"Bedside ID and label check",m:5,v:"key",r:"The unit is labeled for the patient in bed B of the same room."},
+  {l:"Notify blood bank, return the bag",m:5,v:"key",r:"Blood bank notified. Unit and tubing returned."},
+  {l:"Hemolysis labs: DAT, LDH, haptoglobin, bilirubin, UA",m:20,v:"key",r:"DAT positive, haptoglobin undetectable, LDH 820, hemoglobinuria."},
+  {l:"Portable CXR",m:20,v:"ok",r:"No pulmonary edema."}],
+ steps:[
+  {q:"Fever, back pain, hypotension mid-transfusion. First step?",o:[
+   {t:"Stop the transfusion, keep the IV open with saline, check identifiers, call the blood bank",s:"best",f:"Stop first, investigate second."},
+   {t:"Acetaminophen and slow the rate",s:"bad",f:"Fever with hypotension isn't a simple febrile reaction until proven otherwise."},
+   {t:"Diphenhydramine and continue",s:"bad",f:"More incompatible blood worsens hemolysis."}]},
+  {q:"ABO-incompatible unit confirmed. Management?",o:[
+   {t:"IV fluids for BP and urine output, monitor for DIC, AKI, and hyperkalemia; ICU",s:"best",f:"Fluids support renal perfusion. Watch coagulation and potassium."},
+   {t:"Steroids and observe on the floor",s:"bad",f:"Steroids don't stop hemolysis. She needs close monitoring."},
+   {t:"Finish the unit more slowly",s:"bad",f:"Never."}]}],
+ att:"Stop the blood. Check the labels. And make sure the patient in bed B didn't get hers.",
+ pearls:["Most acute hemolytic reactions come from identification errors at the bedside.","Any fever, hypotension, or dyspnea during a transfusion: stop it first.","Report every reaction. A mislabeled unit often means a second patient is at risk."]},
+
+{id:"hemopt",room:"4B-02",who:"58M · bronchiectasis",dl:20,dx:"Massive hemoptysis",
+ nurse:"He coughed up about a cup of bright red blood and he's still coughing it up.",
+ hx:"Right lower lobe predominant bronchiectasis. On apixaban for a DVT 2 months ago.",
+ v:{T:"37.6",HR:"118",BP:"128/74",RR:"26",SpO2:"89% 4L"},
+ work:[
+  {l:"Bedside exam",m:3,v:"key",r:"Coarse crackles and gurgling over the right base."},
+  {l:"Review prior imaging",m:5,v:"key",r:"Prior CT: right lower lobe cystic bronchiectasis with enlarged bronchial arteries."},
+  {l:"CBC, INR, type and cross",m:20,v:"key",r:"Hgb 11.2, Plt 240, INR 1.2. 2 units crossmatched."},
+  {l:"CT angiogram chest",m:40,v:"ok",r:"Right lower lobe source, hypertrophied bronchial arteries. Only if stable enough to travel."},
+  {l:"Sputum culture",m:10,v:"low",r:"Fine to send, not tonight's priority."}],
+ steps:[
+  {q:"Ongoing bleeding, likely right lower lobe. Immediate steps?",o:[
+   {t:"Right side down, hold apixaban and consider reversal, ICU and pulmonology, prepare to intubate with a large ETT",s:"best",f:"Bleeding side down protects the good lung. A large tube allows bronchoscopy."},
+   {t:"Left side down",s:"bad",f:"Blood would flood the healthy lung. Bleeding side down."},
+   {t:"Codeine for cough and observe on the floor",s:"bad",f:"Massive hemoptysis needs an ICU and an airway plan."}]},
+  {q:"Intubated and stable. Definitive control?",o:[
+   {t:"Bronchoscopy to localize, then bronchial artery embolization",s:"best",f:"Most massive hemoptysis is from bronchial arteries; embolization controls most cases."},
+   {t:"Urgent lobectomy tonight",s:"ok",f:"Surgery is generally reserved for when embolization fails or for specific lesions."},
+   {t:"Restart apixaban for the DVT",s:"bad",f:"Not with active life-threatening bleeding."}]}],
+ att:"Bleeding side down. He dies from drowning, not from blood loss. Get IR involved.",
+ pearls:["Position bleeding side down to protect the good lung.","Bronchial arteries cause most massive hemoptysis; bronchial artery embolization is first-line definitive therapy.","Death is from asphyxiation, not exsanguination. The airway comes first."]},
+
+{id:"brady",room:"5N-11",who:"80M · AF, CKD 4",dl:20,dx:"BRASH syndrome",
+ nurse:"HR 34 on tele. He's lightheaded and BP is 78/40.",
+ hx:"AF on metoprolol and diltiazem. Poor oral intake for 2 days.",
+ v:{T:"36.6",HR:"34",BP:"78/40",RR:"18",SpO2:"94% RA"},
+ work:[
+  {l:"12-lead ECG",m:5,v:"key",r:"Junctional bradycardia 34. Peaked T waves."},
+  {l:"BMP",m:20,v:"key",r:"K 6.6, Cr 3.4 (baseline 2.2)."},
+  {l:"Review MAR",m:3,v:"key",r:"Metoprolol 50 mg BID and diltiazem 120 mg daily, both given at 21:00."},
+  {l:"Bedside exam",m:3,v:"key",r:"Pale, cool, slow to answer."},
+  {l:"Echocardiogram",m:60,v:"low",r:"Not available overnight."}],
+ steps:[
+  {q:"Symptomatic bradycardia with hypotension. Immediately?",o:[
+   {t:"Atropine 1 mg IV, pacing pads on, calcium for the hyperkalemia; dopamine or epinephrine infusion if needed",s:"best",f:"Treat the rate and the potassium together."},
+   {t:"Hold metoprolol and recheck in the morning",s:"bad",f:"He is hypotensive and symptomatic now."},
+   {t:"Wait for cardiology before treating",s:"bad",f:"Unstable bradycardia is treated at the bedside."}]},
+  {q:"HR 42, BP 84/46 after atropine. K 6.6, recent beta-blocker and diltiazem.",o:[
+   {t:"Calcium, insulin and dextrose, consider glucagon or high-dose insulin for nodal blocker effect; ICU and pacing as needed",s:"best",f:"Bradycardia, renal failure, AV nodal blockade, shock, hyperkalemia feed each other. Treat all parts."},
+   {t:"Nephrology for dialysis only",s:"ok",f:"Dialysis may be needed, but treat the bradycardia and shock now."},
+   {t:"Amiodarone infusion",s:"bad",f:"Amiodarone slows the rate further."}]}],
+ att:"That's BRASH. Calcium, shift his potassium, support the rate, and get him to the unit.",
+ pearls:["Atropine 1 mg IV every 3–5 min, max 3 mg. Prepare pacing early.","BRASH: bradycardia, renal failure, AV nodal blockade, shock, hyperkalemia.","Beta-blocker or calcium channel blocker toxicity: calcium, glucagon, high-dose insulin euglycemia therapy."]},
+
+{id:"ptx",room:"6W-15",who:"66F · sepsis",dl:10,dx:"Tension pneumothorax after central line",
+ nurse:"Right after her subclavian line went in she got really short of breath and her BP is dropping.",
+ hx:"Right subclavian central venous catheter placed 20 minutes ago.",
+ v:{T:"37.8",HR:"138",BP:"74/40",RR:"34",SpO2:"82% NRB"},
+ work:[
+  {l:"Bedside exam",m:2,v:"key",r:"Absent breath sounds and hyperresonance on the right, trachea deviated left, distended neck veins."},
+  {l:"Lung ultrasound",m:5,v:"key",r:"No lung sliding on the right."},
+  {l:"Portable CXR",m:20,v:"low",r:"Large right tension pneumothorax, 20 minutes later. This is a clinical diagnosis."},
+  {l:"Arterial blood gas",m:15,v:"low",r:"PaO2 52. You lost time."}],
+ steps:[
+  {q:"Hypotension, absent breath sounds, tracheal deviation. Next?",o:[
+   {t:"Immediate needle decompression, then a chest tube",s:"best",f:"Decompress first, image later."},
+   {t:"Stat CXR to confirm",s:"bad",f:"Waiting for a film in tension physiology can be fatal."},
+   {t:"Fluids and norepinephrine",s:"bad",f:"This is obstructive shock. Pressors don't relieve tension."}]}],
+ att:"Don't get a film. Decompress her.",
+ pearls:["Tension pneumothorax is a clinical diagnosis: decompress first.","Needle site: 4th–5th intercostal space just anterior to the midaxillary line (ATLS 10th ed.), or 2nd intercostal space midclavicular.","Subclavian lines carry the highest pneumothorax risk of central line sites."]},
+
+{id:"aod",room:"4B-21",who:"62M · hypertension, smoker",dl:20,dx:"Acute type A aortic dissection",
+ nurse:"Sudden severe chest pain going through to his back. He says it's tearing.",
+ hx:"Admitted for poorly controlled hypertension and AKI.",
+ v:{T:"36.9",HR:"104",BP:"186/102",RR:"22",SpO2:"96% RA"},
+ work:[
+  {l:"BP in both arms",m:5,v:"key",r:"Right 186/102, left 142/80."},
+  {l:"Bedside exam",m:5,v:"key",r:"New diastolic murmur at the right sternal border. Weaker pulses on the left."},
+  {l:"12-lead ECG",m:5,v:"key",r:"Sinus tachycardia, LVH. No ST elevation."},
+  {l:"CTA chest",m:30,v:"key",r:"Type A dissection from the aortic root into the arch."},
+  {l:"Bedside echo",m:10,v:"ok",r:"Moderate aortic regurgitation. No pericardial effusion."},
+  {l:"D-dimer",m:30,v:"low",r:"Elevated, but you needed imaging regardless."}],
+ steps:[
+  {q:"Suspected dissection while CTA is arranged. Treatment?",o:[
+   {t:"IV beta-blocker (esmolol or labetalol) first to HR 60–80, then add a vasodilator for SBP <120",s:"best",f:"Rate control first lowers shear stress. Vasodilators alone cause reflex tachycardia."},
+   {t:"Nicardipine alone",s:"ok",f:"Lowers BP, but without rate control first it causes reflex tachycardia."},
+   {t:"Aspirin and heparin for possible ACS",s:"bad",f:"Antithrombotics can be catastrophic in dissection. Rule it out first."}]},
+  {q:"CTA confirms type A dissection.",o:[
+   {t:"Emergency cardiothoracic surgery consult",s:"best",f:"Type A is a surgical emergency."},
+   {t:"Medical management in the ICU",s:"bad",f:"That's for uncomplicated type B."},
+   {t:"Repeat imaging in the morning",s:"bad",f:"Mortality in untreated type A rises by the hour."}]}],
+ att:"Arm BP differential and tearing pain? No aspirin, no heparin. Esmolol and a CTA.",
+ pearls:["Pulse or BP differential, a new AR murmur, tearing pain: think dissection before giving antithrombotics.","Targets: HR 60–80 and SBP <120, beta-blocker first (2022 ACC/AHA).","Type A (ascending) = surgery. Uncomplicated type B = medical therapy."]},
+
+{id:"scd",room:"3E-12",who:"26F · sickle cell disease (HbSS)",dl:30,dx:"Acute chest syndrome",
+ nurse:"Her pain is 10/10 in her back and legs. Her last hydromorphone was 4 hours ago.",
+ hx:"Admitted today for a pain crisis. Has an individualized pain plan from hematology.",
+ v:{T:"38.3",HR:"112",BP:"122/74",RR:"24",SpO2:"91% RA"},
+ work:[
+  {l:"Review her pain plan",m:5,v:"key",r:"Plan says hydromorphone IV every 2 h as needed. It was ordered every 4 h."},
+  {l:"Chest exam",m:3,v:"key",r:"Splinting, crackles at the left base."},
+  {l:"Portable CXR",m:20,v:"key",r:"New left lower lobe infiltrate."},
+  {l:"CBC and reticulocytes",m:20,v:"key",r:"Hgb 6.4 (baseline 8.2), retic 9%."},
+  {l:"Urine drug screen",m:15,v:"low",r:"Not indicated. Vaso-occlusive pain is real, and screening erodes trust."}],
+ steps:[
+  {q:"Fever, hypoxia, new infiltrate. Plan?",o:[
+   {t:"Treat as acute chest syndrome: ceftriaxone and azithromycin, O2, incentive spirometry, adequate analgesia, call hematology about transfusion",s:"best",f:"ACS is a leading cause of death in sickle cell disease. Hematology decides simple versus exchange transfusion."},
+   {t:"Increase IV fluids to 200 mL/h",s:"bad",f:"Aggressive fluids can worsen pulmonary edema in ACS."},
+   {t:"Hold opioids because of the hypoxia",s:"bad",f:"Undertreated pain causes splinting and hypoventilation, which worsens ACS. Treat pain and monitor."}]}],
+ att:"Fever, hypoxia, new infiltrate in sickle cell is acute chest. Antibiotics, spirometry, treat her pain, call heme.",
+ pearls:["Acute chest syndrome: new infiltrate plus fever or respiratory symptoms in sickle cell disease.","Give analgesia within 1 h of presentation and reassess every 30–60 min (ASH 2020).","Incentive spirometry while awake helps prevent ACS during pain crises."]},
+
+{id:"steroid",room:"4B-16",who:"59M · COPD exacerbation, T2DM",dl:90,dx:"Steroid-induced hyperglycemia",
+ nurse:"Bedtime glucose 342. He feels fine. The sliding scale says 4 units. Is that enough?",
+ hx:"Prednisone 40 mg every morning. Home metformin held. Eating well.",
+ v:{T:"36.8",HR:"88",BP:"136/80",RR:"18",SpO2:"93% 2L"},
+ work:[
+  {l:"Glucose trend",m:5,v:"key",r:"Fasting 128, pre-lunch 248, pre-dinner 318, bedtime 342."},
+  {l:"Check for DKA or HHS",m:20,v:"key",r:"Anion gap 11, no ketones, osmolality normal."},
+  {l:"Bedside exam",m:5,v:"ok",r:"Comfortable and eating."},
+  {l:"Hemoglobin A1c",m:20,v:"ok",r:"7.4%."}],
+ steps:[
+  {q:"Afternoon and evening highs, normal fasting. Best approach?",o:[
+   {t:"Correction dose tonight, and add morning NPH given with the prednisone starting tomorrow",s:"best",f:"NPH's afternoon peak matches prednisone's effect."},
+   {t:"Sliding scale only",s:"ok",f:"Treats highs after the fact. Sliding-scale-only regimens are discouraged."},
+   {t:"Regular insulin 10 units IV now",s:"bad",f:"IV boluses cause brief drops and rebound, and aren't indicated without a crisis."},
+   {t:"Large bedtime glargine dose",s:"bad",f:"Fasting glucose is fine. A big basal dose risks overnight hypoglycemia."}]}],
+ att:"Prednisone in the morning, sugars up in the afternoon. Give NPH with the pred.",
+ pearls:["Morning prednisone causes afternoon-evening hyperglycemia; fasting glucose is often normal.","NPH given with the prednisone dose matches its action profile.","Sliding-scale insulin alone is discouraged for inpatient hyperglycemia (ADA Standards of Care)."]},
+
+{id:"inr",room:"6W-26",who:"76M · AF on warfarin, cellulitis",dl:60,dx:"Supratherapeutic INR without bleeding",
+ nurse:"INR came back 11.2. No bleeding that I can see.",
+ hx:"Warfarin for AF. Started TMP-SMX 3 days ago for cellulitis.",
+ v:{T:"37.0",HR:"76",BP:"132/78",RR:"16",SpO2:"97% RA"},
+ work:[
+  {l:"Exam for bleeding",m:5,v:"key",r:"No bleeding, no hematuria, normal neuro exam."},
+  {l:"Review medications",m:5,v:"key",r:"Warfarin 5 mg daily. TMP-SMX started 3 days ago."},
+  {l:"CBC",m:20,v:"ok",r:"Hgb 12.6, stable."},
+  {l:"CT head",m:40,v:"low",r:"Normal. With no neuro findings, not indicated."}],
+ steps:[
+  {q:"INR 11.2, no bleeding. Plan?",o:[
+   {t:"Hold warfarin, oral vitamin K 2.5–5 mg, recheck INR in 24 h, review the antibiotic",s:"best",f:"ASH 2018 suggests oral vitamin K for INR >10 without bleeding."},
+   {t:"Hold warfarin only, no vitamin K",s:"ok",f:"Appropriate for INR 4.5–10. Above 10, oral vitamin K is suggested."},
+   {t:"4-factor PCC 50 units/kg",s:"bad",f:"PCC is for major bleeding. Here it adds thrombotic risk without benefit."}]}],
+ att:"No bleeding? Hold it, oral vitamin K, and look at that Bactrim.",
+ pearls:["INR >10 without bleeding: hold warfarin, oral vitamin K 2.5–5 mg. Major bleeding: IV vitamin K 5–10 mg plus 4F-PCC.","TMP-SMX, metronidazole, fluconazole, and amiodarone potentiate warfarin.","Oral vitamin K corrects non-urgently without the anaphylactoid risk of IV."]},
+
+{id:"htne",room:"5N-22",who:"50M · uncontrolled hypertension, AKI",dl:30,dx:"Hypertensive emergency with encephalopathy",
+ nurse:"BP 232/134. He has a bad headache, vomited, and he's confused.",
+ hx:"Ran out of his blood pressure medications 2 weeks ago. Admitted for AKI.",
+ v:{T:"37.1",HR:"96",BP:"232/134",RR:"18",SpO2:"97% RA"},
+ work:[
+  {l:"Neuro exam",m:5,v:"key",r:"Confused, no focal deficits."},
+  {l:"Fundoscopy",m:5,v:"key",r:"Bilateral papilledema with flame hemorrhages."},
+  {l:"CT head",m:30,v:"key",r:"No hemorrhage or mass."},
+  {l:"ECG and troponin",m:30,v:"ok",r:"LVH. Troponin mildly elevated."},
+  {l:"Urinalysis",m:20,v:"ok",r:"Proteinuria and hematuria."}],
+ steps:[
+  {q:"Severe hypertension with encephalopathy. Plan?",o:[
+   {t:"ICU, IV nicardipine or clevidipine infusion, lower BP by no more than 25% in the first hour",s:"best",f:"End-organ damage makes this an emergency, and controlled lowering protects perfusion."},
+   {t:"Oral amlodipine and recheck in 4 h",s:"bad",f:"Encephalopathy needs titratable IV therapy."},
+   {t:"Lower to 120/80 within the hour",s:"bad",f:"Rapid normalization risks cerebral, coronary, and renal ischemia."}]}],
+ att:"This one is a real emergency. Unit, drip, and slow down. Twenty-five percent in the first hour.",
+ pearls:["Hypertensive emergency = severe BP plus acute end-organ damage.","Lower by no more than 25% in the first hour, then to 160/100–110 over the next 2–6 h (2017 ACC/AHA).","Exceptions with faster targets: aortic dissection, severe preeclampsia/eclampsia, pheochromocytoma crisis."]},
+
+{id:"ali",room:"7S-18",who:"77M · AF, anticoagulation held",dl:30,dx:"Acute limb ischemia",
+ nurse:"His right foot is cold, numb, and painful. I can't find a pulse.",
+ hx:"Admitted 4 days ago for a GI bleed; apixaban held since. Bleeding resolved, Hgb stable.",
+ v:{T:"36.8",HR:"102",BP:"146/84",RR:"18",SpO2:"96% RA"},
+ work:[
+  {l:"Bedside exam",m:5,v:"key",r:"Right foot pale and cool, no popliteal or pedal pulses, reduced sensation, weak toe dorsiflexion."},
+  {l:"Handheld Doppler",m:10,v:"key",r:"No arterial signal at the dorsalis pedis or posterior tibial. Venous signal present."},
+  {l:"12-lead ECG",m:5,v:"ok",r:"Atrial fibrillation, rate 102."},
+  {l:"CTA lower extremity",m:40,v:"ok",r:"Right popliteal artery occlusion. Useful, but don't let it delay the consult."},
+  {l:"CK and lactate",m:20,v:"ok",r:"CK 380, lactate 1.9."}],
+ steps:[
+  {q:"Cold, pulseless, numb, weak foot. Next?",o:[
+   {t:"Heparin bolus and infusion, emergent vascular surgery consult",s:"best",f:"Sensory loss with weakness means an immediately threatened limb. Unfractionated heparin is reversible if the GI bleed recurs."},
+   {t:"Restart apixaban in the morning",s:"bad",f:"The limb can't wait until morning."},
+   {t:"Warm blankets and recheck pulses in 2 h",s:"bad",f:"Every hour of ischemia lowers the chance of saving the limb."}]}],
+ att:"Numb and weak means the clock is running. Heparin and vascular now.",
+ pearls:["The 6 Ps: pain, pallor, pulselessness, paresthesia, paralysis, poikilothermia.","Any motor weakness or sensory loss beyond the toes = immediately threatened limb.","Unfractionated heparin is preferred because it can be stopped and reversed for surgery."]},
+
+{id:"ss",room:"8N-09",who:"44F · MRSA osteomyelitis",dl:45,dx:"Serotonin syndrome",
+ nurse:"She's agitated, sweating, and her legs keep jerking. Temp 38.9.",
+ hx:"Sertraline 150 mg daily. Linezolid started yesterday. Tramadol as needed.",
+ v:{T:"38.9",HR:"126",BP:"164/96",RR:"22",SpO2:"97% RA"},
+ work:[
+  {l:"Neuro exam",m:5,v:"key",r:"Agitated, diaphoretic, dilated pupils, inducible and spontaneous clonus worse in the legs, hyperreflexia, ocular clonus."},
+  {l:"Review MAR",m:5,v:"key",r:"Sertraline 150 mg, linezolid 600 mg BID since yesterday, tramadol 50 mg ×3 today."},
+  {l:"CK and BMP",m:20,v:"ok",r:"CK 860, creatinine normal."},
+  {l:"Blood cultures",m:10,v:"ok",r:"Sent. Reasonable with fever."},
+  {l:"Lumbar puncture",m:45,v:"low",r:"Not indicated. The exam already explains this."}],
+ steps:[
+  {q:"Clonus and hyperthermia after linezolid, sertraline, and tramadol. Plan?",o:[
+   {t:"Stop all three, benzodiazepines for agitation, supportive cooling and fluids; cyproheptadine if moderate",s:"best",f:"Most cases resolve within about 24 h once the drugs are stopped."},
+   {t:"Haloperidol for agitation",s:"bad",f:"Can worsen hyperthermia and muddies the picture with NMS."},
+   {t:"Physical restraints",s:"bad",f:"Muscle activity against restraints worsens hyperthermia and lactic acidosis."}]}],
+ att:"Clonus plus a new serotonergic drug. Stop them all and give benzos.",
+ pearls:["Hunter criteria: clonus (spontaneous, inducible, or ocular), agitation, diaphoresis, tremor, hyperreflexia, hypertonia with fever.","Serotonin syndrome develops within hours; NMS evolves over days with rigidity and slowed reflexes.","Linezolid is a weak MAO inhibitor. Tramadol, fentanyl, and ondansetron add serotonergic load."]},
+
+{id:"svt",room:"3E-30",who:"38F · pyelonephritis",dl:30,dx:"Paroxysmal SVT",
+ nurse:"HR jumped to 190 suddenly. She feels palpitations but BP is fine.",
+ hx:"Day 2 for pyelonephritis. No cardiac history.",
+ v:{T:"37.4",HR:"188",BP:"118/74",RR:"20",SpO2:"98% RA"},
+ work:[
+  {l:"12-lead ECG",m:5,v:"key",r:"Regular narrow-complex tachycardia at 188. No visible P waves."},
+  {l:"Bedside exam",m:3,v:"key",r:"Alert and comfortable. Normal mentation, warm extremities."},
+  {l:"K and Mg",m:20,v:"ok",r:"K 3.9, Mg 2.0."},
+  {l:"TSH",m:20,v:"low",r:"Normal. Not tonight's priority."}],
+ steps:[
+  {q:"Stable regular narrow-complex tachycardia. First?",o:[
+   {t:"Modified Valsalva: strain 15 s semi-recumbent, then lie flat with legs raised",s:"best",f:"REVERT trial: converts about 4 in 10, versus under 2 in 10 with standard Valsalva."},
+   {t:"Adenosine 6 mg IV push",s:"ok",f:"A reasonable next step, but try vagal maneuvers first in a stable patient."},
+   {t:"Synchronized cardioversion",s:"bad",f:"She's stable."}]},
+  {q:"Valsalva didn't work.",o:[
+   {t:"Adenosine 6 mg rapid IV push with a flush via a proximal vein, then 12 mg if needed, recording a rhythm strip",s:"best",f:"Warn her about the brief chest discomfort and sense of doom."},
+   {t:"Diltiazem IV",s:"ok",f:"An alternative if adenosine fails or is contraindicated."},
+   {t:"Amiodarone 300 mg IV push",s:"bad",f:"That's the cardiac arrest dose."}]}],
+ att:"Stable SVT. Modified Valsalva, then adenosine. Run a strip during the push.",
+ pearls:["Modified Valsalva (REVERT) more than doubles conversion versus standard Valsalva.","Adenosine 6 mg, then 12 mg, rapid push with flush through a proximal vein.","Avoid AV nodal blockers in pre-excited AF: irregular, wide, and varying QRS."]}
+];
+
+const PTS={best:10,ok:4,bad:-8}, WPTS={key:2,ok:0,low:-1};
+let S=null;
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,"0");
+const fmt=t=>{const m=(19*60+t)%1440;return pad(Math.floor(m/60))+":"+pad(m%60)};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function best(){try{return +localStorage.getItem("imnf-best")||0}catch(e){return 0}}
+function saveBest(p){try{if(p>best())localStorage.setItem("imnf-best",p)}catch(e){}}
+
+function start(mode){
+  const n=mode==="cloud"?13:8, deck=CASES.slice();
+  for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}
+  const slot=600/n;
+  S={mode,t:0,score:0,view:"board",open:null,over:false,
+     cs:deck.slice(0,n).map((c,i)=>({id:c.id,arr:Math.round(8+i*slot+Math.random()*slot*.7),dl:mode==="cloud"?Math.max(10,Math.round(c.dl*.75)):c.dl,arrived:false,late:false,done:false,w:[],a:[],att:false}))};
+  tick(); render(); scrollTo(0,0);
+}
+const def=id=>CASES.find(c=>c.id===id);
+
+function toast(msg,crit){const el=document.createElement("div");el.className="t"+(crit?" crit":"");el.textContent=msg;$("#toast").append(el);setTimeout(()=>el.remove(),3200)}
+
+function tick(){
+  for(const c of S.cs){const d=def(c.id);
+    if(!c.arrived&&c.arr<=S.t){c.arrived=true;if(S.t>0)toast("Page · "+d.room+" · "+d.nurse.split(".")[0])}
+    if(c.arrived&&!c.done&&!c.late&&S.t>c.arr+c.dl){c.late=true;S.score-=5;toast(d.room+": rapid response called",1)}
+  }
+  if(S.t>=720){S.t=720;S.over=true}
+}
+function advance(m){S.t=Math.min(720,S.t+m);tick()}
+
+function render(){
+  if(!S){$("#bar").hidden=true;$("#app").innerHTML=viewStart();return}
+  if(S.over){$("#bar").hidden=true;$("#toast").innerHTML="";$("#app").innerHTML=viewDebrief();return}
+  $("#bar").hidden=false;
+  $("#clock").textContent=fmt(S.t);
+  $("#score").textContent=S.score;
+  const arr=S.cs.filter(c=>c.arrived).length, open=S.cs.filter(c=>c.arrived&&!c.done).length;
+  $("#census").textContent=open+" open · "+arr+"/"+S.cs.length+" paged";
+  $("#trk").style.width=(S.t/720*100)+"%";
+  $("#app").innerHTML=S.view==="case"?viewCase(S.cs.find(c=>c.id===S.open)):viewBoard();
+}
+
+function viewStart(){
+  const b=best();
+  return `<section class="hero">
+  <h1>Night<br><span>Float</span></h1>
+  <p class="sub">Internal medicine cross-cover, 19:00 to 07:00. Answer pages, work up the patient, make the call, and collect a teaching pearl from every bedside.</p>
+  <div class="pager" aria-hidden="true"><div class="lcd">
+    <div class="dim">19:15 · PAGE 1 OF 8</div>
+    <div>4B-12 RN: K 6.9 ON AM LAB. MISSED HD TODAY. PT C/O WEAKNESS. PLS CALL X4471<span class="blink">_</span></div>
+  </div></div>
+  <div class="modes">
+    <button class="mode" data-act="start" data-m="std"><div><h3>Standard night</h3><p>8 random pages from a bank of ${CASES.length} cases.</p></div><span class="go">Take the pager</span></button>
+    <button class="mode" data-act="start" data-m="cloud"><div><h3>Black cloud</h3><p>13 random pages, less time before a rapid response.</p></div><span class="go">Take the pager</span></button>
+  </div>
+  ${b?`<p class="label">Best night so far: ${b}%</p>`:""}
+  <div><p class="label">How a shift works</p>
+  <ol class="how">
+    <li>Pages arrive as the clock runs. Each order and decision costs minutes.</li>
+    <li>Open a page, order what you need, then commit to a plan.</li>
+    <li>Leave a page too long and the nurse calls a rapid response.</li>
+    <li>Low-value tests cost points. Calling the attending costs a little, and gets you a hint.</li>
+    <li>Sign out at 07:00 with a score and every pearl from the night.</li>
+  </ol></div>
+  <p class="fine">For education only. Fictional patients; not medical advice. Doses and pathways vary by institution. Follow your local protocols.</p>
+  </section>`;
+}
+
+function chip(c){
+  if(c.done)return `<span class="chip c-done">Done</span>`;
+  if(c.late)return `<span class="chip c-rrt">RRT</span>`;
+  if(c.w.length||c.a.length)return `<span class="chip c-prog">Working</span>`;
+  return `<span class="chip c-new">New</span>`;
+}
+function viewBoard(){
+  const list=S.cs.filter(c=>c.arrived).sort((x,y)=>(x.done-y.done)||(x.arr-y.arr));
+  const pending=list.filter(c=>!c.done).length, left=S.cs.filter(c=>!c.arrived).length;
+  let quiet="";
+  if(!pending){
+    quiet=left?`<div class="quiet"><span>Pager's quiet. ${left} more page${left>1?"s":""} tonight.</span><button class="btn" data-act="wait">Rest until the next page</button></div>`
+            :`<div class="quiet"><span>All pages answered. Nice night.</span><button class="btn" data-act="end">Sign out</button></div>`;
+  }
+  return `<section class="sec"><div class="sechead"><h2 style="font-size:24px">Pager</h2><span class="label">${S.mode==="cloud"?"Black cloud":"Standard"}</span></div>
+  ${quiet}
+  ${list.map(c=>{const d=def(c.id);return `<button class="page${c.done?" done":""}" data-act="open" data-id="${c.id}">
+     <span class="room">${d.room}</span><span class="time">${fmt(c.arr)}</span>${chip(c)}
+     <span class="msg">${esc(d.nurse)}</span></button>`}).join("")}
+  ${pending&&left?`<button class="btn ghost" data-act="wait" style="justify-self:start">Ignore pager, wait for next page</button>`:""}
+  ${!left&&pending?`<button class="btn ghost" data-act="end" style="justify-self:start">Sign out early</button>`:""}
+  </section>`;
+}
+
+function viewCase(c){
+  const d=def(c.id);
+  const vit=Object.entries(d.v).map(([k,v])=>`<div><span class="label">${k==="SpO2"?"SpO₂":k}</span><b>${v}</b></div>`).join("");
+  const orders=d.work.map((w,i)=>`<button class="order" data-act="work" data-i="${i}" ${c.w.includes(i)||c.done?"disabled":""}><span>${w.l}</span><span class="mono">+${w.m} min</span></button>`).join("");
+  const log=c.w.map(i=>{const w=d.work[i];const lab={key:"High yield",ok:"Fine",low:"Low value"}[w.v];
+    return `<div class="res"><div class="top"><span>${w.l}</span><span class="flag f-${w.v}">${lab}</span></div><p>${esc(w.r)}</p></div>`}).join("");
+  const answered=c.a.map((oi,si)=>{const st=d.steps[si],o=st.o[oi];const lab={best:"Best call",ok:"Acceptable",bad:"Harmful"}[o.s];
+    return `<div class="ans s-${o.s}"><div class="label">${esc(st.q)}</div><div class="pick" style="margin-top:4px">${esc(o.t)}</div><p><span class="flag">${lab} · </span>${esc(o.f)}</p></div>`}).join("");
+  let cur="";
+  if(!c.done){const st=d.steps[c.a.length];
+    const n=st.o.length, seed=c.arr+c.a.length*3;
+    const order=st.o.map((o,i)=>i).sort((x,y)=>((x*5+seed)%n)-((y*5+seed)%n));
+    cur=`<div class="q"><span class="label">Decision ${c.a.length+1} of ${d.steps.length} · +5 min</span><h3>${esc(st.q)}</h3>
+      ${order.map(i=>`<button class="opt" data-act="pick" data-i="${i}">${esc(st.o[i].t)}</button>`).join("")}</div>`;}
+  const att=c.att?`<p class="attq">“${esc(d.att)}”</p>`:(!c.done?`<button class="att" data-act="att">Call the attending <span class="mono" style="color:var(--muted);font-size:13px">· +10 min · −3</span></button>`:"");
+  const pearls=c.done?`<div class="pearls"><span class="label" style="color:var(--amber)">Teaching pearls</span><div class="dx">${esc(d.dx)}</div><ul>${d.pearls.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></div>`:"";
+  return `<button class="back" data-act="board">← Pager</button>
+  <div class="chead"><div><h2 class="mono">${d.room}</h2><div class="who">${d.who}</div></div>${chip(c)}</div>
+  <div class="bubble"><span class="label">RN · ${fmt(c.arr)}</span>${esc(d.nurse)}</div>
+  ${c.late&&!c.done?`<div class="rrt">Rapid response at the bedside. You were paged at ${fmt(c.arr)}.</div>`:""}
+  <div class="vitals">${vit}</div>
+  <p class="hx">${esc(d.hx)}</p>
+  <section class="sec"><span class="label">Orders and bedside</span><div class="orders">${orders}</div>${log?`<div class="log">${log}</div>`:""}</section>
+  <section class="sec"><span class="label">Your plan</span>${answered}${cur}${att}</section>
+  ${pearls?`<section class="sec">${pearls}<button class="btn" data-act="board" style="justify-self:start">Back to pager</button></section>`:""}`;
+}
+
+function maxScore(){return S.cs.reduce((s,c)=>{const d=def(c.id);return s+d.work.filter(w=>w.v==="key").length*2+d.steps.length*10},0)}
+function viewDebrief(){
+  const mx=maxScore(), pct=Math.max(0,Math.round(S.score/mx*100));
+  saveBest(pct);
+  const grade=pct>=85?"Attending-ready":pct>=65?"Solid night":pct>=40?"Rough night":"Call your senior next time";
+  const rrt=S.cs.filter(c=>c.late).length, low=S.cs.reduce((s,c)=>s+c.w.filter(i=>def(c.id).work[i].v==="low").length,0);
+  const done=S.cs.filter(c=>c.done).length;
+  return `<section class="hero">
+  <p class="label">Sign-out · 07:00</p>
+  <div><div class="big">${pct}%</div><h2 style="font-size:32px;margin-top:6px">${grade}</h2></div>
+  <div class="stats"><div class="stat"><span class="label">Closed</span><b>${done}/${S.cs.length}</b></div>
+  <div class="stat"><span class="label">RRTs</span><b>${rrt}</b></div><div class="stat"><span class="label">Low-value</span><b>${low}</b></div></div>
+  <div class="sec"><span class="label">Tonight's patients</span>
+  ${S.cs.map(c=>{const d=def(c.id);const bad=c.a.filter((oi,si)=>d.steps[si].o[oi].s==="bad").length;
+    const st=!c.done?`<span class="chip c-rrt">${c.arrived?"Unfinished":"Never paged"}</span>`:bad?`<span class="chip c-rrt">${bad} harmful</span>`:c.late?`<span class="chip c-prog">Late</span>`:`<span class="chip c-done">Clean</span>`;
+    return `<details class="dcase"><summary><span><span class="mono">${d.room}</span> · ${esc(d.dx)}</span>${st}</summary><ul>${d.pearls.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></details>`}).join("")}
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" data-act="again">Another night</button><button class="btn ghost" data-act="home">Home</button></div>
+  <div class="promo"><div><b>Board review, taught like rounds.</b><span>Boardside Reviews launches in 2027. Waitlist members get the founders discount.</span></div><a class="btn" href="https://forms.gle/9qnowgoDevR742wB7" target="_blank" rel="noopener">Join the waitlist</a></div>
+  <p class="fine">For education only. Fictional patients; not medical advice.</p>
+  </section>`;
+}
+
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;
+  const act=b.dataset.act;
+  if(act==="start"){start(b.dataset.m);return}
+  if(act==="again"){start(S.mode);return}
+  if(act==="home"){S=null;render();scrollTo(0,0);return}
+  if(act==="open"){S.view="case";S.open=b.dataset.id;render();scrollTo(0,0);return}
+  if(act==="board"){S.view="board";render();scrollTo(0,0);return}
+  if(act==="wait"){const nx=Math.min(...S.cs.filter(c=>!c.arrived).map(c=>c.arr));advance(Math.max(1,nx-S.t));render();return}
+  if(act==="end"){S.score;S.over=true;render();scrollTo(0,0);return}
+  const c=S.cs.find(x=>x.id===S.open), d=def(c.id);
+  if(act==="work"){const i=+b.dataset.i;if(c.w.includes(i))return;c.w.push(i);S.score+=WPTS[d.work[i].v];advance(d.work[i].m);render();return}
+  if(act==="att"){c.att=true;S.score-=3;advance(10);render();return}
+  if(act==="pick"){const i=+b.dataset.i;c.a.push(i);S.score+=PTS[d.steps[c.a.length-1].o[i].s];
+    if(c.a.length===d.steps.length)c.done=true;advance(5);render();return}
+});
+
+window.claude?.hot?.snapshot?.(()=>({S}));
+const boot=data=>{if(data&&data.S&&data.S.cs&&data.S.cs[0]&&data.S.cs[0].arr!==undefined)S=data.S;render()};
+window.claude?.hot?.ready?window.claude.hot.ready(boot):boot(window.claude?.hot?.data??{});
+</script>
+</body>
+</html>
