@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <title>Leaderboard | Boardside Reviews</title>
-<meta name="description" content="Top scores from Boardside Reviews games, including IM Night Float and ABG Blitz.">
+<meta name="description" content="Top scores from Boardside Reviews games, including IM Night Float, ABG Blitz, and Hemodynamic Roulette.">
 <style>
 :root{--navy:#0b2545;--teal:#0d7070;--teal-bright:#3cc4b4;--teal-soft:#e2f3f1;--coral:#b9432c;--coral-soft:#fdece7;--ink2:#33465f;--muted:#52627a;--line:#dce3ea;--sky:#eef5fc;--sky2:#f5f9fd;--amber:#f0b54a}
 *{box-sizing:border-box}
@@ -70,7 +70,7 @@ tr.mine td{background:var(--teal-soft)}
 <body>
 <header><div class="wrap">
 <a class="brand" href="/" aria-label="Boardside Reviews home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Boardside Reviews mark"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg><span>Boardside Reviews</span></a>
-<nav><a href="/#games">Games</a><a href="night-float.html">Night Float</a><a href="abg-blitz.html">ABG Blitz</a></nav>
+<nav><a href="/#games">Games</a><a href="night-float.html">Night Float</a><a href="abg-blitz.html">ABG Blitz</a><a href="hemodynamic-roulette.html">Hemo Roulette</a></nav>
 </div></header>
 <main>
 <section class="hero"><div class="wrap">
@@ -97,6 +97,7 @@ const BOARDS=[
   {id:"night-float-standard",group:"IM NIGHT FLOAT",label:"Standard night",game:"night-float",variant:"standard",play:"night-float.html"},
   {id:"night-float-black-cloud",group:"IM NIGHT FLOAT",label:"Black cloud",game:"night-float",variant:"black-cloud",play:"night-float.html"},
   {id:"abg-blitz",group:"ABG BLITZ",label:"ABG Blitz",game:"abg-blitz",variant:"3-min",play:"abg-blitz.html",points:true},
+  {id:"hemo-roulette",group:"HEMODYNAMIC ROULETTE",label:"Hemodynamic Roulette",game:"hemo-roulette",variant:"1-min",play:"hemodynamic-roulette.html",points:true},
   {id:"questions",group:"BOARD QUESTIONS",label:"Question sets",game:"questions",variant:"all",soon:"Question-set rankings open when the first playable question set goes live."}
 ];
 let cur=BOARDS.find(b=>b.id===location.hash.slice(1))||BOARDS[0], days=null;

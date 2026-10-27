@@ -172,6 +172,8 @@ nav .links a.dd-item:hover{background:var(--sky)}
 .dd-ic.dd-abg{background:#0c1630;color:#2ec4b6;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-weight:700;font-size:14px;box-shadow:inset 0 -3px 0 #f0b54a}
 .game-lcd .abg-row{display:flex;flex-wrap:wrap;gap:4px 14px}
 .game-lcd .hi{color:#f0b54a}
+.dd-ic.dd-hemo{background:#050b1a;box-shadow:inset 0 -3px 0 #ff6b78}
+.game-lcd .red{color:#ff6b78;text-shadow:0 0 6px rgba(255,107,120,.4)}
 .dd-item.soon .dd-ic{background:var(--sky2);border:1px dashed #c5d3e2}
 nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px solid var(--line);font-size:14px;font-weight:600;color:var(--teal)}
 @media (max-width:640px){.dd-menu{position:fixed;left:16px;right:16px;top:auto;width:auto;max-width:none}}
@@ -193,6 +195,7 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <!-- Games: add a new <a class="dd-item"> line here for each new game -->
 <a class="dd-item" href="night-float.html"><span class="dd-ic" aria-hidden="true"><span></span></span><span class="dd-txt"><b>IM Night Float</b><small>Overnight cross-cover simulator</small></span></a>
 <a class="dd-item" href="abg-blitz.html"><span class="dd-ic dd-abg" aria-hidden="true">pH</span><span class="dd-txt"><b>ABG Blitz</b><small>3-minute acid–base challenge</small></span></a>
+<a class="dd-item" href="hemodynamic-roulette.html"><span class="dd-ic dd-hemo" aria-hidden="true"><svg width="24" height="14" viewBox="0 0 24 14" fill="none" stroke="#ff6b78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 11h4l2-8 3 10 2-6h3l2-3 2 7h4"/></svg></span><span class="dd-txt"><b>Hemodynamic Roulette</b><small>60-second shock challenge</small></span></a>
 <div class="dd-item soon"><span class="dd-ic" aria-hidden="true"></span><span class="dd-txt"><b>More games</b><small>Coming soon</small></span></div>
 <a class="dd-item" href="leaderboard.html" data-lb hidden><span class="dd-ic dd-lb" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f0b54a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span><span class="dd-txt"><b>Leaderboard</b><small>Top scores across games</small></span></a>
 <a class="dd-all" href="#games">See all games →</a>
@@ -306,6 +309,19 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
 <small>For education only. Simulated values; not medical advice.</small>
 <a href="leaderboard.html#abg-blitz" data-lb hidden style="color:var(--teal-bright);font-weight:600;font-size:14px;text-decoration:none">See the leaderboard →</a>
+</div>
+</article>
+<article class="game">
+<div class="game-pager" aria-hidden="true"><div class="game-lcd"><div class="dim">SWAN · CASE 04 · 0:38 LEFT</div><div class="abg-row"><span class="red">ART 78/62 (67)</span><span>HR 128</span></div><div class="abg-row"><span>RAP 18</span><span>PA 32/19</span><span>PCWP 19</span><span>CI 1.6</span></div><div>RA = PAD = PCWP → <span class="hi">EQUALIZED</span><span class="cur">_</span></div></div></div>
+<div class="game-copy">
+<span class="eyebrow">FREE · 60-SECOND CHALLENGE</span>
+<h3>Hemodynamic Roulette</h3>
+<p>One minute, one PA catheter at a time. Read the filling pressures, cardiac index, SVR and SvO₂, then call the shock: distributive, cardiogenic, obstructive, or hypovolemic. RV infarcts and tamponade are waiting to trip you up.</p>
+<div class="game-facts"><span>8 shock patterns</span><span>Live arterial line</span><span>Step-by-step answers</span></div>
+<a class="btn btn-white" href="hemodynamic-roulette.html">Spin the wheel
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
+<small>For education only. Simulated values; not medical advice.</small>
+<a href="leaderboard.html#hemo-roulette" data-lb hidden style="color:var(--teal-bright);font-weight:600;font-size:14px;text-decoration:none">See the leaderboard →</a>
 </div>
 </article>
 <div class="game-next">

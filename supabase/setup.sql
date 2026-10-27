@@ -319,3 +319,8 @@ language sql stable security definer set search_path = public as $$
 $$;
 revoke execute on function public.get_points_leaderboard(text, text, integer, integer) from public;
 grant execute on function public.get_points_leaderboard(text, text, integer, integer) to anon, authenticated;
+
+-- Hemodynamic Roulette (60 seconds of play): cap obviously fake posts.
+alter table public.scores drop constraint if exists hemo_roulette_cap;
+alter table public.scores add constraint hemo_roulette_cap
+  check (game <> 'hemo-roulette' or score <= 8000);
