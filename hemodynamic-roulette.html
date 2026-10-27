@@ -223,6 +223,10 @@ button:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
 .chip.big[aria-pressed="true"]{background:color-mix(in srgb,var(--c) 34%, var(--ink-2))}
 #go[hidden]{display:none!important}
 @media (max-width:620px){.vals.hemo{grid-template-columns:repeat(2,minmax(0,1fr))}.shockpad{grid-template-columns:1fr 1fr}.chip.big{min-height:70px;font-size:14px}.mon-bp,.mon-hr{font-size:20px}.brand b{font-size:16px}}
+.brand{flex-direction:row;align-items:center;gap:10px}
+.brand-mark{width:38px;height:38px;flex:0 0 auto;display:block}
+.brand-t{display:flex;flex-direction:column;line-height:1.05;min-width:0}
+@media (max-width:620px){.brand-mark{width:32px;height:32px}}
 </style>
 </head>
 <body>
@@ -231,7 +235,7 @@ button:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
 
 <div class="wrap">
   <header class="hud">
-    <a class="brand" href="/" title="Boardside Reviews home"><small>Boardside Reviews</small><b>HEMODYNAMIC ROULETTE</b></a>
+    <a class="brand" href="/" title="Back to Boardside Reviews home" aria-label="Back to Boardside Reviews home"><svg class="brand-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg><span class="brand-t"><small>Boardside Reviews</small><b>HEMODYNAMIC ROULETTE</b></span></a>
     <div class="stat"><span>Time</span><strong id="time" class="time">1:00</strong></div>
     <div class="stat"><span>Solved</span><strong id="solved">0</strong></div>
     <div class="stat"><span>Streak</span><strong id="streak">×0</strong></div>
