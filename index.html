@@ -149,6 +149,28 @@ footer .links a:hover{color:var(--teal)}
 .game-next p{margin:0;font-size:16px;line-height:24px;color:var(--muted)}
 .game-next a{color:var(--teal);font-weight:600;text-decoration:none}
 @media (prefers-reduced-motion:reduce){.game-lcd .cur,.dot{animation:none}}
+.dd{position:relative}
+.dd-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:0;font:inherit;color:var(--ink2);cursor:pointer}
+.dd-btn:hover,.dd.open .dd-btn{color:var(--teal)}
+.dd-btn svg{transition:transform .15s}
+.dd.open .dd-btn svg{transform:rotate(180deg)}
+.dd-btn:focus-visible,.dd-menu a:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:6px}
+.dd-menu{display:none;position:absolute;top:100%;left:-12px;z-index:30;padding-top:12px;width:300px;max-width:calc(100vw - 32px)}
+.dd.open .dd-menu{display:block}
+@media (hover:hover){.dd:hover .dd-menu{display:block}.dd:hover .dd-btn{color:var(--teal)}}
+.dd-panel{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 44px rgba(11,37,69,.16);padding:8px;display:flex;flex-direction:column;gap:2px}
+nav .links .dd-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;color:var(--navy);text-decoration:none}
+nav .links a.dd-item:hover{background:var(--sky)}
+.dd-ic{flex:0 0 auto;width:38px;height:38px;border-radius:10px;background:#2a2f38;display:flex;align-items:center;justify-content:center}
+.dd-ic span{width:24px;height:12px;border-radius:3px;background:#1a1608;box-shadow:inset 0 0 0 1px #f0b54a55;position:relative}
+.dd-ic span::after{content:"";position:absolute;left:4px;top:5px;width:12px;height:2px;background:#f0b54a;border-radius:1px}
+.dd-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.dd-txt b{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px}
+.dd-txt small{font-size:13px;font-weight:400;color:var(--muted)}
+.dd-item.soon{opacity:.7}
+.dd-item.soon .dd-ic{background:var(--sky2);border:1px dashed #c5d3e2}
+nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px solid var(--line);font-size:14px;font-weight:600;color:var(--teal)}
+@media (max-width:640px){.dd-menu{position:fixed;left:16px;right:16px;top:auto;width:auto;max-width:none}}
 @media (max-width:640px){nav .logo svg{height:44px}nav .bmark svg{height:40px;width:40px}nav .links{gap:6px 16px;font-size:14px}.hero .wrap{padding-top:48px}}
 </style>
 </head>
@@ -161,7 +183,15 @@ footer .links a:hover{color:var(--teal)}
 <a href="#how">How it works</a>
 <a href="#subjects">Subjects</a>
 <a href="#free">Free videos</a>
-<a href="#games">Gamified Learning</a>
+<div class="dd" id="games-dd">
+<button class="dd-btn" type="button" aria-expanded="false" aria-controls="games-menu">Gamified Learning<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+<div class="dd-menu" id="games-menu"><div class="dd-panel">
+<!-- Games: add a new <a class="dd-item"> line here for each new game -->
+<a class="dd-item" href="night-float.html"><span class="dd-ic" aria-hidden="true"><span></span></span><span class="dd-txt"><b>IM Night Float</b><small>Overnight cross-cover simulator</small></span></a>
+<div class="dd-item soon"><span class="dd-ic" aria-hidden="true"></span><span class="dd-txt"><b>More games</b><small>Coming soon</small></span></div>
+<a class="dd-all" href="#games">See all games →</a>
+</div></div>
+</div>
 <a href="#about">About</a>
 <a class="btn" href="https://forms.gle/9qnowgoDevR742wB7" target="_blank" rel="noopener">Join the waitlist</a>
 <a class="bmark" href="#top" aria-label="Back to top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Boardside Reviews mark"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg></a>
@@ -314,5 +344,16 @@ footer .links a:hover{color:var(--teal)}
 </div>
 </div>
 </footer>
+<script>
+(function(){
+  var dd=document.getElementById('games-dd'); if(!dd) return;
+  var btn=dd.querySelector('.dd-btn');
+  function set(o){dd.classList.toggle('open',o);btn.setAttribute('aria-expanded',o?'true':'false');}
+  btn.addEventListener('click',function(e){e.stopPropagation();set(!dd.classList.contains('open'));});
+  document.addEventListener('click',function(e){if(!dd.contains(e.target))set(false);});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&dd.classList.contains('open')){set(false);btn.focus();}});
+  dd.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){set(false);});});
+})();
+</script>
 </body>
 </html>
