@@ -150,7 +150,16 @@ a.btn{text-decoration:none;display:inline-block}
 .promo div{display:grid;gap:4px;min-width:0;flex:1 1 260px}
 .promo b{font-family:var(--display);font-size:19px}
 .promo span{color:var(--muted);font-size:15px}
+.lbbox{background:var(--lcd);border:1px solid #3a3115;border-radius:14px;padding:16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.lbbox div{display:grid;gap:4px;min-width:0;flex:1 1 240px}
+.lbbox b{font-family:var(--display);font-size:20px;color:var(--amber)}
+.lbbox span.msg{color:var(--fg);font-size:15px}
+.lbbox span.err{color:var(--crit);font-size:14px}
+.lblink{color:var(--amber);font-family:var(--display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:14px;text-decoration:none}
 </style>
+<script src="lb-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="lb.js"></script>
 </head>
 <body>
 
@@ -1005,6 +1014,7 @@ function viewStart(){
     <button class="mode" data-act="start" data-m="cloud"><div><h3>Black cloud</h3><p>13 random pages, less time before a rapid response.</p></div><span class="go">Take the pager</span></button>
   </div>
   ${b?`<p class="label">Best night so far: ${b}%</p>`:""}
+  ${window.BLB&&BLB.enabled?`<a class="lblink" href="leaderboard.html">See the leaderboard →</a>`:""}
   <div><p class="label">How a shift works</p>
   <ol class="how">
     <li>Pages arrive as the clock runs. Each order and decision costs minutes.</li>
@@ -1068,10 +1078,30 @@ function viewCase(c){
   ${pearls?`<section class="sec">${pearls}<button class="btn" data-act="board" style="justify-self:start">Back to pager</button></section>`:""}`;
 }
 
+const LBV=()=>S.mode==="cloud"?"black-cloud":"standard";
+const LBNAME=()=>S.mode==="cloud"?"black cloud":"standard";
+function lbBox(){
+  const st=S.lb||{};
+  if(st.done) return `<div class="lbbox" id="lbbox"><div><span class="label">Leaderboard</span><b>${st.rank?"#"+st.rank+" on the "+LBNAME()+" board":"Posted"}</b><span class="msg">Posted as ${esc(st.name)}. Your best night counts.</span></div><a class="btn ghost" href="leaderboard.html#night-float-${LBV()}">See leaderboard</a></div>`;
+  return `<div class="lbbox" id="lbbox"><div><span class="label">Leaderboard</span><b>Post your ${S.pct}% to the ${LBNAME()} board</b>${st.err?`<span class="err">${esc(st.err)}</span>`:`<span class="msg">Sign in with your email once. Only your display name is shown.</span>`}</div><button class="btn" data-act="post" ${st.busy?"disabled":""}>${st.busy?"Posting…":"Post my score"}</button></div>`;
+}
+async function postScore(){
+  if(!S||!S.over||(S.lb&&(S.lb.busy||S.lb.done)))return;
+  S.lb={busy:true};render();
+  try{
+    const name=await BLB.dialog({title:"Post your score",intro:"We'll email you a 6-digit code to verify it's you. No password needed."});
+    if(!name){S.lb={};render();return}
+    await BLB.submit("night-float",LBV(),S.pct,100);
+    let rank=null;
+    try{const rows=await BLB.board("night-float",LBV(),null,200);const me=rows.find(r=>r.is_me);rank=me?me.rank:null}catch(e){}
+    S.lb={done:true,name,rank};
+  }catch(e){S.lb={err:BLB.friendly(e)}}
+  render();
+}
 function maxScore(){return S.cs.reduce((s,c)=>{const d=def(c.id);return s+d.work.filter(w=>w.v==="key").length*2+d.steps.length*10},0)}
 function viewDebrief(){
   const mx=maxScore(), pct=Math.max(0,Math.round(S.score/mx*100));
-  saveBest(pct);
+  saveBest(pct); S.pct=Math.min(100,pct);
   const grade=pct>=85?"Attending-ready":pct>=65?"Solid night":pct>=40?"Rough night":"Call your senior next time";
   const rrt=S.cs.filter(c=>c.late).length, low=S.cs.reduce((s,c)=>s+c.w.filter(i=>def(c.id).work[i].v==="low").length,0);
   const done=S.cs.filter(c=>c.done).length;
@@ -1085,6 +1115,7 @@ function viewDebrief(){
     const st=!c.done?`<span class="chip c-rrt">${c.arrived?"Unfinished":"Never paged"}</span>`:bad?`<span class="chip c-rrt">${bad} harmful</span>`:c.late?`<span class="chip c-prog">Late</span>`:`<span class="chip c-done">Clean</span>`;
     return `<details class="dcase"><summary><span><span class="mono">${d.room}</span> · ${esc(d.dx)}</span>${st}</summary><ul>${d.pearls.map(p=>`<li>${esc(p)}</li>`).join("")}</ul></details>`}).join("")}
   </div>
+  ${window.BLB&&BLB.enabled?lbBox():""}
   <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" data-act="again">Another night</button><button class="btn ghost" data-act="home">Home</button></div>
   <div class="promo"><div><b>Board review, taught like rounds.</b><span>Boardside Reviews launches in 2027. Waitlist members get the founders discount.</span></div><a class="btn" href="https://forms.gle/9qnowgoDevR742wB7" target="_blank" rel="noopener">Join the waitlist</a></div>
   <p class="fine">For education only. Fictional patients; not medical advice.</p>
@@ -1095,6 +1126,7 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("[data-act]");if(!b)return;
   const act=b.dataset.act;
   if(act==="start"){start(b.dataset.m);return}
+  if(act==="post"){postScore();return}
   if(act==="again"){start(S.mode);return}
   if(act==="home"){S=null;render();scrollTo(0,0);return}
   if(act==="open"){S.view="case";S.open=b.dataset.id;render();scrollTo(0,0);return}

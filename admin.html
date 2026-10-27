@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%20role%3D%22img%22%20aria-label%3D%22Boardside%20Reviews%20mark%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<title>Leaderboard Admin | Boardside Reviews</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+:root{--navy:#0b2545;--teal:#0d7070;--teal-bright:#3cc4b4;--teal-soft:#e2f3f1;--coral:#b9432c;--coral-soft:#fdece7;--ink2:#33465f;--muted:#52627a;--line:#dce3ea;--sky:#eef5fc;--sky2:#f5f9fd;--amber:#f0b54a}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--navy);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.wrap{max-width:960px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+header{border-bottom:1px solid #e3ebf3;background:#fff}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px}
+.brand svg{width:40px;height:40px;display:block}
+header nav{display:flex;gap:18px;font-size:15px;font-weight:500}
+header nav a{text-decoration:none;color:var(--ink2)}
+header nav a:hover{color:var(--teal)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--teal)}
+h1{margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(40px,7vw,64px);line-height:1;letter-spacing:-.03em}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;padding:11px 16px;font-weight:600;font-size:15px;background:var(--navy);color:#fff;text-decoration:none}
+.btn.ghost{background:#fff;color:var(--teal);border:1px solid #b9d9d6}
+.btn.danger{background:#fff;color:var(--coral);border:1px solid #efc2b7}
+.btn:disabled{opacity:.5;cursor:default}
+.linkbtn{background:none;border:0;padding:0;color:var(--teal);font-weight:600}
+footer{border-top:1px solid #e3ebf3;margin-top:64px}
+footer .wrap{padding-block:24px;font-size:13px;color:var(--muted)}
+@media (max-width:560px){header nav{gap:12px;font-size:14px}.brand span{display:none}}
+
+main .wrap{padding-block:36px;display:flex;flex-direction:column;gap:28px}
+h1{font-size:clamp(32px,5vw,44px)}
+h2{margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:22px}
+.card{border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+input[type=search],input[type=text]{font:inherit;font-size:15px;padding:10px 12px;border:1px solid #c9d5e2;border-radius:10px;min-width:0;flex:1 1 220px}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--muted);padding:10px 12px;background:var(--sky2);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #eef2f6;vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.acts{white-space:nowrap}
+td.acts .btn{padding:7px 10px;font-size:13px;margin:2px 4px 2px 0}
+.pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;padding:3px 8px;border-radius:999px}
+.p-ban{background:var(--coral-soft);color:var(--coral)}.p-noname{background:#fff4dc;color:#7a5200}
+.muted{color:var(--muted)}
+.words{display:flex;flex-wrap:wrap;gap:6px}
+.word{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px;font-size:13px}
+.word.any{border-color:#efc2b7;background:var(--coral-soft)}
+.word button{border:0;background:none;color:var(--muted);font-size:16px;line-height:1;padding:0 4px}
+.word button:hover{color:var(--coral)}
+.confirm{background:var(--coral-soft);border:1px solid #efc2b7;border-radius:12px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:50}
+label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2)}
+</style>
+<script src="lb-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="lb.js"></script>
+</head>
+<body>
+<header><div class="wrap">
+<a class="brand" href="/" aria-label="Boardside Reviews home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Boardside Reviews mark"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg><span>Boardside Reviews</span></a>
+<nav><a href="leaderboard.html">Leaderboard</a></nav>
+</div></header>
+<main><div class="wrap" id="app"><div class="card"><b>Loading…</b></div></div></main>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dt=d=>d?new Date(d).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"—";
+let players=[],words=[],q="",pending=null;
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2600)}
+
+async function boot(){
+  const app=$("#app");
+  if(!BLB.enabled){app.innerHTML=`<h1>Leaderboard admin</h1><div class="card">The leaderboard isn't connected yet. Add the Supabase details to lb-config.js.</div>`;return}
+  const u=await BLB.user();
+  if(!u){app.innerHTML=`<h1>Leaderboard admin</h1><div class="card"><span>Sign in with your admin email.</span><div><button class="btn" data-a="in">Sign in</button></div></div>`;return}
+  let ok=false;try{ok=await BLB.rpc("is_admin")}catch(e){}
+  if(!ok){app.innerHTML=`<h1>Leaderboard admin</h1><div class="card"><span>${esc(u.email)} doesn't have admin access.</span><div><button class="btn ghost" data-a="out">Sign out</button></div></div>`;return}
+  app.innerHTML=`<div class="row"><h1>Leaderboard admin</h1><span class="muted">${esc(u.email)} · <button class="linkbtn" data-a="out">Sign out</button></span></div>
+  <section class="card"><div class="row"><h2>Players</h2><input type="search" id="q" placeholder="Search name or email" aria-label="Search players"></div><div id="confirm"></div><div class="tablebox" id="players"></div></section>
+  <section class="card"><h2>Blocked words</h2><p class="muted" style="margin:0">Names containing these are rejected. Adding a word also clears any current names that match. Red words are blocked even inside longer words; the rest only as a whole word, so real names like Hancock or Nazir still work.</p>
+  <form id="wf" class="row" style="justify-content:flex-start"><input type="text" id="w" placeholder="Add a word" aria-label="Word to block" maxlength="30"><label class="chk"><input type="checkbox" id="wany"> Also inside longer words</label><button class="btn">Add</button></form><div class="words" id="words"></div></section>`;
+  $("#q").addEventListener("input",e=>{q=e.target.value.toLowerCase();drawPlayers()});
+  $("#wf").addEventListener("submit",async e=>{e.preventDefault();const v=$("#w").value.trim().toLowerCase();if(!/^[a-z]{2,30}$/.test(v)){toast("Use 2–30 letters, no spaces.");return}
+    try{await BLB.rpc("admin_add_blocked_word",{p_word:v,p_anywhere:$("#wany").checked});$("#w").value="";toast("Blocked “"+v+"”");await load()}catch(x){toast(BLB.friendly(x))}});
+  await load();
+}
+async function load(){
+  try{[players,words]=await Promise.all([BLB.rpc("admin_list_players"),BLB.rpc("admin_list_blocked_words")])}catch(e){toast(BLB.friendly(e));return}
+  drawPlayers();drawWords();
+}
+function drawPlayers(){
+  const rows=players.filter(p=>!q||(p.email||"").toLowerCase().includes(q)||(p.display_name||"").toLowerCase().includes(q));
+  $("#players").innerHTML=rows.length?`<table><thead><tr><th>Name</th><th>Email</th><th>Plays</th><th>Last played</th><th>Actions</th></tr></thead><tbody>${rows.map(p=>`<tr>
+   <td>${p.display_name?esc(p.display_name):`<span class="pill p-noname">NO NAME</span>`} ${p.banned?`<span class="pill p-ban">BANNED</span>`:""}</td>
+   <td>${esc(p.email)}</td><td>${p.plays}</td><td>${dt(p.last_played)}</td>
+   <td class="acts">${p.display_name?`<button class="btn ghost" data-act="remove" data-id="${p.user_id}">Remove name</button>`:""}${p.banned?`<button class="btn ghost" data-act="unban" data-id="${p.user_id}">Unban</button>`:`<button class="btn danger" data-act="ban" data-id="${p.user_id}">Ban</button>`}${+p.plays?`<button class="btn danger" data-act="clear" data-id="${p.user_id}">Clear scores</button>`:""}</td></tr>`).join("")}</tbody></table>`
+   :`<p class="muted" style="padding:16px;margin:0">${players.length?"No players match.":"No players yet."}</p>`;
+}
+function drawWords(){
+  $("#words").innerHTML=words.map(w=>`<span class="word ${w.anywhere?"any":""}">${esc(w.word)}<button type="button" data-word="${esc(w.word)}" aria-label="Unblock ${esc(w.word)}">×</button></span>`).join("");
+}
+const ACTIONS={
+  remove:{fn:"admin_remove_name",args:id=>({p_user:id,p_ban:false}),msg:"Remove this name? They'll have to pick a new one before posting again.",done:"Name removed"},
+  ban:{fn:"admin_remove_name",args:id=>({p_user:id,p_ban:true}),msg:"Ban this player? Their name is removed, they disappear from every board, and they can't post.",done:"Player banned"},
+  unban:{fn:"admin_unban",args:id=>({p_user:id}),msg:"Unban this player? Their past scores show again once they pick a name.",done:"Player unbanned"},
+  clear:{fn:"admin_clear_scores",args:id=>({p_user:id}),msg:"Delete all of this player's scores? This can't be undone.",done:"Scores cleared"}
+};
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.a==="in"){await BLB.dialog({title:"Admin sign-in",intro:"Enter your admin email. We'll send a 6-digit code."});boot();return}
+  if(b.dataset.a==="out"){await BLB.signOut();boot();return}
+  if(b.dataset.word){try{await BLB.rpc("admin_remove_blocked_word",{p_word:b.dataset.word});toast("Unblocked “"+b.dataset.word+"”");await load()}catch(x){toast(BLB.friendly(x))}return}
+  if(b.dataset.act){const a=ACTIONS[b.dataset.act],p=players.find(x=>x.user_id===b.dataset.id);pending={a,id:b.dataset.id};
+    $("#confirm").innerHTML=`<div class="confirm"><span><b>${esc(p.display_name||p.email)}</b>: ${esc(a.msg)}</span><span><button class="btn danger" data-go>Confirm</button> <button class="btn ghost" data-cancel>Cancel</button></span></div>`;$("#confirm").scrollIntoView({block:"nearest"});return}
+  if(b.hasAttribute("data-cancel")){pending=null;$("#confirm").innerHTML="";return}
+  if(b.hasAttribute("data-go")&&pending){const {a,id}=pending;pending=null;$("#confirm").innerHTML="";try{await BLB.rpc(a.fn,a.args(id));toast(a.done);await load()}catch(x){toast(BLB.friendly(x))}}
+});
+boot();
+</script>
+</body>
+</html>

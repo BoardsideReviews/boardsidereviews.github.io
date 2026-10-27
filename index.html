@@ -11,6 +11,7 @@
 <style>
 :root{--navy:#0b2545;--teal:#0d7070;--teal-bright:#3cc4b4;--teal-soft:#e2f3f1;--coral:#b9432c;--coral-soft:#fdece7;--ink2:#33465f;--muted:#52627a;--line:#dce3ea;--sky:#eef5fc;--sky2:#f5f9fd}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{scroll-behavior:smooth;scroll-padding-top:100px}
 body{margin:0;background:#fff;color:var(--navy);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:inherit}
@@ -189,6 +190,7 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <!-- Games: add a new <a class="dd-item"> line here for each new game -->
 <a class="dd-item" href="night-float.html"><span class="dd-ic" aria-hidden="true"><span></span></span><span class="dd-txt"><b>IM Night Float</b><small>Overnight cross-cover simulator</small></span></a>
 <div class="dd-item soon"><span class="dd-ic" aria-hidden="true"></span><span class="dd-txt"><b>More games</b><small>Coming soon</small></span></div>
+<a class="dd-item" href="leaderboard.html" data-lb hidden><span class="dd-ic dd-lb" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f0b54a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span><span class="dd-txt"><b>Leaderboard</b><small>Top scores across games</small></span></a>
 <a class="dd-all" href="#games">See all games →</a>
 </div></div>
 </div>
@@ -286,6 +288,7 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <a class="btn btn-white" href="night-float.html">Take the pager
 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
 <small>For education only. Fictional patients; not medical advice.</small>
+<a href="leaderboard.html" data-lb hidden style="color:var(--teal-bright);font-weight:600;font-size:14px;text-decoration:none">See the leaderboard →</a>
 </div>
 </article>
 <div class="game-next">
@@ -355,5 +358,7 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
   dd.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){set(false);});});
 })();
 </script>
+<script src="lb-config.js"></script>
+<script src="lb.js"></script>
 </body>
 </html>
