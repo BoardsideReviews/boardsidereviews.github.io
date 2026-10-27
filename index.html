@@ -169,6 +169,9 @@ nav .links a.dd-item:hover{background:var(--sky)}
 .dd-txt b{font-family:'Plus Jakarta Sans',sans-serif;font-size:15px}
 .dd-txt small{font-size:13px;font-weight:400;color:var(--muted)}
 .dd-item.soon{opacity:.7}
+.dd-ic.dd-abg{background:#0c1630;color:#2ec4b6;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-weight:700;font-size:14px;box-shadow:inset 0 -3px 0 #f0b54a}
+.game-lcd .abg-row{display:flex;flex-wrap:wrap;gap:4px 14px}
+.game-lcd .hi{color:#f0b54a}
 .dd-item.soon .dd-ic{background:var(--sky2);border:1px dashed #c5d3e2}
 nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px solid var(--line);font-size:14px;font-weight:600;color:var(--teal)}
 @media (max-width:640px){.dd-menu{position:fixed;left:16px;right:16px;top:auto;width:auto;max-width:none}}
@@ -189,6 +192,7 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <div class="dd-menu" id="games-menu"><div class="dd-panel">
 <!-- Games: add a new <a class="dd-item"> line here for each new game -->
 <a class="dd-item" href="night-float.html"><span class="dd-ic" aria-hidden="true"><span></span></span><span class="dd-txt"><b>IM Night Float</b><small>Overnight cross-cover simulator</small></span></a>
+<a class="dd-item" href="abg-blitz.html"><span class="dd-ic dd-abg" aria-hidden="true">pH</span><span class="dd-txt"><b>ABG Blitz</b><small>3-minute acid–base challenge</small></span></a>
 <div class="dd-item soon"><span class="dd-ic" aria-hidden="true"></span><span class="dd-txt"><b>More games</b><small>Coming soon</small></span></div>
 <a class="dd-item" href="leaderboard.html" data-lb hidden><span class="dd-ic dd-lb" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f0b54a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span><span class="dd-txt"><b>Leaderboard</b><small>Top scores across games</small></span></a>
 <a class="dd-all" href="#games">See all games →</a>
@@ -289,6 +293,19 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
 <small>For education only. Fictional patients; not medical advice.</small>
 <a href="leaderboard.html" data-lb hidden style="color:var(--teal-bright);font-weight:600;font-size:14px;text-decoration:none">See the leaderboard →</a>
+</div>
+</article>
+<article class="game">
+<div class="game-pager" aria-hidden="true"><div class="game-lcd"><div class="dim">ABG · CASE 07 · 1:42 LEFT</div><div class="abg-row"><span>pH <span class="hi">7.24</span></span><span>PaCO₂ 39</span><span>HCO₃⁻ 16</span><span>AG 12</span></div><div>WINTER'S 30–34 → PCO₂ TOO HIGH<span class="cur">_</span></div></div></div>
+<div class="game-copy">
+<span class="eyebrow">FREE · 3-MINUTE CHALLENGE</span>
+<h3>ABG Blitz</h3>
+<p>Three minutes on the clock. Read each blood gas, tap every primary disorder, and catch the hidden ones with the delta-delta. Streaks score big, and every miss comes with the worked answer.</p>
+<div class="game-facts"><span>Unlimited gases</span><span>Delta-delta and compensation</span><span>Step-by-step answers</span></div>
+<a class="btn btn-white" href="abg-blitz.html">Start the clock
+<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
+<small>For education only. Simulated values; not medical advice.</small>
+<a href="leaderboard.html#abg-blitz" data-lb hidden style="color:var(--teal-bright);font-weight:600;font-size:14px;text-decoration:none">See the leaderboard →</a>
 </div>
 </article>
 <div class="game-next">

@@ -74,6 +74,12 @@
     if (r.error) throw r.error;
     return r.data || [];
   }
+  async function boardPoints(game, variant, days, limit) {
+    need();
+    var r = await sb.rpc("get_points_leaderboard", { p_game: game, p_variant: variant, p_days: days || null, p_limit: limit || 50 });
+    if (r.error) throw r.error;
+    return r.data || [];
+  }
   async function rpc(name, args) {
     need();
     var r = await sb.rpc(name, args || {});
@@ -199,7 +205,7 @@
   window.BLB = {
     enabled: enabled, friendly: friendly, user: user, profile: profile,
     sendCode: sendCode, verify: verify, setName: setName, submit: submit,
-    board: board, rpc: rpc, signOut: signOut, dialog: dialog,
+    board: board, boardPoints: boardPoints, rpc: rpc, signOut: signOut, dialog: dialog,
     onAuth: function (fn) { if (sb) sb.auth.onAuthStateChange(function () { fn(); }); }
   };
 })();

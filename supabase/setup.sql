@@ -277,3 +277,45 @@ grant execute on function public.submit_score(text, text, integer, integer) to a
 grant execute on function public.admin_list_players(), public.admin_remove_name(uuid, boolean),
   public.admin_unban(uuid), public.admin_clear_scores(uuid), public.admin_list_blocked_words(),
   public.admin_add_blocked_word(text, boolean), public.admin_remove_blocked_word(text) to authenticated;
+
+-- ─────────────────────────────────────────────────────────────
+-- 6. POINTS-RANKED BOARDS (ABG Blitz)
+-- ABG Blitz posts raw points (score = total = points), so it is
+-- ranked by best points instead of percent. Night Float is unchanged.
+-- ─────────────────────────────────────────────────────────────
+alter table public.scores drop constraint if exists score_in_range;
+alter table public.scores add constraint score_in_range
+  check (total between 1 and 100000 and score between 0 and total);
+
+-- No realistic 3-minute run gets near this; blocks obviously fake posts.
+alter table public.scores drop constraint if exists abg_blitz_cap;
+alter table public.scores add constraint abg_blitz_cap
+  check (game <> 'abg-blitz' or score <= 15000);
+
+create or replace function public.get_points_leaderboard(p_game text, p_variant text, p_days integer default null, p_limit integer default 50)
+returns table (rank bigint, display_name text, best_score integer, plays bigint, achieved_at timestamptz, is_me boolean)
+language sql stable security definer set search_path = public as $$
+  with s as (
+    select sc.*
+    from public.scores sc
+    join public.profiles pr on pr.user_id = sc.user_id
+    where sc.game = p_game and sc.variant = p_variant
+      and pr.display_name is not null and not pr.banned
+      and (p_days is null or sc.created_at > now() - make_interval(days => p_days))
+  ),
+  best as (
+    select distinct on (user_id) user_id, score, created_at
+    from s order by user_id, score desc, created_at asc
+  ),
+  counts as (select user_id, count(*) as plays from s group by user_id)
+  select rank() over (order by b.score desc, b.created_at asc),
+         pr.display_name, b.score, c.plays, b.created_at,
+         (b.user_id = auth.uid())
+  from best b
+  join public.profiles pr on pr.user_id = b.user_id
+  join counts c on c.user_id = b.user_id
+  order by b.score desc, b.created_at asc
+  limit least(greatest(coalesce(p_limit, 50), 1), 200);
+$$;
+revoke execute on function public.get_points_leaderboard(text, text, integer, integer) from public;
+grant execute on function public.get_points_leaderboard(text, text, integer, integer) to anon, authenticated;
