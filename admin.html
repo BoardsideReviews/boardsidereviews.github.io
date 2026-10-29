@@ -73,7 +73,7 @@ label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const dt=d=>d?new Date(d).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"—";
-let players=[],words=[],q="",pending=null;
+let players=[],words=[],wl=[],q="",pending=null;
 function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2600)}
 
 async function boot(){
@@ -85,6 +85,7 @@ async function boot(){
   if(!ok){app.innerHTML=`<h1>Leaderboard admin</h1><div class="card"><span>${esc(u.email)} doesn't have admin access.</span><div><button class="btn ghost" data-a="out">Sign out</button></div></div>`;return}
   app.innerHTML=`<div class="row"><h1>Leaderboard admin</h1><span class="muted">${esc(u.email)} · <button class="linkbtn" data-a="out">Sign out</button></span></div>
   <section class="card"><div class="row"><h2>Players</h2><input type="search" id="q" placeholder="Search name or email" aria-label="Search players"></div><div id="confirm"></div><div class="tablebox" id="players"></div></section>
+  <section class="card"><div class="row"><h2>Waitlist sign-ups</h2><span><button class="btn ghost" data-a="copywl">Copy emails</button> <button class="btn" data-a="csvwl">Download CSV</button></span></div><p class="muted" style="margin:0" id="wlnote"></p></section>
   <section class="card"><h2>Blocked words</h2><p class="muted" style="margin:0">Names containing these are rejected. Adding a word also clears any current names that match. Red words are blocked even inside longer words; the rest only as a whole word, so real names like Hancock or Nazir still work.</p>
   <form id="wf" class="row" style="justify-content:flex-start"><input type="text" id="w" placeholder="Add a word" aria-label="Word to block" maxlength="30"><label class="chk"><input type="checkbox" id="wany"> Also inside longer words</label><button class="btn">Add</button></form><div class="words" id="words"></div></section>`;
   $("#q").addEventListener("input",e=>{q=e.target.value.toLowerCase();drawPlayers()});
@@ -94,6 +95,8 @@ async function boot(){
 }
 async function load(){
   try{[players,words]=await Promise.all([BLB.rpc("admin_list_players"),BLB.rpc("admin_list_blocked_words")])}catch(e){toast(BLB.friendly(e));return}
+  try{wl=await BLB.rpc("admin_waitlist")||[];$("#wlnote").textContent=wl.length?`${wl.length} leaderboard player${wl.length===1?"":"s"} opted in to the waitlist. Paste them into your waitlist sheet.`:"No leaderboard players have opted in yet."}
+  catch(e){wl=[];$("#wlnote").textContent="Waitlist export needs the latest database update (section 7 of supabase/setup.sql)."}
   drawPlayers();drawWords();
 }
 function drawPlayers(){
@@ -116,6 +119,10 @@ const ACTIONS={
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.a==="in"){await BLB.dialog({title:"Admin sign-in",intro:"Enter your admin email. We'll send a 6-digit code."});boot();return}
+  if(b.dataset.a==="copywl"){if(!wl.length){toast("No waitlist emails yet.");return}try{await navigator.clipboard.writeText(wl.map(r=>r.email).join("\n"));toast(`Copied ${wl.length} email${wl.length===1?"":"s"}`)}catch(x){toast("Couldn't copy. Use Download CSV.")}return}
+  if(b.dataset.a==="csvwl"){if(!wl.length){toast("No waitlist emails yet.");return}const cell=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+    const csv="Email,Display name,Joined\n"+wl.map(r=>[r.email,r.display_name,r.joined?new Date(r.joined).toISOString().slice(0,10):""].map(cell).join(",")).join("\n");
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="boardside-waitlist-from-leaderboard.csv";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);return}
   if(b.dataset.a==="out"){await BLB.signOut();boot();return}
   if(b.dataset.word){try{await BLB.rpc("admin_remove_blocked_word",{p_word:b.dataset.word});toast("Unblocked “"+b.dataset.word+"”");await load()}catch(x){toast(BLB.friendly(x))}return}
   if(b.dataset.act){const a=ACTIONS[b.dataset.act],p=players.find(x=>x.user_id===b.dataset.id);pending={a,id:b.dataset.id};

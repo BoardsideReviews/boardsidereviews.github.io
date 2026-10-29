@@ -5,6 +5,7 @@
 (function () {
   var cfg = window.BOARDSIDE_LB || {};
   var enabled = !!(cfg.url && cfg.key && window.supabase && window.supabase.createClient);
+  var wantWaitlist = false; // set by the sign-in dialog's waitlist checkbox
   var sb = enabled ? window.supabase.createClient(cfg.url, cfg.key, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
   }) : null;
@@ -56,12 +57,18 @@
   async function setName(name) {
     var u = await user(); if (!u) throw new Error("not_signed_in");
     var p = await profile();
+    var row = { display_name: name };
+    if (wantWaitlist) row.waitlist = true;
     var r = p && !p.missing
-      ? await sb.from("profiles").update({ display_name: name }).eq("user_id", u.id).select("display_name")
-      : await sb.from("profiles").insert({ user_id: u.id, display_name: name }).select("display_name");
+      ? await sb.from("profiles").update(row).eq("user_id", u.id).select("display_name")
+      : await sb.from("profiles").insert(Object.assign({ user_id: u.id }, row)).select("display_name");
     if (r.error) throw r.error;
     if (!r.data || !r.data.length) throw new Error("banned");
     return r.data[0].display_name;
+  }
+  async function joinWaitlist() {
+    var u = await user(); if (!u || !wantWaitlist) return;
+    try { await sb.from("profiles").update({ waitlist: true }).eq("user_id", u.id); } catch (e) {}
   }
   async function submit(game, variant, score, total) {
     need();
@@ -104,6 +111,8 @@
 .blb-link{font:inherit;font-size:14px;background:none;border:0;color:#0d7070;font-weight:600;cursor:pointer;padding:6px 0}\
 .blb-err{color:#b9432c;font-size:14px;min-height:0}\
 .blb-err:empty{display:none}\
+.blb-card label.blb-chk{flex-direction:row;align-items:flex-start;gap:10px;font-weight:500;font-size:14px;line-height:20px;color:#33465f;cursor:pointer}\
+.blb-card label.blb-chk input{width:18px;height:18px;flex:0 0 18px;margin:1px 0 0;padding:0;accent-color:#0d7070}\
 .blb-fine{font-size:12px!important;color:#7a8799!important}';
 
   function dialog(opts) {
@@ -125,6 +134,7 @@
         card.innerHTML = '<h2 id="blb-title">' + (opts.title || "Join the leaderboard") + '</h2>' +
           '<p>' + (opts.intro || "We'll email you a 6-digit code. No password needed.") + '</p>' +
           '<form class="blb-f" novalidate><label>Email<input id="blb-email" type="email" autocomplete="email" required></label>' +
+          '<label class="blb-chk"><input type="checkbox" id="blb-wl" checked><span>Also add me to the Boardside Reviews waitlist: one email at launch with the founders discount.</span></label>' +
           '<div class="blb-err"></div><div class="blb-row"><button class="blb-btn" type="submit">Email me a code</button>' +
           '<button class="blb-link" type="button" data-x>Not now</button></div>' +
           '<p class="blb-fine">Only your display name is shown publicly. Your email stays private.</p></form>';
@@ -136,6 +146,7 @@
           var v = inp.value.trim();
           if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { er.textContent = "Enter a valid email address."; return; }
           var b = f.querySelector(".blb-btn"); b.disabled = true; b.textContent = "Sending…";
+          wantWaitlist = card.querySelector("#blb-wl").checked;
           try { await sendCode(v); email = v; stepCode(); }
           catch (x) { er.textContent = friendly(x); b.disabled = false; b.textContent = "Email me a code"; }
         };
@@ -159,6 +170,7 @@
             await verify(email, v);
             var p = await profile();
             if (p && p.banned) { er.textContent = MESSAGES.banned; b.disabled = false; b.textContent = "Verify"; return; }
+            if (p && !p.missing) await joinWaitlist();
             if (p && p.display_name && !opts.rename) close(p.display_name); else stepName(p && p.display_name);
           } catch (x) { er.textContent = friendly(x); b.disabled = false; b.textContent = "Verify"; }
         };

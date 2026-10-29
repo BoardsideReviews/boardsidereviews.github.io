@@ -324,3 +324,45 @@ grant execute on function public.get_points_leaderboard(text, text, integer, int
 alter table public.scores drop constraint if exists hemo_roulette_cap;
 alter table public.scores add constraint hemo_roulette_cap
   check (game <> 'hemo-roulette' or score <= 8000);
+
+-- ─────────────────────────────────────────────────────────────
+-- 7. WAITLIST OPT-IN
+-- Players can tick "Add me to the waitlist" when they sign in.
+-- Download the list from the Waitlist section of admin.html.
+-- ─────────────────────────────────────────────────────────────
+alter table public.profiles add column if not exists waitlist boolean not null default false;
+alter table public.profiles add column if not exists waitlist_at timestamptz;
+grant insert (waitlist) on public.profiles to authenticated;
+grant update (waitlist) on public.profiles to authenticated;
+
+create or replace function public.profiles_waitlist_time()
+returns trigger language plpgsql set search_path = public as $$
+begin
+  if new.waitlist and (tg_op = 'INSERT' or not coalesce(old.waitlist, false)) then
+    new.waitlist_at := now();
+  elsif not new.waitlist then
+    new.waitlist_at := null;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists profiles_waitlist_time on public.profiles;
+create trigger profiles_waitlist_time
+  before insert or update of waitlist on public.profiles
+  for each row execute function public.profiles_waitlist_time();
+
+create or replace function public.admin_waitlist()
+returns table (email text, display_name text, joined timestamptz)
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'not_admin'; end if;
+  return query
+    select u.email::text, pr.display_name, coalesce(pr.waitlist_at, pr.created_at)
+    from public.profiles pr
+    join auth.users u on u.id = pr.user_id
+    where pr.waitlist
+    order by coalesce(pr.waitlist_at, pr.created_at) desc;
+end;
+$$;
+revoke execute on function public.admin_waitlist() from public, anon;
+grant execute on function public.admin_waitlist() to authenticated;
