@@ -1083,7 +1083,7 @@ const LBNAME=()=>S.mode==="cloud"?"black cloud":"standard";
 function lbBox(){
   const st=S.lb||{};
   if(st.done) return `<div class="lbbox" id="lbbox"><div><span class="label">Leaderboard</span><b>${st.rank?"#"+st.rank+" on the "+LBNAME()+" board":"Posted"}</b><span class="msg">Posted as ${esc(st.name)}. Your best night counts.</span></div><a class="btn ghost" href="leaderboard.html#night-float-${LBV()}">See leaderboard</a></div>`;
-  return `<div class="lbbox" id="lbbox"><div><span class="label">Leaderboard</span><b>Post your ${S.pct}% to the ${LBNAME()} board</b>${st.err?`<span class="err">${esc(st.err)}</span>`:`<span class="msg">Sign in with your email once. Only your display name is shown.</span>`}</div><button class="btn" data-act="post" ${st.busy?"disabled":""}>${st.busy?"Posting…":"Post my score"}</button></div>`;
+  return `<div class="lbbox" id="lbbox"><div><span class="label">Leaderboard</span><b>Post your ${Math.max(0,S.score)} points to the ${LBNAME()} board</b>${st.err?`<span class="err">${esc(st.err)}</span>`:`<span class="msg">Sign in with your email once. Only your display name is shown.</span>`}</div><button class="btn" data-act="post" ${st.busy?"disabled":""}>${st.busy?"Posting…":"Post my score"}</button></div>`;
 }
 async function postScore(){
   if(!S||!S.over||(S.lb&&(S.lb.busy||S.lb.done)))return;
@@ -1091,9 +1091,10 @@ async function postScore(){
   try{
     const name=await BLB.dialog({title:"Post your score",intro:"We'll email you a 6-digit code to verify it's you. No password needed."});
     if(!name){S.lb={};render();return}
-    await BLB.submit("night-float",LBV(),S.pct,100);
+    const pts=Math.max(0,S.score);
+    await BLB.submit("night-float",LBV(),pts,Math.max(1,pts));
     let rank=null;
-    try{const rows=await BLB.board("night-float",LBV(),null,200);const me=rows.find(r=>r.is_me);rank=me?me.rank:null}catch(e){}
+    try{const rows=await BLB.boardPoints("night-float",LBV(),null,200);const me=rows.find(r=>r.is_me);rank=me?me.rank:null}catch(e){}
     S.lb={done:true,name,rank};
   }catch(e){S.lb={err:BLB.friendly(e)}}
   render();
