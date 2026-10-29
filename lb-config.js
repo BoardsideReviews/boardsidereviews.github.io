@@ -1,8 +1,7 @@
 // Boardside Reviews leaderboard settings.
-// Paste your Supabase Project URL and publishable (anon) key below.
-// Both are safe to publish: the database's own rules decide what anyone can do.
-// While these are empty, the leaderboard stays hidden across the site.
+// Supabase Project URL and publishable key (both safe to publish:
+// the database's own rules decide what anyone can do).
 window.BOARDSIDE_LB = {
-  url: "",
-  key: ""
+  url: "https://kugxnegnzikqwbmxadkj.supabase.co",
+  key: "sb_publishable_dUWbUHrSpZctTNT0vhPqag_Qw-PJlpb"
 };
