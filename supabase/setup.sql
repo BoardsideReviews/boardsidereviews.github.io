@@ -324,3 +324,8 @@ grant execute on function public.get_points_leaderboard(text, text, integer, int
 alter table public.scores drop constraint if exists hemo_roulette_cap;
 alter table public.scores add constraint hemo_roulette_cap
   check (game <> 'hemo-roulette' or score <= 8000);
+
+-- Titrate Tonight (six simulated nights): cap obviously fake posts.
+alter table public.scores drop constraint if exists titrate_tonight_cap;
+alter table public.scores add constraint titrate_tonight_cap
+  check (game <> 'titrate-tonight' or score <= 15000);

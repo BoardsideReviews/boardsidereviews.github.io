@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Titrate Tonight | Boardside Reviews</title>
+<meta name="description" content="Titrate Tonight: a free sleep apnea game from Boardside Reviews. Titrate CPAP overnight, read flow and effort, and learn OSA, OHS and central sleep apnea for the boards.">
+<script src="lb-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="lb.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#eef1ff; --dim:#9aa3d6; --night:#070a1f; --panel:#10163a; --panel2:#151d4a;
+  --cyan:#5ef2e6; --violet:#b58cff; --gold:#ffd166; --red:#ff5c7a; --green:#57f0a0; --moon:#fff4c9;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--night);color:var(--ink);font-family:Nunito,system-ui,sans-serif;overflow:hidden}
+body{background:
+  radial-gradient(1200px 600px at 50% -10%,#1a2463 0%,transparent 60%),
+  radial-gradient(800px 500px at 100% 100%,#1b1146 0%,transparent 60%),var(--night)}
+#sky-bg{position:fixed;inset:0;pointer-events:none}
+#app{position:relative;max-width:480px;height:100%;margin:0 auto;display:flex;flex-direction:column;justify-content:center;padding:10px 12px 12px;gap:8px}
+
+/* HUD */
+.hud{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hud .pt{font-family:Fredoka;font-weight:600;font-size:15px;line-height:1.1}
+.hud .pt small{display:block;color:var(--dim);font-family:Nunito;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.score{font-family:Fredoka;font-weight:700;font-size:24px;color:var(--gold);text-shadow:0 0 18px rgba(255,209,102,.45);min-width:70px;text-align:right}
+.score small{display:block;font-size:10px;color:var(--dim);font-family:Nunito;letter-spacing:.1em;font-weight:800}
+.homebtn{color:var(--dim);text-decoration:none;font-size:20px;font-weight:800;padding:0 4px}
+.iconbtn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--ink);border-radius:12px;width:36px;height:36px;font-size:16px;cursor:pointer}
+
+/* Stage */
+.stage{position:relative;border-radius:20px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.06);flex:0 0 auto}
+.stage svg{display:block;width:100%;height:auto}
+#tint{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 32% 58%,rgba(255,40,80,.0),rgba(255,40,80,.55));opacity:0;transition:opacity .4s}
+#calm{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 32% 58%,rgba(94,242,230,.18),transparent 55%);opacity:0;transition:opacity .8s}
+#fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.z{position:absolute;font-family:Fredoka;font-weight:700;color:#cfd6ff;opacity:0;animation:zfloat 2.2s ease-out forwards;text-shadow:0 0 8px rgba(160,170,255,.8)}
+@keyframes zfloat{0%{opacity:0;transform:translate(0,0) rotate(-10deg) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(28px,-60px) rotate(12deg) scale(1.3)}}
+.pop{position:absolute;font-family:Fredoka;font-weight:700;font-size:15px;pointer-events:none;animation:pop 1.1s ease-out forwards;white-space:nowrap;transform:translateX(-50%)}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,6px) scale(.7)}15%{opacity:1;transform:translate(-50%,0) scale(1.15)}100%{opacity:0;transform:translate(-50%,-40px) scale(1)}}
+.pop.good{color:var(--green);text-shadow:0 0 10px rgba(87,240,160,.7)}
+.pop.bad{color:var(--red);text-shadow:0 0 10px rgba(255,92,122,.7);font-size:17px}
+.pop.big{font-size:22px;color:var(--gold);text-shadow:0 0 14px rgba(255,209,102,.8)}
+#toast{position:absolute;left:10px;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{background:rgba(9,12,36,.88);border:1px solid rgba(255,255,255,.14);border-left:4px solid var(--cyan);border-radius:12px;padding:8px 10px;font-size:12.5px;font-weight:700;line-height:1.3;animation:tin .35s ease-out;backdrop-filter:blur(6px)}
+.toast.warn{border-left-color:var(--red)} .toast.ok{border-left-color:var(--green)} .toast.info{border-left-color:var(--gold)}
+.toast b{color:var(--cyan)} .toast.warn b{color:var(--red)} .toast.ok b{color:var(--green)} .toast.info b{color:var(--gold)}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+
+/* Monitor */
+.monitor{position:relative;background:#03060f;border-radius:16px;border:1px solid #1d2a55;box-shadow:inset 0 0 30px rgba(94,242,230,.06),0 6px 24px rgba(0,0,0,.4);overflow:hidden;flex:1 1 auto;min-height:150px;max-height:270px;display:flex;flex-direction:column}
+.mtop{display:flex;justify-content:space-between;align-items:center;padding:6px 10px 2px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#7d8bc0}
+.mtop .rec{color:var(--red)} .mtop .rec::before{content:'●';margin-right:4px;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.2}}
+.mbody{position:relative;flex:1}
+#trace{position:absolute;inset:0;width:100%;height:100%}
+.readouts{position:absolute;right:8px;top:4px;display:flex;flex-direction:column;align-items:flex-end;gap:2px;pointer-events:none;font-family:'Share Tech Mono',monospace}
+.spo2{font-size:30px;line-height:1;color:var(--gold);text-shadow:0 0 12px rgba(255,209,102,.5)}
+.spo2 small{font-size:11px;color:#a08a4a;margin-left:2px}
+.spo2.alarm{color:var(--red);text-shadow:0 0 14px rgba(255,92,122,.8);animation:blink .6s infinite}
+.ahi{font-size:13px;color:#cfd6ff}
+.stagechip{font-size:11px;padding:1px 7px;border-radius:8px;background:#18224d;color:#9aa3d6}
+.stagechip.rem{background:#4b2a8a;color:#e6d6ff;box-shadow:0 0 10px rgba(181,140,255,.6)}
+.combo{font-size:12px;color:var(--green)}
+
+/* Controls */
+.controls{display:flex;flex-direction:column;gap:8px;flex:0 0 auto}
+.dial{display:flex;align-items:center;gap:10px;background:linear-gradient(180deg,#1a2252,#121941);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:8px}
+.pbtn{width:62px;height:62px;border-radius:50%;border:0;font-family:Fredoka;font-size:34px;font-weight:600;color:#08102c;cursor:pointer;flex:0 0 auto;box-shadow:0 4px 0 rgba(0,0,0,.35),0 0 18px rgba(94,242,230,.25);transition:transform .06s}
+.pbtn:active{transform:translateY(3px) scale(.96);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.pbtn.minus{background:linear-gradient(180deg,#c9d2ff,#8f9ce6)}
+.pbtn.plus{background:linear-gradient(180deg,#8ffff4,#33cfc2)}
+.pval{flex:1;text-align:center}
+.pval .num{font-family:Fredoka;font-weight:700;font-size:40px;line-height:1;color:#fff;text-shadow:0 0 18px rgba(94,242,230,.5)}
+.pval .num span{font-size:14px;color:var(--dim);font-weight:500;margin-left:3px}
+.pval .mode{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--cyan);text-transform:uppercase}
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tool{border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--ink);font-family:Fredoka;font-weight:600;font-size:15px;padding:9px 4px;cursor:pointer;line-height:1.05}
+.tool small{display:block;font-family:Nunito;font-size:10px;font-weight:700;color:var(--dim);margin-top:2px}
+.tool.on{background:linear-gradient(180deg,#5ef2e6,#2fb6ad);color:#06122a;border-color:transparent;box-shadow:0 0 16px rgba(94,242,230,.5)}
+.tool.on small{color:#0d3b46}
+
+/* Overlay screens */
+.screen{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(4,6,20,.72);backdrop-filter:blur(6px)}
+.screen.show{display:flex;animation:fade .35s ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.card{width:100%;max-width:440px;max-height:100%;overflow:auto;background:linear-gradient(180deg,#18205a,#0f1540);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:rise .4s cubic-bezier(.2,1.3,.4,1)}
+@keyframes rise{from{transform:translateY(24px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.card h2{font-family:Fredoka;font-weight:700;font-size:24px;margin:0 0 4px}
+.card h3{font-family:Fredoka;font-weight:600;font-size:15px;margin:14px 0 6px;color:var(--cyan)}
+.card p{margin:6px 0;font-size:14px;line-height:1.45;color:#d7dcff}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.btn{display:block;width:100%;margin-top:14px;border:0;border-radius:16px;padding:14px;font-family:Fredoka;font-weight:700;font-size:18px;color:#06122a;background:linear-gradient(180deg,#ffe08a,#ffb547);box-shadow:0 5px 0 #b9741a,0 0 24px rgba(255,209,102,.35);cursor:pointer}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b9741a}
+.btn.ghost{background:rgba(255,255,255,.07);color:var(--ink);box-shadow:none;border:1px solid rgba(255,255,255,.15);font-size:15px;padding:11px}
+.req{background:#f4f1e6;color:#1f2340;border-radius:14px;padding:14px 14px 10px;position:relative;font-family:Nunito;box-shadow:0 6px 0 #c9c3ad}
+.req::before{content:'';position:absolute;top:-8px;left:50%;width:70px;height:16px;margin-left:-35px;background:#cfc7a8;border-radius:4px;box-shadow:0 2px 0 #a59d80}
+.req .rh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px dashed #cfc7a8;padding-bottom:6px;margin-bottom:6px}
+.req .rh b{font-family:Fredoka;font-size:20px}
+.req .rh span{font-size:12px;font-weight:800;color:#7a6f4a;text-transform:uppercase;letter-spacing:.08em}
+.req ul{margin:4px 0 6px;padding-left:18px;font-size:14px;line-height:1.5}
+.req .order{font-weight:800;font-size:13.5px;color:#3a2d8a;margin-top:4px}
+.howto{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:13px;align-items:center;margin-top:8px}
+.howto .k{font-family:'Share Tech Mono',monospace;font-size:12px;padding:3px 7px;border-radius:7px;text-align:center}
+.k.f{background:#0a2d33;color:var(--cyan)} .k.e{background:#2a1a4a;color:var(--violet)} .k.s{background:#3a2e0a;color:var(--gold)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.stat{background:rgba(255,255,255,.05);border-radius:14px;padding:10px;text-align:center}
+.stat b{display:block;font-family:Fredoka;font-size:26px}
+.stat span{font-size:11px;color:var(--dim);font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.grade{font-family:Fredoka;font-weight:700;font-size:20px;text-align:center;margin-top:10px}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.opt{text-align:left;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--ink);font-family:Nunito;font-size:14px;font-weight:700;padding:11px 12px;cursor:pointer;line-height:1.35}
+.opt b{color:var(--gold);margin-right:6px}
+.opt.right{background:rgba(87,240,160,.18);border-color:var(--green)}
+.opt.wrong{background:rgba(255,92,122,.18);border-color:var(--red)}
+.why{margin-top:10px;background:rgba(94,242,230,.08);border-left:3px solid var(--cyan);border-radius:10px;padding:10px;font-size:13.5px;line-height:1.45;display:none}
+.title-wrap{text-align:center}
+.title-wrap svg{width:100%;max-width:340px}
+.title{font-family:Fredoka;font-weight:700;font-size:44px;line-height:.95;margin:4px 0;background:linear-gradient(180deg,#fff7d6,#ffd166 55%,#ff9f5a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(255,209,102,.35))}
+.brand{font-size:12px;font-weight:800;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+input.txt{width:100%;margin-top:8px;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:var(--ink);font-family:Nunito;font-size:15px;font-weight:700}
+.lb{margin-top:10px;font-size:14px}
+.lb .row{display:flex;justify-content:space-between;padding:6px 8px;border-radius:8px}
+.lb .row:nth-child(odd){background:rgba(255,255,255,.04)}
+.lb .row.me{background:rgba(255,209,102,.18)}
+.muted{color:var(--dim);font-size:12px}
+@media (max-height:700px){ .pbtn{width:54px;height:54px;font-size:30px} .pval .num{font-size:34px} .tool{padding:7px 4px;font-size:14px} }
+</style>
+</head>
+<body>
+<canvas id="sky-bg"></canvas>
+<div id="app">
+  <div class="hud">
+    <a class="homebtn" href="/#games" aria-label="All games">←</a>
+    <div class="pt" style="flex:1"><small id="hudLevel">Patient 1 / 6</small><span id="hudName">—</span></div>
+    <button class="iconbtn" id="muteBtn" title="Sound">🔊</button>
+    <div class="score"><small>SCORE</small><span id="hudScore">0</span></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <svg id="scene" viewBox="0 0 400 220" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wallG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2257"/><stop offset="1" stop-color="#121842"/></linearGradient>
+        <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1"><stop id="sky1" offset="0" stop-color="#060a2a"/><stop id="sky2" offset="1" stop-color="#1c2a72"/></linearGradient>
+        <radialGradient id="moonGlow"><stop offset="0" stop-color="#fff4c9" stop-opacity=".55"/><stop offset="1" stop-color="#fff4c9" stop-opacity="0"/></radialGradient>
+        <radialGradient id="lampGlow"><stop offset="0" stop-color="#ffcf7a" stop-opacity=".45"/><stop offset="1" stop-color="#ffcf7a" stop-opacity="0"/></radialGradient>
+        <radialGradient id="beam" cx=".5" cy="0" r="1"><stop offset="0" stop-color="#cfe0ff" stop-opacity=".16"/><stop offset="1" stop-color="#cfe0ff" stop-opacity="0"/></radialGradient>
+        <linearGradient id="blanketG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6d7ff0"/><stop offset="1" stop-color="#4150b8"/></linearGradient>
+        <linearGradient id="curtG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2d2a74"/><stop offset=".5" stop-color="#3b378f"/><stop offset="1" stop-color="#2a276b"/></linearGradient>
+        <clipPath id="winClip"><rect x="152" y="16" width="116" height="78" rx="3"/></clipPath>
+        <pattern id="quilt" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H18" stroke="#8b99ff" stroke-opacity=".25" stroke-width="1.2"/></pattern>
+      </defs>
+      <rect width="400" height="220" fill="url(#wallG)"/>
+      <!-- wallpaper dots -->
+      <g fill="#2a3378" opacity=".5">
+        <circle cx="20" cy="20" r="1.4"/><circle cx="60" cy="44" r="1.4"/><circle cx="100" cy="18" r="1.4"/><circle cx="120" cy="64" r="1.4"/><circle cx="300" cy="80" r="1.4"/><circle cx="330" cy="20" r="1.4"/><circle cx="380" cy="60" r="1.4"/><circle cx="40" cy="88" r="1.4"/><circle cx="370" cy="100" r="1.4"/>
+      </g>
+      <!-- window -->
+      <rect x="146" y="10" width="128" height="90" rx="6" fill="#0d1236"/>
+      <g clip-path="url(#winClip)">
+        <rect x="152" y="16" width="116" height="78" fill="url(#skyG)"/>
+        <g id="stars" fill="#fff"></g>
+        <g id="moon">
+          <circle cx="238" cy="38" r="22" fill="url(#moonGlow)"/>
+          <circle cx="238" cy="38" r="10" fill="#fff4c9"/>
+          <circle id="moonBite" cx="243" cy="34" r="9" fill="#0b1238"/>
+        </g>
+        <g id="sun" opacity="0"><circle cx="190" cy="98" r="16" fill="#ffd58a"/><circle cx="190" cy="98" r="30" fill="#ffb36b" opacity=".35"/></g>
+        <!-- distant city -->
+        <path d="M152 94V80h8v-6h6v10h7V72h9v22h6V78h10v16h8V82h7v-8h8v20h9V76h10v18h6V84h10v10z" fill="#0a0e2c" opacity=".9"/>
+        <g fill="#ffd166" opacity=".6"><rect x="176" y="76" width="2" height="2"/><rect x="200" y="82" width="2" height="2"/><rect x="236" y="80" width="2" height="2"/><rect x="250" y="84" width="2" height="2"/></g>
+      </g>
+      <path d="M210 16V94M152 55H268" stroke="#0d1236" stroke-width="4"/>
+      <!-- curtains -->
+      <path d="M136 6h30c-6 30-4 60 6 98h-36z" fill="url(#curtG)"/>
+      <path d="M284 6h-30c6 30 4 60-6 98h36z" fill="url(#curtG)"/>
+      <rect x="130" y="4" width="160" height="6" rx="3" fill="#565ab0"/>
+      <!-- moonbeam -->
+      <path id="beamP" d="M160 94L120 220H330L262 94z" fill="url(#beam)"/>
+      <!-- wall clock -->
+      <g transform="translate(345 40)">
+        <circle r="17" fill="#f4f1e6" stroke="#565ab0" stroke-width="3"/>
+        <g stroke="#2a2f5e" stroke-width="1.2"><path d="M0-14v3M14 0h-3M0 14v-3M-14 0h3"/></g>
+        <path id="hourH" d="M0 0V-8" stroke="#1f2340" stroke-width="2.4" stroke-linecap="round"/>
+        <path id="minH" d="M0 0V-12" stroke="#1f2340" stroke-width="1.6" stroke-linecap="round"/>
+        <circle r="1.8" fill="#ff5c7a"/>
+      </g>
+      <!-- framed diploma -->
+      <g transform="translate(36 40)"><rect x="-20" y="-16" width="40" height="30" rx="2" fill="#565ab0"/><rect x="-16" y="-12" width="32" height="22" fill="#f4f1e6"/><path d="M-10 -5h20M-10 0h20M-6 5h12" stroke="#b9b39a" stroke-width="1.5"/></g>
+      <!-- floor -->
+      <rect y="196" width="400" height="24" fill="#0c1033"/>
+      <path d="M0 196H400" stroke="#262d6b" stroke-width="2"/>
+      <!-- lamp glow -->
+      <circle cx="30" cy="104" r="60" fill="url(#lampGlow)"/>
+      <!-- nightstand -->
+      <rect x="6" y="148" width="74" height="50" rx="4" fill="#3a2f6b"/>
+      <rect x="10" y="160" width="66" height="16" rx="3" fill="#2e2558"/><circle cx="43" cy="168" r="2" fill="#a594e6"/>
+      <rect x="10" y="180" width="66" height="14" rx="3" fill="#2e2558"/>
+      <!-- lamp -->
+      <path d="M22 148v-18" stroke="#c9b9ff" stroke-width="2"/>
+      <path d="M12 108h20l5 22h-30z" fill="#ffcf7a"/>
+      <rect x="16" y="146" width="12" height="3" rx="1" fill="#c9b9ff"/>
+      <!-- CPAP machine -->
+      <g id="cpap">
+        <rect x="38" y="118" width="40" height="30" rx="7" fill="#e6ebfa"/>
+        <rect x="38" y="140" width="40" height="8" rx="3" fill="#c3cbe6"/>
+        <rect x="42" y="122" width="22" height="13" rx="3" fill="#06142a"/>
+        <text id="cpapTxt" x="53" y="132" text-anchor="middle" font-family="Share Tech Mono" font-size="9" fill="#5ef2e6">5</text>
+        <circle id="cpapLed" cx="71" cy="126" r="2.4" fill="#57f0a0"/>
+        <rect x="66" y="131" width="9" height="6" rx="2" fill="#9fd3ff" opacity=".7"/>
+      </g>
+      <!-- bed -->
+      <rect x="86" y="96" width="14" height="102" rx="5" fill="#5b4aa8"/>
+      <circle cx="93" cy="96" r="8" fill="#6b58c2"/>
+      <rect x="96" y="160" width="298" height="36" rx="6" fill="#4a3d93"/>
+      <rect x="380" y="130" width="14" height="68" rx="5" fill="#5b4aa8"/>
+      <rect x="98" y="146" width="290" height="20" rx="9" fill="#e9ecf8"/>
+      <!-- pillow -->
+      <ellipse cx="132" cy="140" rx="32" ry="11" fill="#f7f8ff"/>
+      <ellipse cx="132" cy="137" rx="26" ry="6" fill="#ffffff"/>
+      <!-- tubing -->
+      <path id="tube" d="M76 128 C 96 128, 96 168, 112 160 S 136 140, 142 134" fill="none" stroke="#b9c6ea" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M76 128 C 96 128, 96 168, 112 160 S 136 140, 142 134" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="1.2" stroke-dasharray="2 3"/>
+      <!-- patient -->
+      <g id="patient">
+        <path d="M118 120c-2-12 8-20 20-18 10 2 14 10 12 18" fill="#3a2a1f"/>
+        <circle cx="136" cy="125" r="14" fill="#c98f6a"/>
+        <path d="M122 120c2-10 12-14 22-10 4 2 6 6 6 8-8-6-20-6-28 2z" fill="#3a2a1f"/>
+        <ellipse cx="124" cy="128" rx="3" ry="4" fill="#b67d5a"/>
+        <path id="eye" d="M137 122q4 3 8 0" fill="none" stroke="#2a1b12" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M128 116 Q 140 112 152 124" fill="none" stroke="#7f8fb8" stroke-width="1.5" opacity=".8"/>
+        <path d="M126 136 Q 138 142 150 132" fill="none" stroke="#7f8fb8" stroke-width="1.5" opacity=".8"/>
+        <g id="mask">
+          <path d="M141 125c6-3 12 0 13 6 1 6-4 10-10 9-5-1-7-4-6-8z" fill="#cfeaff" fill-opacity=".75" stroke="#9ec8ee" stroke-width="1.2"/>
+          <circle id="maskFog" cx="147" cy="133" r="4" fill="#ffffff" opacity=".0"/>
+        </g>
+      </g>
+      <!-- blanket -->
+      <g id="blanket">
+        <path id="blanketP" d="M150 150 C 160 132, 190 128, 215 134 C 250 142, 300 140, 345 146 C 365 148, 380 150, 388 156 L 388 168 L 150 168 Z" fill="url(#blanketG)"/>
+        <path d="M150 150 C 160 132, 190 128, 215 134 C 250 142, 300 140, 345 146 C 365 148, 380 150, 388 156 L 388 168 L 150 168 Z" fill="url(#quilt)"/>
+        <path d="M150 150 C 160 132, 190 128, 215 134" fill="none" stroke="#f4f1e6" stroke-width="5" stroke-linecap="round"/>
+      </g>
+      <!-- teddy on nightstand edge? no: alarm glow on cpap -->
+      <rect id="dawnWash" width="400" height="220" fill="#ff9a6b" opacity="0" style="mix-blend-mode:soft-light"/>
+    </svg>
+    <div id="calm"></div>
+    <div id="tint"></div>
+    <div id="fx"></div>
+    <div id="toast"></div>
+  </div>
+
+  <div class="monitor">
+    <div class="mtop"><span class="rec">PSG · CPAP TITRATION</span><span id="clock">22:30</span></div>
+    <div class="mbody">
+      <canvas id="trace"></canvas>
+      <div class="readouts">
+        <div class="spo2" id="spo2">96<small>SpO₂</small></div>
+        <div class="ahi">AHI <span id="ahi">—</span></div>
+        <div class="stagechip" id="stagechip">NREM</div>
+        <div class="combo" id="combo"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="dial">
+      <button class="pbtn minus" id="minus" aria-label="Lower pressure">−</button>
+      <div class="pval"><div class="num" id="pnum">5<span>cmH₂O</span></div><div class="mode" id="pmode">CPAP</div></div>
+      <button class="pbtn plus" id="plus" aria-label="Raise pressure">+</button>
+    </div>
+    <div class="tools">
+      <button class="tool" data-tool="BPAP">BPAP<small>bilevel</small></button>
+      <button class="tool" data-tool="ASV">ASV<small>servo-vent</small></button>
+      <button class="tool" data-tool="O2">+ O₂<small>bleed-in</small></button>
+    </div>
+  </div>
+</div>
+
+<!-- Screens -->
+<div class="screen show" id="sTitle"><div class="card title-wrap">
+  <svg viewBox="0 0 340 120">
+    <defs><radialGradient id="tg"><stop offset="0" stop-color="#fff4c9" stop-opacity=".6"/><stop offset="1" stop-color="#fff4c9" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="170" cy="52" r="50" fill="url(#tg)"/>
+    <circle cx="170" cy="52" r="26" fill="#fff4c9"/><circle cx="182" cy="42" r="23" fill="#18205a"/>
+    <g fill="#fff"><circle cx="70" cy="20" r="1.6"/><circle cx="270" cy="30" r="2"/><circle cx="110" cy="60" r="1.2"/><circle cx="240" cy="70" r="1.3"/><circle cx="40" cy="80" r="1.4"/><circle cx="300" cy="90" r="1.6"/></g>
+    <path id="titleWave" d="M10 100 Q 40 80 70 100 T 130 100 T 190 100 T 250 100 T 310 100" fill="none" stroke="#5ef2e6" stroke-width="4" stroke-linecap="round"/>
+    <text x="214" y="38" font-family="Fredoka" font-weight="700" font-size="18" fill="#cfd6ff" opacity=".9">z</text>
+    <text x="226" y="24" font-family="Fredoka" font-weight="700" font-size="13" fill="#cfd6ff" opacity=".7">z</text>
+  </svg>
+  <div class="brand">Boardside Reviews · Gamified Learning</div>
+  <div class="title">Titrate<br>Tonight</div>
+  <p>You're the night-shift sleep tech. Six patients, six nights. Dial in the pressure, read the flow and effort traces, and use the right tool for the right breathing problem. Bad calls get flagged on the monitor.</p>
+  <button class="btn" id="startBtn">Start the night shift</button>
+  <p class="muted">Sound on for snores, alarms and combos 🎧 · <a href="/#games" style="color:var(--cyan)">All games</a></p>
+  <p class="muted" style="font-size:11px">For education only. Fictional patients and simulated values.</p>
+</div></div>
+
+<div class="screen" id="sIntro"><div class="card">
+  <div class="kicker" id="iKicker">Patient 1 of 6</div>
+  <h2 id="iTitle" style="margin-bottom:12px">Sleep lab requisition</h2>
+  <div class="req">
+    <div class="rh"><b id="iName">—</b><span id="iTag">—</span></div>
+    <ul id="iLines"></ul>
+    <div class="order" id="iOrder"></div>
+  </div>
+  <div id="iHow"></div>
+  <button class="btn" id="goBtn">Lights out 🌙</button>
+</div></div>
+
+<div class="screen" id="sSummary"><div class="card">
+  <div class="kicker">Morning · 06:30</div>
+  <h2 id="sumTitle">Night complete</h2>
+  <div class="stats">
+    <div class="stat"><b id="sumAHI">0</b><span>Residual AHI</span></div>
+    <div class="stat"><b id="sumP">0</b><span>Final pressure</span></div>
+    <div class="stat"><b id="sumEv">0</b><span>OA / H / CA events</span></div>
+    <div class="stat"><b id="sumPts" style="color:var(--gold)">0</b><span>Night points</span></div>
+  </div>
+  <div class="grade" id="sumGrade"></div>
+  <p id="sumPearl" class="why" style="display:block"></p>
+  <button class="btn" id="toQBtn">Morning report question ☕</button>
+</div></div>
+
+<div class="screen" id="sQ"><div class="card">
+  <div class="kicker">Morning report · +300 if right</div>
+  <p id="qStem" style="font-weight:700;color:#fff;font-size:15px"></p>
+  <div class="opts" id="qOpts"></div>
+  <div class="why" id="qWhy"></div>
+  <button class="btn" id="qNext" style="display:none">Next patient</button>
+</div></div>
+
+<div class="screen" id="sFinal"><div class="card" style="text-align:center">
+  <div class="kicker">Shift over</div>
+  <h2 id="fRank">Master Titrator</h2>
+  <div class="title" style="font-size:54px" id="fScore">0</div>
+  <p id="fLine" class="muted"></p>
+  <div id="postBox"></div>
+  <div class="lb" id="lbList"></div>
+  <button class="btn ghost" id="againBtn">Play again</button>
+  <a class="btn ghost" href="/#games" style="text-decoration:none;text-align:center">← All games</a>
+</div></div>
+
+<script>
+const LB_GAME='titrate-tonight', LB_VARIANT='shift';
+const NIGHT = 44;                 // real seconds per night (= 22:30 → 06:30)
+const REMW = [[.2,.29],[.47,.58],[.74,.87]];
+const $ = s => document.querySelector(s);
+
+/* ---------------- Patients ---------------- */
+const CASES = [
+ { id:'osa', name:'Mr. Delgado', age:52, tag:'Snorer',
+   lines:['52 M · BMI 34 · neck 18 in','Loud snoring, witnessed apneas, Epworth 14','Home sleep test: AHI 38 (severe OSA)','EF 60% · no opioids'],
+   order:'Order: CPAP titration. Find the pressure that keeps his airway open all night.',
+   base:9, rem:1, tol:3, spo2:96,
+   pearl:'Obstructive apnea = effort continues but flow stops. Raise CPAP in 1 cmH₂O steps until apneas, hypopneas, and snoring are gone. In a real lab, AASM says no faster than every 5 minutes, up to a max of 20 cmH₂O.',
+   q:{stem:'A 52-year-old man with loud snoring and witnessed apneas is referred for a sleep study. Which additional finding would make in-lab polysomnography preferred over a home sleep apnea test?',
+      opts:['BMI of 34 kg/m²','Hypertension controlled on two drugs','Heart failure with an ejection fraction of 30%','Epworth Sleepiness Scale score of 14'], ans:2,
+      why:'A home test is fine for an uncomplicated adult with a high pretest probability of moderate–severe OSA. Use in-lab PSG for significant cardiopulmonary disease (like HFrEF), neuromuscular weakness, chronic opioid use, prior stroke, or a suspected non-OSA sleep disorder. Obesity, controlled HTN, and sleepiness only raise the pretest probability.'} },
+ { id:'rem', name:'Ms. Okafor', age:47, tag:'REM-predominant',
+   lines:['47 F · BMI 31','Events cluster in REM sleep and on her back','PSG: AHI 22 overall, 54 in supine REM','EF 60% · no opioids'],
+   order:'Order: CPAP titration. A pressure only counts if it holds through supine REM.',
+   base:8, rem:3, tol:3, spo2:96,
+   pearl:'REM atonia plus the supine position makes the upper airway its floppiest. A pressure that works in lateral NREM often fails in supine REM, so the final pressure has to cover REM.',
+   q:{stem:'During a CPAP titration, 9 cmH₂O eliminates all events in lateral NREM sleep, but the patient never reached supine REM sleep at that pressure. Which statement is correct?',
+      opts:['The titration is optimal; prescribe 9 cmH₂O','OSA usually improves in REM, so 8 cmH₂O will likely suffice','An optimal titration should show control of events during supine REM at the chosen pressure','She should be switched to bilevel PAP'], ans:2,
+      why:'AASM defines an optimal titration as an AHI/RDI under 5 for at least 15 minutes, including supine REM sleep, at the selected pressure. OSA is typically worst in supine REM, so a pressure that was never tested there may be too low.'} },
+ { id:'ohs', name:'Mr. Hassan', age:61, tag:'Obesity hypoventilation',
+   lines:['61 M · BMI 46','Morning headaches, leg edema','Awake ABG: PaCO₂ 52 · serum HCO₃⁻ 32','Severe OSA on diagnostic PSG'],
+   order:'Order: PAP titration. Watch the SpO₂ even after the apneas stop.',
+   base:12, rem:1, tol:3, spo2:96, hypo:true,
+   pearl:'In OHS, CPAP can open the airway but still leave him hypoventilating, with low SpO₂ and rising CO₂ and no discrete events. If hypoventilation persists after obstructive events are gone, switch to BPAP. Adding O₂ alone hides the problem and can worsen hypercapnia.',
+   q:{stem:'An obese patient with severe OSA is being evaluated for obesity hypoventilation syndrome. Which finding makes OHS unlikely?',
+      opts:['BMI of 45 kg/m²','Serum bicarbonate of 22 mEq/L','Awake SpO₂ of 90% on room air','AHI of 60 events/hour'], ans:1,
+      why:'Per the 2019 ATS guideline, a serum bicarbonate below 27 mEq/L makes OHS very unlikely, so an ABG isn\'t needed. If HCO₃⁻ is ≥27, check an ABG: OHS requires an awake PaCO₂ ≥45 mmHg with BMI ≥30 and no other cause of hypoventilation.'} },
+ { id:'csahf', name:'Mrs. Lindqvist', age:72, tag:'HFrEF · Cheyne–Stokes',
+   lines:['72 F · BMI 27','HFrEF, EF 25% on full GDMT','Crescendo–decrescendo breathing at night','PSG: central AHI 34, obstructive AHI 9'],
+   order:'Order: PAP titration. Not every apnea is the airway\'s fault. Watch the effort belt.',
+   base:7, rem:1, tol:4, spo2:95, central:'csr',
+   pearl:'Cheyne–Stokes breathing is waxing and waning breaths with central apneas, where flow and effort stop together. Optimize HF therapy, then CPAP ± nocturnal O₂. ASV is contraindicated with EF ≤45%: in SERVE-HF it increased cardiovascular mortality.',
+   q:{stem:'A 72-year-old woman with HFrEF (EF 25%) on optimized therapy has central sleep apnea with Cheyne–Stokes breathing. Which treatment should be avoided?',
+      opts:['CPAP','Nocturnal supplemental oxygen','Adaptive servo-ventilation (ASV)','Further optimization of diuretics'], ans:2,
+      why:'In SERVE-HF, ASV for predominantly central sleep apnea in HFrEF (EF ≤45%) increased all-cause and cardiovascular mortality. Reasonable options are GDMT optimization, CPAP, and nocturnal oxygen.'} },
+ { id:'opioid', name:'Mr. Brooks', age:44, tag:'Chronic opioids',
+   lines:['44 M · BMI 29','Methadone 90 mg daily for chronic pain','PSG: ataxic breathing, central AHI 31','Echo: EF 60%'],
+   order:'Order: PAP titration. Irregular breathing, lots of centrals. Check the EF before choosing.',
+   base:7, rem:1, tol:3, spo2:95, central:'ataxic',
+   pearl:'Opioids cause ataxic breathing with central apneas, and more CPAP doesn\'t fix it. Reduce the opioid when feasible. With a preserved EF, ASV (or BPAP with a backup rate) works well. BPAP without a backup rate can make centrals worse.',
+   q:{stem:'A 44-year-old man taking methadone 90 mg daily has ataxic breathing and frequent central apneas on PSG. His EF is 60%. What is the best initial step?',
+      opts:['Increase CPAP until the central apneas resolve','Reduce the opioid dose if clinically feasible','Add a nightly benzodiazepine to consolidate sleep','Reassure him; central apneas on opioids need no treatment'], ans:1,
+      why:'The opioid is driving the central apneas, so reduce or taper it when clinically possible. If CSA persists, use PAP: ASV (fine here because EF >45%) or BPAP with a backup rate. Raising CPAP doesn\'t fix centrals, and benzodiazepines add respiratory depression.'} },
+ { id:'tecsa', name:'Ms. Reyes', age:39, tag:'Severe OSA',
+   lines:['39 F · BMI 38','Severe OSA, AHI 64','No heart failure (EF 60%) · no opioids','First time on PAP'],
+   order:'Order: CPAP titration. Find her pressure and don\'t overshoot.',
+   base:10, rem:1, tol:3, spo2:96, central:'te',
+   pearl:'Treatment-emergent central apnea: obstructive events clear on CPAP, then centrals appear, and over-titrating makes them worse. Most resolve with continued CPAP over weeks to months. Hold a reasonable pressure and reassess; consider ASV only if they persist.',
+   q:{stem:'During CPAP titration for severe OSA, obstructive events resolve at 10 cmH₂O but new central apneas appear (central AHI 12). EF is 60%. What is the best next step?',
+      opts:['Increase CPAP to 15 cmH₂O to eliminate the central events','Continue CPAP at 10 cmH₂O and reassess on therapy in 1–3 months','Stop PAP and refer for upper-airway surgery','Add nocturnal oxygen and stop CPAP'], ans:1,
+      why:'Treatment-emergent central sleep apnea usually resolves with continued CPAP. Avoid over-titration, which can provoke more centrals. If it persists on follow-up, ASV (EF >45%) or BPAP with a backup rate are options.'} }
+];
+
+/* ---------------- State ---------------- */
+let G = { score:0, idx:0, muted:false, hints:new Set() };
+let S = null; let running=false, last=0;
+const C = () => CASES[G.idx];
+
+/* ---------------- Audio ---------------- */
+let AC=null, master, breathG, snoreG, hissG, humG;
+function audioInit(){
+  if(AC) return;
+  try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
+  master = AC.createGain(); master.gain.value = G.muted?0:.9; master.connect(AC.destination);
+  const nb = AC.createBuffer(1, AC.sampleRate*2, AC.sampleRate); const d=nb.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  const mkNoise=()=>{const s=AC.createBufferSource(); s.buffer=nb; s.loop=true; s.start(); return s;};
+  // breathing
+  const n1=mkNoise(), bp=AC.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=900; bp.Q.value=.6;
+  breathG=AC.createGain(); breathG.gain.value=0; n1.connect(bp).connect(breathG).connect(master);
+  // snore
+  const os=AC.createOscillator(); os.type='sawtooth'; os.frequency.value=68;
+  const lfo=AC.createOscillator(); lfo.frequency.value=23; const lg=AC.createGain(); lg.gain.value=14; lfo.connect(lg).connect(os.frequency); lfo.start();
+  const lp=AC.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=380;
+  snoreG=AC.createGain(); snoreG.gain.value=0; os.connect(lp).connect(snoreG).connect(master); os.start();
+  // leak hiss
+  const n2=mkNoise(), hp=AC.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=4000;
+  hissG=AC.createGain(); hissG.gain.value=0; n2.connect(hp).connect(hissG).connect(master);
+  // machine hum
+  const hm=AC.createOscillator(); hm.type='sine'; hm.frequency.value=110; humG=AC.createGain(); humG.gain.value=0; hm.connect(humG).connect(master); hm.start();
+}
+function tone(f,dur=.12,type='sine',vol=.18,slide=0,delay=0){
+  if(!AC||G.muted) return; const t=AC.currentTime+delay;
+  const o=AC.createOscillator(), g=AC.createGain(); o.type=type; o.frequency.setValueAtTime(f,t);
+  if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+dur);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(master); o.start(t); o.stop(t+dur+.05);
+}
+const sfx = {
+  click(){ tone(1400,.04,'square',.05) },
+  up(){ tone(520,.08,'triangle',.12,180) }, down(){ tone(520,.08,'triangle',.12,-180) },
+  good(){ tone(880,.09,'sine',.07) },
+  combo(n){ [0,4,7,12].slice(0,2+Math.min(2,n)).forEach((s,i)=>tone(660*Math.pow(2,s/12),.18,'triangle',.12,0,i*.07)) },
+  bad(){ tone(220,.22,'sawtooth',.12,-90) },
+  alarm(){ tone(988,.12,'square',.07); tone(988,.12,'square',.07,0,.18) },
+  snort(){ if(!AC||G.muted) return; tone(90,.25,'sawtooth',.22,60); tone(140,.18,'square',.08,-60,.05) },
+  right(){ [0,4,7,12].forEach((s,i)=>tone(523*Math.pow(2,s/12),.22,'triangle',.14,0,i*.08)) },
+  wrong(){ tone(300,.3,'sawtooth',.12,-150) },
+  harm(){ tone(150,.5,'sawtooth',.2,-60); tone(155,.5,'square',.08,-60) },
+  chime(){ [12,7,4,0].forEach((s,i)=>tone(523*Math.pow(2,s/12),.35,'sine',.1,0,i*.12)) }
+};
+function setG(g,v){ if(g&&AC) g.gain.setTargetAtTime(G.muted?0:v, AC.currentTime, .05); }
+
+/* ---------------- Background stars ---------------- */
+const bg=$('#sky-bg'), bgx=bg.getContext('2d'); let bgStars=[];
+function bgResize(){ bg.width=innerWidth*devicePixelRatio; bg.height=innerHeight*devicePixelRatio;
+  bgStars=Array.from({length:110},()=>({x:Math.random()*bg.width,y:Math.random()*bg.height,r:Math.random()*1.4*devicePixelRatio+.3,p:Math.random()*6})); }
+function bgDraw(t){ bgx.clearRect(0,0,bg.width,bg.height);
+  for(const s of bgStars){ bgx.globalAlpha=.25+.35*(.5+.5*Math.sin(t/900+s.p)); bgx.fillStyle='#cfd6ff'; bgx.beginPath(); bgx.arc(s.x,s.y,s.r,0,7); bgx.fill(); } bgx.globalAlpha=1; }
+addEventListener('resize',()=>{bgResize(); traceResize();}); bgResize();
+
+/* scene stars */
+(function(){ const g=$('#stars'); for(let i=0;i<22;i++){ const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  c.setAttribute('cx',154+Math.random()*112); c.setAttribute('cy',18+Math.random()*52); c.setAttribute('r',(Math.random()*.9+.3).toFixed(2));
+  c.dataset.p=Math.random()*6; g.appendChild(c);} })();
+
+/* ---------------- Trace canvas ---------------- */
+const cv=$('#trace'), cx=cv.getContext('2d'); let W=0,H=0, buf={f:[],e:[],s:[]}, colTotal=0, colAcc=0, labels=[];
+function traceResize(){ const r=cv.getBoundingClientRect(); W=Math.max(50,Math.floor(r.width)); H=Math.max(60,Math.floor(r.height));
+  cv.width=W*devicePixelRatio; cv.height=H*devicePixelRatio; cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  for(const k of ['f','e','s']){ const a=buf[k]; buf[k]=new Array(W).fill(k==='s'?96:0); const off=Math.max(0,a.length-W); for(let i=off;i<a.length;i++) buf[k][W-(a.length-i)]=a[i]; } }
+function pushCols(n,f,e,s){ for(let i=0;i<n;i++){ buf.f.push(f); buf.f.shift(); buf.e.push(e); buf.e.shift(); buf.s.push(s); buf.s.shift(); colTotal++; } }
+function drawTrace(){
+  cx.clearRect(0,0,W,H);
+  // grid
+  cx.strokeStyle='rgba(94,242,230,.06)'; cx.lineWidth=1;
+  for(let x=(-colTotal%30+30)%30;x<W;x+=30){ cx.beginPath(); cx.moveTo(x+.5,0); cx.lineTo(x+.5,H); cx.stroke(); }
+  for(let y=0;y<H;y+=20){ cx.beginPath(); cx.moveTo(0,y+.5); cx.lineTo(W,y+.5); cx.stroke(); }
+  const yF=H*.22, aF=H*.14, yE=H*.52, aE=H*.11, sTop=H*.72, sBot=H*.95;
+  const line=(arr,y0,amp,col,glow)=>{ cx.strokeStyle=col; cx.lineWidth=2; cx.shadowColor=col; cx.shadowBlur=glow; cx.beginPath();
+    for(let x=0;x<W;x++){ const v=y0-arr[x]*amp; x?cx.lineTo(x,v):cx.moveTo(x,v);} cx.stroke(); cx.shadowBlur=0; };
+  line(buf.f,yF,aF,'#5ef2e6',8); line(buf.e,yE,aE,'#b58cff',6);
+  // spo2
+  cx.strokeStyle='rgba(255,209,102,.18)'; cx.setLineDash([3,4]); const y90=sBot-(90-80)/20*(sBot-sTop); cx.beginPath(); cx.moveTo(0,y90); cx.lineTo(W,y90); cx.stroke(); cx.setLineDash([]);
+  cx.strokeStyle='#ffd166'; cx.lineWidth=2; cx.shadowColor='#ffd166'; cx.shadowBlur=6; cx.beginPath();
+  for(let x=0;x<W;x++){ const v=sBot-(Math.max(78,Math.min(100,buf.s[x]))-80)/20*(sBot-sTop); x?cx.lineTo(x,v):cx.moveTo(x,v);} cx.stroke(); cx.shadowBlur=0;
+  // channel labels
+  cx.font='10px "Share Tech Mono",monospace'; cx.fillStyle='rgba(94,242,230,.7)'; cx.fillText('FLOW',6,yF-aF-2>10?yF-aF-2:12);
+  cx.fillStyle='rgba(181,140,255,.75)'; cx.fillText('EFFORT',6,yE-aE+2); cx.fillStyle='rgba(255,209,102,.7)'; cx.fillText('SpO₂',6,sTop-2);
+  // event labels
+  labels=labels.filter(l=>colTotal-l.col<W+40);
+  for(const l of labels){ const x=W-(colTotal-l.col); if(x<-30) continue;
+    cx.fillStyle=l.c; cx.globalAlpha=.16; cx.fillRect(x,2,l.w,H*.62); cx.globalAlpha=1;
+    cx.font='bold 11px "Share Tech Mono",monospace'; cx.fillStyle=l.c; cx.fillText(l.t,x+3,13); }
+}
+
+/* ---------------- UI helpers ---------------- */
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show')); if(id) $(id).classList.add('show'); }
+function toast(html,kind='',ms=3600){ const t=document.createElement('div'); t.className='toast '+kind; t.innerHTML=html; const box=$('#toast');
+  box.appendChild(t); while(box.children.length>2) box.firstChild.remove(); setTimeout(()=>{t.style.transition='opacity .4s'; t.style.opacity=0; setTimeout(()=>t.remove(),400)},ms); }
+function hint(key,html,kind){ if(G.hints.has(key)) return; G.hints.add(key); toast(html,kind,4800); }
+function pop(text,cls,x=34,y=40){ const p=document.createElement('div'); p.className='pop '+cls; p.textContent=text; p.style.left=x+'%'; p.style.top=y+'%'; $('#fx').appendChild(p); setTimeout(()=>p.remove(),1150); }
+function zzz(size){ const z=document.createElement('div'); z.className='z'; z.textContent='z'; z.style.fontSize=size+'px'; z.style.left=(36+Math.random()*3)+'%'; z.style.top=(44+Math.random()*4)+'%'; $('#fx').appendChild(z); setTimeout(()=>z.remove(),2300); }
+function addScore(n){ G.score=Math.max(0,G.score+n); S && (S.pts+=n); $('#hudScore').textContent=G.score; }
+function shake(){ const s=$('#stage'); s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake'); }
+
+/* ---------------- Night setup ---------------- */
+function inREM(fr){ return REMW.some(([a,b])=>fr>=a&&fr<b); }
+function newNight(){
+  const c=C();
+  S={ t:0, P:5, mode:'CPAP', o2:false, spo2:c.spo2, ev:null, cool:2.2, phase:0, per:1.5, amp:1,
+      streak:0, pts:0, events:[], rem:false, snoring:false, zT:0, alarmT:0, penal:new Set(), credited:new Set(),
+      leakOn:false, lastFlow:0 };
+  labels=[]; for(const k in buf) buf[k].fill(k==='s'?c.spo2:0);
+  document.querySelectorAll('.tool').forEach(b=>b.classList.remove('on'));
+  updP(); $('#hudName').textContent=c.name; $('#hudLevel').textContent=`Patient ${G.idx+1} / ${CASES.length}`;
+}
+function need(){ const c=C(); return c.base + (S.rem?c.rem:0); }
+
+function baselineSpO2(){
+  const c=C(), d=need()-S.P;
+  if(c.hypo){ if(S.mode==='BPAP') return S.o2?96:94; return S.o2?90:(d>0?84:86); }
+  let b=c.spo2; if(S.o2) b=Math.min(98,b+2); return b;
+}
+function hypovent(){ return C().hypo && S.mode!=='BPAP'; }
+
+/* ---------------- Events ---------------- */
+const EV = {
+  OA:{dur:4.4, drop:8, col:'#ff5c7a', label:'OA'},
+  H: {dur:4.0, drop:4, col:'#ff9f5a', label:'H'},
+  CA:{dur:4.2, drop:5, col:'#b58cff', label:'CA'},
+  CSR:{dur:6.6, drop:6, col:'#b58cff', label:'CA·CSR'},
+  LEAK:{dur:2.6, drop:0, col:'#9fd3ff', label:'LEAK'}
+};
+function centralP(d,over){
+  const c=C(); if(!c.central) return 0;
+  if(c.central==='csr'){ let p = d>0?.42:.2; if(S.o2) p*=.4; if(S.mode==='BPAP') p+=.25; return p; }
+  if(c.central==='ataxic'){ if(S.mode==='ASV') return .04; let p=.42; if(S.mode==='BPAP') p=.6; if(S.o2) p*=.85; return p; }
+  if(c.central==='te'){ if(d>0) return 0; let p=.1+Math.max(0,over-.5)*.2; if(S.mode==='BPAP') p+=.2; return Math.min(.7,p); }
+  return 0;
+}
+function maybeEvent(){
+  const c=C(), n=need(), d=n-S.P, over=S.P-n;
+  if(d>0 && Math.random()<Math.min(.85,.3+.18*d)){ startEv(d>=2.5 ? (Math.random()<.7?'OA':'H') : (Math.random()<.25?'OA':'H')); return; }
+  if(Math.random()<centralP(d,over)){ startEv(c.central==='csr'?'CSR':'CA'); return; }
+  if(over>c.tol && Math.random()<Math.min(.7,.2+.25*(over-c.tol))){ startEv('LEAK'); return; }
+}
+function startEv(type){
+  const e=EV[type]; S.ev={type,τ:0,dur:e.dur,snorted:false};
+  labels.push({col:colTotal,t:e.label,c:e.col,w:Math.round(e.dur*55)});
+  if(type!=='LEAK'){ S.events.push({t:S.t,type}); S.streak=0; addScore(-15); pop('−'+e.label,'bad',38,34); sfx.bad(); }
+  else { addScore(-10); pop('LEAK','bad',38,34); }
+  if(type==='OA') hint('OA','<b>Obstructive apnea:</b> effort keeps going, flow stops. The airway is collapsing, so <b>raise the pressure</b>.','warn');
+  if(type==='H')  hint('H','<b>Hypopnea:</b> reduced flow with a desat. Still under-titrated, so <b>nudge the pressure up</b>.','warn');
+  if(type==='CA') hint('CA','<b>Central apnea:</b> flow <i>and</i> effort both stop. The brain isn\'t sending the breath, so more pressure won\'t fix it.','info');
+  if(type==='CSR')hint('CSR','<b>Cheyne–Stokes:</b> crescendo–decrescendo breaths, then a central apnea. Think about the heart, not the airway.','info');
+  if(type==='LEAK')hint('LEAK','<b>Mask leak / aerophagia:</b> you\'ve overshot. <b>Back the pressure down.</b>','warn');
+}
+function envelope(){
+  // returns [flowAmp, effortAmp, offset]
+  if(!S.ev) return null; const τ=S.ev.τ, t=S.ev.type;
+  const ramp=(a,b,x)=>a+(b-a)*Math.max(0,Math.min(1,x));
+  if(t==='OA'){ if(τ<.4) return [ramp(1,.05,τ/.4),1.05,0]; if(τ<3) return [.05,1.15,0]; return [1.7,1.5,0]; }
+  if(t==='H'){ if(τ<3) return [.35,.75,0]; return [1.4,1.3,0]; }
+  if(t==='CA'){ if(τ<.3) return [ramp(1,0,τ/.3),ramp(1,0,τ/.3),0]; if(τ<2.8) return [0,0,0]; return [1.2,1.15,0]; }
+  if(t==='CSR'){ if(τ<1.6){const a=ramp(1.1,0,τ/1.6); return [a,a,0];} if(τ<4) return [0,0,0]; const a=Math.sin((τ-4)/2.6*Math.PI)*1.6+.15; return [a,a,0]; }
+  if(t==='LEAK') return [1,1,.55];
+  return null;
+}
+
+/* ---------------- Tools ---------------- */
+function setToolUI(){ document.querySelectorAll('.tool').forEach(b=>{ const t=b.dataset.tool; b.classList.toggle('on', t==='O2'?S.o2:S.mode===t); }); updP(); }
+function useTool(t){
+  if(!running) return; audioInit(); sfx.click();
+  const c=C(), id=c.id;
+  const turningOn = t==='O2' ? !S.o2 : S.mode!==t;
+  const once=(k,pts,html,kind)=>{ if(pts<0){ if(S.penal.has(k)) {toast(html,kind,3000);return;} S.penal.add(k);} else if(pts>0){ if(S.credited.has(k)) return; S.credited.add(k);} if(pts) { addScore(pts); pop((pts>0?'+':'')+pts, pts>0?'good big':'bad',50,30); } toast(html,kind,5200); };
+  if(!turningOn){ if(t==='O2') S.o2=false; else S.mode='CPAP'; setToolUI(); return; }
+  // apply
+  if(t==='O2') S.o2=true; else S.mode=t;
+  setToolUI();
+  const revert=()=>setTimeout(()=>{ if(!S) return; if(t==='O2') S.o2=false; else S.mode='CPAP'; setToolUI(); },900);
+  if(t==='ASV'){
+    if(id==='csahf'){ once('asv',-400,'<b>STOP: ASV is contraindicated.</b> HFrEF with EF ≤45% plus central apnea = SERVE-HF, where ASV increased cardiovascular mortality.','warn'); sfx.harm(); shake(); flashRed(); revert(); return; }
+    if(id==='opioid'){ once('asv',300,'<b>Nice call.</b> EF is 60%, so ASV is safe, and it smooths out opioid-associated central apnea.','ok'); sfx.right(); return; }
+    if(id==='tecsa'){ toast('<b>Not yet.</b> Most treatment-emergent centrals settle with continued CPAP. Save ASV for persistent cases.','info',4800); revert(); return; }
+    once('asvx',-50,'<b>No central apnea here.</b> This is a floppy airway, not a breathing-drive problem. CPAP is the fix.','warn'); sfx.wrong(); revert(); return;
+  }
+  if(t==='BPAP'){
+    if(id==='ohs'){ if(need()-S.P>0){ toast('<b>Close.</b> Switch to BPAP once the obstructive events are controlled. First find the EPAP that opens the airway.','info',4500); }
+      once('bpap',300,'<b>Correct.</b> Persistent hypoventilation (low SpO₂, no events) after the obstruction is fixed means BPAP. The IPAP–EPAP difference adds ventilation.','ok'); sfx.right(); return; }
+    if(id==='csahf'||id==='opioid'||id==='tecsa'){ once('bpapc',-100,'<b>Careful.</b> BPAP without a backup rate can <i>worsen</i> central apnea by blowing off CO₂.','warn'); sfx.wrong(); revert(); return; }
+    toast('<b>Not needed.</b> Use BPAP for CPAP intolerance or if obstructive events persist at 15 cmH₂O.','info',4500); revert(); return;
+  }
+  if(t==='O2'){
+    if(id==='csahf'){ once('o2',200,'<b>Good.</b> Nocturnal O₂ is a reasonable add-on for central apnea in heart failure.','ok'); sfx.right(); return; }
+    if(id==='ohs'){ if(S.mode!=='BPAP'){ toast('<b>Masking, not fixing.</b> O₂ raises the SpO₂ number but CO₂ keeps climbing. Fix the ventilation first.','warn',5000); sfx.wrong(); } else toast('<b>OK.</b> O₂ can be added once ventilation is supported.','info',3500); return; }
+    if(id==='opioid'||id==='tecsa'){ toast('<b>Partial help at best.</b> Oxygen doesn\'t address the cause here.','info',4000); return; }
+    once('o2x',-50,'<b>Don\'t treat the number.</b> The desats are from airway collapse, so open the airway with pressure.','warn'); sfx.wrong(); revert(); return;
+  }
+}
+function flashRed(){ const t=$('#tint'); t.style.opacity=1; setTimeout(()=>t.style.opacity='',500); }
+
+/* ---------------- Pressure ---------------- */
+function updP(){ if(!S) return; const ip=S.P+4;
+  $('#pnum').innerHTML = (S.mode==='BPAP'?`${ip}/${S.P}`:S.P)+'<span>cmH₂O</span>';
+  $('#pmode').textContent = S.mode==='BPAP'?'BPAP · IPAP/EPAP':S.mode==='ASV'?'ASV · EPAP':'CPAP'+(S.o2?' + O₂':'');
+  if(S.mode!=='CPAP'&&S.o2) $('#pmode').textContent+=' + O₂';
+  $('#cpapTxt').textContent = S.mode==='BPAP'?`${ip}/${S.P}`:S.P; }
+function changeP(dv){ if(!running) return; audioInit(); const np=Math.max(4,Math.min(20,S.P+dv)); if(np===S.P){ sfx.click(); return; } S.P=np; dv>0?sfx.up():sfx.down(); updP();
+  const pv=$('#pnum'); pv.animate([{transform:'scale(1.18)'},{transform:'scale(1)'}],{duration:180});
+  if(S.P>=15 && C().id!=='ohs') hint('p15','<b>15 cmH₂O and climbing?</b> If you\'re still seeing events, ask whether they\'re really obstructive.','info'); }
+$('#plus').onclick=()=>changeP(1); $('#minus').onclick=()=>changeP(-1);
+document.querySelectorAll('.tool').forEach(b=>b.onclick=()=>useTool(b.dataset.tool));
+addEventListener('keydown',e=>{ if(e.key==='ArrowUp'||e.key==='+'||e.key==='=') changeP(1); if(e.key==='ArrowDown'||e.key==='-') changeP(-1); });
+
+/* ---------------- Main loop ---------------- */
+function step(dt){
+  const c=C(); S.t+=dt; const fr=S.t/NIGHT;
+  const rem=inREM(fr); if(rem!==S.rem){ S.rem=rem; const ch=$('#stagechip'); ch.textContent=rem?'REM':'NREM'; ch.classList.toggle('rem',rem);
+    if(rem) hint('REM','<b>REM sleep:</b> muscle tone drops and the airway gets floppier. Be ready to go up.','info'); }
+  const n=need(), d=n-S.P, over=S.P-n;
+  // events
+  if(S.ev){ S.ev.τ+=dt;
+    if((S.ev.type==='OA'&&S.ev.τ>3||S.ev.type==='H'&&S.ev.τ>3)&&!S.ev.snorted){ S.ev.snorted=true; sfx.snort(); }
+    if(S.ev.τ>=S.ev.dur){ S.ev=null; S.cool=1.3; } }
+  else { S.cool-=dt; if(S.cool<=0){ S.cool=1.6; maybeEvent(); } }
+  // spo2
+  let target=baselineSpO2();
+  if(S.ev && EV[S.ev.type].drop){ const e=EV[S.ev.type]; const lo = S.ev.type==='CSR'?[1.4,4.6]:[.8,3.4]; if(S.ev.τ>lo[0]&&S.ev.τ<lo[1]) target-=e.drop; }
+  const rate = target<S.spo2?2.6:3.6; S.spo2 += Math.sign(target-S.spo2)*Math.min(Math.abs(target-S.spo2),rate*dt);
+  // breathing
+  const ataxic = c.central==='ataxic' && S.mode!=='ASV';
+  S.phase += dt*2*Math.PI/S.per;
+  if(S.phase>=2*Math.PI){ S.phase-=2*Math.PI; onBreath(n);
+    if(ataxic){ S.per=1.1+Math.random()*1.0; S.amp=.45+Math.random()*1.0; } else { S.per=1.5; S.amp=1; } }
+  let fa=S.amp, ea=S.amp, off=0;
+  if(c.central==='csr' && !S.ev) { const w=1+.22*Math.sin(S.t*1.1); fa*=w; ea*=w; }
+  const env=envelope(); if(env){ fa=env[0]*(S.ev.type==='LEAK'?S.amp:1); ea=env[1]; off=env[2]; }
+  S.snoring = !S.ev && d>0;
+  let flow = fa*Math.sin(S.phase) + off;
+  if(S.snoring && Math.sin(S.phase)>0) flow += .14*Math.sin(S.phase*21);
+  if(off) flow += (Math.random()-.5)*.25;
+  const eff = ea*Math.sin(S.phase-.5);
+  S.lastFlow=flow;
+  colAcc+=dt*55; const k=Math.floor(colAcc); colAcc-=k; if(k) pushCols(k,flow,eff,S.spo2);
+  // fx
+  S.zT-=dt; if(S.snoring && S.zT<=0){ zzz(10+Math.min(10,d*3)); S.zT=Math.max(.35,1.1-d*.2);
+    if(S.t>3) hint('snore','<b>Snoring</b> means the airway is still partly collapsing. You\'re under-titrated.','warn'); }
+  const alarm=S.spo2<88; $('#tint').style.opacity = alarm ? (.5+.35*Math.sin(S.t*8)) : 0;
+  $('#calm').style.opacity = (!S.ev && d<=0 && S.streak>=6 && !alarm)?1:0;
+  S.alarmT-=dt; if(alarm && S.alarmT<=0){ sfx.alarm(); S.alarmT=1.2; }
+  if(hypovent() && d<=0 && S.spo2<88 && S.t>6) hint('hypo','<b>No events, but SpO₂ is stuck in the 80s.</b> The airway is open and he\'s still hypoventilating.','info');
+  // sounds
+  setG(breathG, Math.min(.09, Math.abs(flow)*.05)); setG(snoreG, S.snoring&&Math.sin(S.phase)>0 ? Math.min(.16,.05+d*.03) : 0);
+  setG(hissG, S.ev&&S.ev.type==='LEAK'?.05:0); setG(humG,.012);
+  if(S.t>=NIGHT) endNight();
+}
+function onBreath(n){
+  const c=C(), d=n-S.P, over=S.P-n;
+  if(S.ev || d>0 || over>c.tol){ if(d>0) S.streak=0; return; }
+  if(hypovent() && S.spo2<88){ addScore(2); return; }
+  S.streak++; const mult=1+Math.min(2,Math.floor(S.streak/6)*.5); const p=Math.round(10*mult); addScore(p);
+  pop('+'+p,'good',34+Math.random()*6,36); sfx.good();
+  if(S.streak%6===0){ sfx.combo(S.streak/6); pop(`×${mult} calm streak`,'big',50,22); }
+}
+function render(){
+  if(!S) return; const fr=Math.min(1,S.t/NIGHT);
+  // clock: 22:30 + 8h
+  const mins = 22*60+30 + fr*480; const hh=Math.floor(mins/60)%24, mm=Math.floor(mins%60);
+  $('#clock').textContent=String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+  $('#minH').setAttribute('transform',`rotate(${mm*6})`); $('#hourH').setAttribute('transform',`rotate(${(hh%12)*30+mm*.5})`);
+  // spo2 readout
+  const sp=$('#spo2'); sp.innerHTML=Math.round(S.spo2)+'<small>SpO₂</small>'; sp.classList.toggle('alarm',S.spo2<88);
+  // live AHI
+  const resp=S.events.length; $('#ahi').textContent = fr>.12 ? Math.round(resp*4.5/fr) : '—';
+  $('#combo').textContent = S.streak>=6 ? `×${1+Math.min(2,Math.floor(S.streak/6)*.5)} streak` : '';
+  // blanket breathing + mask fog
+  const s=1+Math.max(-.6,Math.min(1.6,S.lastFlow))*.07;
+  $('#blanket').setAttribute('transform',`translate(0 168) scale(1 ${s.toFixed(3)}) translate(0 -168)`);
+  $('#maskFog').setAttribute('opacity', Math.max(0,S.lastFlow)*.35);
+  $('#cpapLed').setAttribute('fill', S.spo2<88?'#ff5c7a':(S.ev?'#ffd166':'#57f0a0'));
+  // dawn
+  const dawn=Math.max(0,(fr-.82)/.18);
+  const mix=(a,b)=>{const pa=parseInt(a.slice(1),16),pb=parseInt(b.slice(1),16);const r=((pa>>16)+(((pb>>16)-(pa>>16))*dawn))|0,g=(((pa>>8)&255)+((((pb>>8)&255)-((pa>>8)&255))*dawn))|0,bl=((pa&255)+(((pb&255)-(pa&255))*dawn))|0;return `rgb(${r},${g},${bl})`;};
+  $('#sky1').setAttribute('stop-color',mix('#060a2a','#3d4a9e')); $('#sky2').setAttribute('stop-color',mix('#1c2a72','#ffb27a'));
+  $('#moon').setAttribute('opacity',1-dawn); $('#sun').setAttribute('opacity',dawn); $('#sun').setAttribute('transform',`translate(0 ${-dawn*14})`);
+  $('#moonBite').setAttribute('fill',mix('#0b1238','#6b6fb4')); $('#dawnWash').setAttribute('opacity',dawn*.35);
+  const tt=performance.now(); document.querySelectorAll('#stars circle').forEach(c=>c.setAttribute('opacity',((.4+.6*Math.abs(Math.sin(tt/700+ +c.dataset.p)))*(1-dawn)).toFixed(2)));
+}
+function frame(ts){
+  bgDraw(ts);
+  if(running){ const dt=Math.min(.05,(ts-last)/1000||0); step(dt); render(); drawTrace(); }
+  last=ts; requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+document.addEventListener('visibilitychange',()=>{ last=performance.now(); });
+
+/* ---------------- Flow between screens ---------------- */
+function showIntro(){
+  const c=C(); newNight(); render(); drawTrace();
+  $('#iKicker').textContent=`Patient ${G.idx+1} of ${CASES.length} · ${c.age} y/o`;
+  $('#iTitle').textContent= G.idx===0?'Your first patient':'Next patient';
+  $('#iName').textContent=c.name; $('#iTag').textContent=c.tag;
+  $('#iLines').innerHTML=c.lines.map(l=>`<li>${l}</li>`).join(''); $('#iOrder').textContent=c.order;
+  $('#iHow').innerHTML = G.idx===0 ? `<h3>How to play</h3>
+    <div class="howto"><span class="k f">FLOW</span><span>Airflow at the nose. Flat line = no air moving.</span>
+    <span class="k e">EFFORT</span><span>Chest belt. Still moving while flow is flat = <b>obstructive</b>. Both flat = <b>central</b>.</span>
+    <span class="k s">SpO₂</span><span>Keep it out of the red zone (&lt;88%).</span></div>
+    <p>Tap <b>+</b>/<b>−</b> to titrate. Clean, quiet breaths build a streak multiplier. The <b>BPAP / ASV / O₂</b> buttons are for problems more pressure can't fix. Use them wisely, because a bad call costs points.</p>` :
+    `<p class="muted" style="margin-top:12px">Pressure resets to 5 cmH₂O. Read the requisition, since the clues are in there.</p>`;
+  show('#sIntro');
+}
+function startNight(){ audioInit(); if(AC&&AC.state==='suspended') AC.resume(); show(null); running=true; last=performance.now(); }
+function endNight(){
+  running=false; [breathG,snoreG,hissG,humG].forEach(g=>setG(g,0));
+  $('#tint').style.opacity=0; $('#calm').style.opacity=0;
+  const c=C(); const late=S.events.filter(e=>e.t>NIGHT/2).length; const res=late*9;
+  let bonus=0, grade='';
+  if(late===0){ bonus=600; grade='🌟 Optimal titration (AHI < 5)'; }
+  else if(late===1){ bonus=300; grade='✅ Good titration (AHI < 10)'; }
+  else if(late<=3){ bonus=100; grade='⚠️ Adequate at best. Residual events.'; }
+  else grade='❌ Inadequate: events persisted';
+  if(c.id==='ohs' && S.mode!=='BPAP'){ grade+=' · still hypoventilating (needed BPAP)'; bonus=Math.min(bonus,100); }
+  if(c.id==='csahf' && !S.o2 && late>0) grade+=' · O₂ could have helped';
+  if(c.id==='opioid' && S.mode!=='ASV') grade+=' · centrals needed ASV (EF 60%)';
+  addScore(bonus); sfx.chime();
+  $('#sumTitle').textContent=`${c.name} slept through it`+(late>3?'… mostly':'');
+  $('#sumAHI').textContent=res; $('#sumP').textContent=S.mode==='BPAP'?`${S.P+4}/${S.P}`:S.P;
+  const ct=t=>S.events.filter(e=>e.type===t).length;
+  $('#sumEv').textContent=`${ct('OA')} / ${ct('H')} / ${ct('CA')+ct('CSR')}`; $('#sumPts').textContent=(S.pts>0?'+':'')+S.pts;
+  $('#sumGrade').textContent=grade+(bonus?`  +${bonus}`:''); $('#sumPearl').innerHTML='<b style="color:var(--cyan)">Pearl:</b> '+c.pearl;
+  setTimeout(()=>show('#sSummary'),400);
+}
+function showQ(){
+  const q=C().q; $('#qStem').textContent=q.stem; $('#qWhy').style.display='none'; $('#qNext').style.display='none';
+  $('#qNext').textContent = G.idx<CASES.length-1?'Next patient →':'See my shift score';
+  const box=$('#qOpts'); box.innerHTML='';
+  q.opts.forEach((o,i)=>{ const b=document.createElement('button'); b.className='opt'; b.innerHTML=`<b>${'ABCD'[i]}</b>${o}`;
+    b.onclick=()=>{ if(box.dataset.done) return; box.dataset.done=1; const ok=i===q.ans;
+      b.classList.add(ok?'right':'wrong'); box.children[q.ans].classList.add('right');
+      if(ok){ addScore(300); sfx.right(); } else sfx.wrong();
+      $('#qWhy').innerHTML=(ok?'<b style="color:var(--green)">Correct, +300.</b> ':'<b style="color:var(--red)">Not quite.</b> ')+q.why; $('#qWhy').style.display='block'; $('#qNext').style.display='block'; };
+    box.appendChild(b); });
+  delete box.dataset.done; show('#sQ');
+}
+function nextPatient(){ G.idx++; if(G.idx>=CASES.length) return finish(); showIntro(); }
+function finish(){
+  const s=G.score; const r = s>=8000?'Master Titrator':s>=6000?'Sleep Whisperer':s>=4000?'Night Owl':s>=2000?'Sleep Tech':'Sleep Tech Trainee';
+  $('#fRank').textContent=r; $('#fScore').textContent=s; $('#fLine').textContent='Six patients, six nights. Ranked by pure score.';
+  paintPost(); loadLB(); show('#sFinal'); sfx.chime();
+}
+$('#startBtn').onclick=()=>{ audioInit(); if(AC&&AC.state==='suspended') AC.resume(); G.score=0; G.idx=0; $('#hudScore').textContent=0; showIntro(); };
+$('#goBtn').onclick=startNight;
+$('#toQBtn').onclick=showQ;
+$('#qNext').onclick=nextPatient;
+$('#againBtn').onclick=()=>{ G.score=0; G.idx=0; $('#hudScore').textContent=0; showIntro(); };
+$('#muteBtn').onclick=()=>{ G.muted=!G.muted; $('#muteBtn').textContent=G.muted?'🔇':'🔊'; if(master) master.gain.value=G.muted?0:.9; };
+
+/* ---------------- Leaderboard (shared Boardside board) ---------------- */
+const hasLB=()=>!!(window.BLB&&window.BLB.enabled&&window.BLB.boardPoints);
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+async function loadLB(){
+  const box=$('#lbList'); if(!hasLB()){ box.innerHTML=''; return; }
+  box.innerHTML='<h3>Leaderboard</h3><p class="muted">Loading…</p>';
+  try{ const rows=await BLB.boardPoints(LB_GAME,LB_VARIANT,null,10);
+    box.innerHTML='<h3>Leaderboard · top 10</h3>'+(rows.length?rows.map(r=>`<div class="row ${r.is_me?'me':''}"><span>${r.rank}. ${esc(r.display_name)}</span><b>${Number(r.best_score).toLocaleString()}</b></div>`).join(''):'<p class="muted">No scores yet. Post yours and take the top spot.</p>')+'<p><a href="leaderboard.html#titrate-tonight" style="color:var(--cyan)">Full leaderboard →</a></p>';
+  }catch(e){ box.innerHTML='<h3>Leaderboard</h3><p class="muted">'+esc(BLB.friendly(e))+'</p>'; }
+}
+function paintPost(){
+  const pb=$('#postBox'); if(!hasLB()){ pb.innerHTML=''; return; }
+  if(G.score<=0){ pb.innerHTML='<p class="muted">Score above zero to post.</p>'; return; }
+  pb.innerHTML='<button class="btn" id="lbSave">Post my score</button><p class="muted">Sign in with your email once. Only your display name is shown.</p>';
+  const b=$('#lbSave');
+  b.onclick=async()=>{ b.disabled=true; b.textContent='Posting…';
+    try{ const name=await BLB.dialog({title:'Post your score',intro:"We'll email you a 6-digit code to verify it's you. No password needed."});
+      if(!name){ b.disabled=false; b.textContent='Post my score'; return; }
+      const pts=Math.min(G.score,100000); await BLB.submit(LB_GAME,LB_VARIANT,pts,pts);
+      let rk=null; try{ const rows=await BLB.boardPoints(LB_GAME,LB_VARIANT,null,200); const me=rows.find(r=>r.is_me); rk=me?me.rank:null; }catch(e){}
+      pb.innerHTML=`<p style="color:var(--green);font-weight:800">Posted as ${esc(name)}${rk?` · your best ranks #${rk}`:''}</p>`; sfx.right(); loadLB();
+    }catch(e){ b.disabled=false; b.textContent='Post my score'; let n=$('#postErr'); if(!n){ n=document.createElement('p'); n.id='postErr'; n.className='muted'; n.style.color='var(--red)'; pb.appendChild(n);} n.textContent=BLB.friendly(e); } };
+}
+
+traceResize(); newNight(); render(); drawTrace();
+</script>
+</body>
+</html>
