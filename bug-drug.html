@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Don't Shrug the Bug | Boardside Reviews</title>
+<meta name="description" content="A free infectious-disease game. Match the bug to the drug and level up: Gram stain, susceptibility, resistance, clinical clues, then attending rounds.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
+<script src="lb-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="lb.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Space+Mono:wght@400;700&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#EAF2EF; --bg2:#FFFFFF; --line:#CBDAD4; --fg:#15221E; --muted:#5D6E67;
+  --cv:#7C4DFF; --iod:#D9A441; --alc:#2EB5A0; --saf:#FF4D7E; --gold:#B7791F;
+  --s:#1F9D63; --r:#D6453B;
+  --paper:#FFFDF8; --paper2:#FFFFFF; --pline:#DDD4C2; --ink:#1C1B18; --ink2:#6B665C;
+  --t1:var(--cv); --t2:#D9A441; --t3:#2EB5A0; --t4:var(--saf); --t5:#F0A21B;
+  --d:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --m:"Space Mono",ui-monospace,Menlo,monospace;
+  --og:0;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--d);font-size:15px;line-height:1.45;overflow-x:hidden;
+  padding:env(safe-area-inset-top,0) max(16px,env(safe-area-inset-right,0)) env(safe-area-inset-bottom,0) max(16px,env(safe-area-inset-left,0));
+  background-color:#EEF0FF;background-attachment:fixed;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22220%22%20height%3D%22220%22%20viewBox%3D%220%200%20220%20220%22%3E%3Cg%20opacity%3D%22.11%22%3E%3Cg%20fill%3D%22%237C4DFF%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2234%22%20r%3D%225%22/%3E%3Ccircle%20cx%3D%2239%22%20cy%3D%2234%22%20r%3D%225%22/%3E%3Ccircle%20cx%3D%2234.5%22%20cy%3D%2242%22%20r%3D%225%22/%3E%3Ccircle%20cx%3D%2225.5%22%20cy%3D%2242%22%20r%3D%225%22/%3E%3C/g%3E%3Crect%20x%3D%22140%22%20y%3D%2240%22%20width%3D%2230%22%20height%3D%2210%22%20rx%3D%225%22%20fill%3D%22%23FF4D7E%22%20transform%3D%22rotate%28-25%20155%2045%29%22/%3E%3Cg%20fill%3D%22%237C4DFF%22%3E%3Ccircle%20cx%3D%22120%22%20cy%3D%22150%22%20r%3D%224.5%22/%3E%3Ccircle%20cx%3D%22129%22%20cy%3D%22146%22%20r%3D%224.5%22/%3E%3Ccircle%20cx%3D%22138%22%20cy%3D%22143%22%20r%3D%224.5%22/%3E%3Ccircle%20cx%3D%22147%22%20cy%3D%22142%22%20r%3D%224.5%22/%3E%3C/g%3E%3Crect%20x%3D%2240%22%20y%3D%22150%22%20width%3D%2222%22%20height%3D%228%22%20rx%3D%224%22%20fill%3D%22%23FF4D7E%22%20transform%3D%22rotate%2835%2051%20154%29%22/%3E%3Cg%20fill%3D%22%23FF4D7E%22%3E%3Cellipse%20cx%3D%22190%22%20cy%3D%22180%22%20rx%3D%224.5%22%20ry%3D%226%22/%3E%3Cellipse%20cx%3D%22200%22%20cy%3D%22180%22%20rx%3D%224.5%22%20ry%3D%226%22/%3E%3C/g%3E%3Crect%20x%3D%2280%22%20y%3D%2290%22%20width%3D%2230%22%20height%3D%2210%22%20rx%3D%225%22%20fill%3D%22%232EB5A0%22%20transform%3D%22rotate%2810%2095%2095%29%22/%3E%3Ccircle%20cx%3D%22190%22%20cy%3D%22110%22%20r%3D%227%22%20fill%3D%22%23D9A441%22/%3E%3Ccircle%20cx%3D%22198%22%20cy%3D%22104%22%20r%3D%223.5%22%20fill%3D%22%23D9A441%22/%3E%3C/g%3E%3C/svg%3E"),radial-gradient(900px 600px at 0% 0%,rgba(124,77,255,.22),transparent 60%),radial-gradient(800px 600px at 100% 0%,rgba(255,77,126,.18),transparent 60%),radial-gradient(900px 700px at 50% 110%,rgba(46,181,160,.22),transparent 60%),radial-gradient(700px 500px at 100% 70%,rgba(242,193,78,.18),transparent 60%);background-size:220px 220px,auto,auto,auto,auto;}
+/* colonies creeping in from the corners: they grow with every miss */
+body::before,body::after{content:"";position:fixed;z-index:0;pointer-events:none;border-radius:50%;transition:transform 1.2s cubic-bezier(.2,.9,.3,1),opacity 1.2s;opacity:calc(var(--og) * .28)}
+body::before{width:520px;height:520px;left:-260px;top:-200px;transform:scale(calc(.3 + var(--og) * .35));
+  background:radial-gradient(circle at 60% 60%,rgba(255,77,126,.55) 0 6px,transparent 7px) 0 0/34px 30px,radial-gradient(circle,rgba(255,77,126,.35),transparent 68%)}
+body::after{width:560px;height:560px;right:-280px;bottom:-240px;transform:scale(calc(.3 + var(--og) * .35));
+  background:radial-gradient(circle at 40% 40%,rgba(124,77,255,.55) 0 5px,transparent 6px) 0 0/28px 32px,radial-gradient(circle,rgba(124,77,255,.35),transparent 68%)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding-block:14px 48px}
+
+.top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.brand{text-decoration:none;color:inherit;display:flex;flex-direction:column;line-height:1.05;margin-right:auto}
+.brand small{font-family:var(--m);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.brand b{font-weight:800;font-size:22px;letter-spacing:-.02em}
+.brand b i{font-style:normal;color:var(--cv)} .brand b em{font-style:normal;color:var(--saf)}
+.iconbtn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--bg2);display:grid;place-items:center}
+.iconbtn svg{width:19px;height:19px}
+
+.game{display:grid;grid-template-columns:360px minmax(0,1fr);gap:26px;align-items:start}
+@media (max-width:860px){.game{grid-template-columns:1fr;gap:14px}}
+
+/* microscope */
+.bench{display:flex;flex-direction:column;align-items:center;gap:14px;position:sticky;top:44px}
+.bench .caption{margin-top:12px}
+@media (max-width:860px){.bench{position:static;display:grid;grid-template-columns:auto 1fr;gap:6px 26px;align-items:center;padding:22px 4px 10px 22px}.bench .caption{margin-top:0}.bench .scope{grid-row:span 2}.bench .caption{align-self:end;text-align:left}.bench .readout{align-self:start;display:flex;flex-wrap:wrap;gap:10px 18px;min-width:0}.bench .caption{min-width:0}.ro{align-items:flex-start}}
+.scope{position:relative;width:340px;aspect-ratio:1;border-radius:50%;transition:transform .35s cubic-bezier(.2,1.4,.4,1)}
+@media (max-width:860px){.bench .scope{width:min(40vw,170px)}}
+@media (max-width:860px){.mag span{display:none}}
+@media (max-width:420px){.ro strong{font-size:22px}.disc{width:26px;height:26px}.mag{font-size:8px}}
+.scope.pulse{transform:scale(1.04)}
+.scope::before{content:"";position:absolute;inset:-14px;border-radius:50%;background:conic-gradient(from 20deg,#F4F6F5,#C9D1CE,#FFFFFF,#B9C3BF,#EEF1F0,#C9D1CE,#F4F6F5);box-shadow:0 0 0 6px var(--tc,var(--cv)),0 0 0 7px rgba(255,255,255,.8),0 0 60px 6px color-mix(in srgb,var(--tc,var(--cv)) 45%,transparent),0 26px 50px -18px rgba(21,34,30,.45);transition:box-shadow .6s}
+.scope::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;box-shadow:inset 0 0 34px 8px rgba(60,70,66,.45),inset 0 0 0 2px rgba(21,34,30,.25)}
+.scope canvas{position:relative;display:block;width:100%;height:100%;border-radius:50%;transition:filter .7s ease}
+.scope canvas.blur{filter:blur(6px) saturate(.2)}
+.mag{position:absolute;z-index:2;left:50%;top:11%;transform:translateX(-50%);font-family:var(--m);font-size:10px;letter-spacing:.12em;color:rgba(28,27,24,.5);white-space:nowrap;pointer-events:none}
+.mag b{color:rgba(28,27,24,.8)}
+.scale{position:absolute;z-index:2;right:22%;bottom:16%;font-family:var(--m);font-size:9px;color:rgba(28,27,24,.55);display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none}
+.scale i{display:block;width:34px;height:2px;background:rgba(28,27,24,.55)}
+.stamp{position:absolute;z-index:3;left:27%;top:27%;width:46%;aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:5px solid currentColor;pointer-events:none;opacity:0;font-family:var(--m);text-transform:uppercase}
+.stamp b{font-family:var(--d);font-weight:800;font-size:clamp(40px,9vw,64px);line-height:.9}
+.stamp small{font-size:10px;letter-spacing:.14em;font-weight:700}
+.stamp.s{color:var(--s);background:rgba(243,238,226,.6)} .stamp.r{color:var(--r);background:rgba(243,238,226,.6)}
+.stamp.go{animation:stamp 1.25s cubic-bezier(.2,1.2,.3,1) forwards}
+@keyframes stamp{0%{opacity:0;transform:scale(2.2) rotate(-24deg)}18%{opacity:.95;transform:scale(1) rotate(-12deg)}75%{opacity:.95}100%{opacity:0;transform:scale(1) rotate(-12deg)}}
+.caption{font-family:var(--m);font-size:11px;letter-spacing:.06em;color:var(--muted);text-align:center;min-height:16px;text-transform:uppercase}
+.caption b{color:var(--fg);font-weight:700}
+.caption .pos{color:#5B2EC4} .caption .neg{color:#C42B62}
+
+.readout{display:grid;grid-template-columns:repeat(3,auto);gap:22px;align-items:end;justify-content:center}
+.ro{display:flex;flex-direction:column;align-items:center;gap:3px}
+.ro span{font-family:var(--m);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.ro strong{font-weight:800;font-size:26px;line-height:1;font-variant-numeric:tabular-nums;background:#fff;border-radius:12px;padding:6px 12px;box-shadow:0 6px 16px -10px rgba(21,34,30,.5),inset 0 -3px 0 var(--rc,var(--cv))}
+.ro:nth-child(1){--rc:var(--gold)}.ro:nth-child(2){--rc:var(--tc,var(--cv))}
+#score{color:var(--gold);display:inline-block;transition:transform .15s} #score.bump{transform:scale(1.2)}
+.discs{display:flex;gap:6px}
+.disc:nth-child(1){--dc:#7C4DFF}.disc:nth-child(2){--dc:#D9A441}.disc:nth-child(3){--dc:#2EB5A0}
+.disc{border-top:3px solid var(--dc);width:30px;height:30px;border-radius:50%;background:#F7F4EC;color:#3a3833;display:grid;place-items:center;font-family:var(--m);font-size:8px;font-weight:700;box-shadow:inset 0 0 0 2px #cfc7b6,0 4px 10px -4px rgba(21,34,30,.35);transition:all .4s}
+.disc.lost{background:#F6DEDA;color:var(--r);box-shadow:inset 0 0 0 2px var(--r);transform:scale(.85) rotate(-20deg);font-size:13px}
+.disc.crack{animation:crack .5s}
+@keyframes crack{30%{transform:scale(1.3) rotate(14deg)}}
+
+/* protocol steps */
+.steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-bottom:12px}
+.step{position:relative;padding:7px 8px 9px;border-top:4px solid color-mix(in srgb,var(--c) 28%,transparent);min-width:0;opacity:.7;transition:opacity .3s}
+.step b{display:block;font-family:var(--m);font-size:10px;color:var(--muted);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step span{display:block;font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step.done{opacity:.75;border-color:var(--c)}
+.step.on{opacity:1}
+.step.on span{color:var(--c)}
+.step .fill{position:absolute;left:0;top:-3px;height:3px;background:var(--c);transition:width .4s}
+.step:nth-child(1){--c:var(--t1)}.step:nth-child(2){--c:var(--t2)}.step:nth-child(3){--c:var(--t3)}.step:nth-child(4){--c:var(--t4)}.step:nth-child(5){--c:var(--t5)}
+.step .short{display:none}
+@media (max-width:620px){.step span{font-size:11px}.step{padding:6px 3px 7px}.step .full{display:none}.step .short{display:block}}
+
+/* requisition card */
+.req{position:relative;background:var(--paper);color:var(--ink);border-radius:6px 6px 14px 14px;padding:18px;box-shadow:0 22px 44px -22px rgba(21,34,30,.4),0 0 0 1px rgba(21,34,30,.08);
+  background-image:repeating-linear-gradient(0deg,transparent 0 27px,rgba(28,27,24,.045) 27px 28px)}
+.req::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;border-radius:6px 6px 0 0;background:var(--tc,var(--cv))}
+.req.shake{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.rqhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--m);font-size:11px;color:var(--ink2);letter-spacing:.06em;text-transform:uppercase;padding-bottom:10px;border-bottom:1.5px dashed var(--pline);margin:4px 0 14px}
+.rqhead .tag{color:#fff;background:var(--tc,var(--cv));padding:3px 8px;border-radius:4px;font-weight:700}
+.rqhead .sp{margin-left:auto;display:flex;align-items:center;gap:6px}
+.rqhead .bar{width:80px;height:6px;border-radius:6px;background:var(--pline);overflow:hidden}
+.rqhead .bar i{display:block;height:100%;width:100%;background:var(--tc,var(--cv));transform-origin:left}
+.lbl{font-family:var(--m);font-size:10px;letter-spacing:.14em;color:var(--ink2);text-transform:uppercase}
+.bug{font-weight:800;font-size:clamp(23px,3.6vw,32px);line-height:1.12;letter-spacing:-.02em;margin:2px 0 4px}
+.bug.sm{font-size:clamp(18px,2.6vw,22px);font-weight:600;line-height:1.35;letter-spacing:-.01em}
+.ask{margin:0 0 14px;color:var(--ink2);font-size:15px}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+@media (max-width:620px){.opts{grid-template-columns:1fr}}
+.opt{position:relative;display:flex;align-items:center;gap:12px;text-align:left;background:var(--paper2);color:var(--ink);border:1.5px solid var(--pline);border-radius:10px;padding:12px 13px;min-height:56px;transition:transform .12s,border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--tc,var(--cv));transform:translateY(-1px)}
+.opt:disabled{cursor:default}
+.opt .k{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--m);font-size:11px;font-weight:700;color:#fff;background:var(--kc)}
+.opt:nth-child(1){--kc:#7C4DFF}.opt:nth-child(2){--kc:#E0457B}.opt:nth-child(3){--kc:#2EB5A0}.opt:nth-child(4){--kc:#D9A441}
+.opt .t{font-weight:600;font-size:15px;line-height:1.3}
+.opt.right{border-color:var(--s);background:#E3F3E9} .opt.right .k{background:var(--s)}
+.opt.wrong{border-color:var(--r);background:#FAE3DF} .opt.wrong .k{background:var(--r)}
+.opt.dim{opacity:.45}
+.fb{margin-top:14px;padding-top:12px;border-top:1.5px dashed var(--pline);display:flex;flex-direction:column;gap:8px;animation:fbin .3s ease-out}
+@keyframes fbin{from{opacity:0;transform:translateY(6px)}}
+.fb h3{margin:0;font-family:var(--m);font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.fb.ok h3{color:var(--s)} .fb.no h3{color:var(--r)}
+.fb p{margin:0;font-size:15px;line-height:1.5}
+.fb .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
+.fb small{font-family:var(--m);color:var(--ink2);font-size:11px}
+.go{font-family:var(--d);font-weight:800;font-size:16px;border:0;border-radius:999px;padding:12px 22px;background:var(--fg);color:#fff;transition:transform .12s}
+.go:hover{transform:translateY(-1px)}
+.go.violet{background:var(--cv);color:#fff;box-shadow:0 12px 26px -10px rgba(124,77,255,.6)}
+.keys{font-family:var(--m);font-size:11px;color:var(--muted);text-align:center;margin-top:12px}
+.keys kbd{font-family:var(--m);font-size:10px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px}
+.foot{font-family:var(--m);font-size:11px;color:var(--muted);text-align:center;margin-top:10px}
+.foot a{color:var(--muted)}
+
+/* overlays */
+.screen{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(135deg,rgba(237,231,255,.94),rgba(253,232,240,.94) 50%,rgba(227,246,241,.94));backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);overflow-y:auto}
+.intro{width:min(980px,100%);display:grid;grid-template-columns:auto minmax(0,1fr);gap:48px;align-items:center;margin:auto}
+.intro .scope{width:min(380px,64vw)}
+@media (max-width:820px){.intro{grid-template-columns:1fr;gap:22px;justify-items:center;text-align:center;padding-top:22px}.intro .scope{width:min(240px,52vw)}}
+.intro h1{margin:0 0 10px;font-weight:800;font-size:clamp(42px,7.5vw,76px);line-height:.92;letter-spacing:-.045em}
+.intro h1 i{font-style:normal;color:var(--cv)} .intro h1 em{font-style:normal;color:var(--saf)}
+.intro .sub{margin:0 0 18px;color:var(--muted);font-size:17px}
+.proto{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;text-align:left;font-size:14px}
+.proto li{display:grid;grid-template-columns:66px 12px 1fr;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.proto li b{font-family:var(--m);font-size:11px;color:var(--muted);font-weight:400}
+.proto li i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 0%,#fff)}
+.proto li span{color:var(--muted)} .proto li span strong{color:var(--fg);font-weight:600}
+.rules{font-family:var(--m);font-size:11px;color:var(--muted);margin:0 0 20px;line-height:1.7}
+.ctas{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+@media (max-width:820px){.ctas{justify-content:center}}
+.home{color:var(--muted);font-size:13px;text-decoration:none;font-family:var(--m)}
+.home:hover{color:var(--fg)}
+
+/* culture report */
+.report{position:relative;width:min(540px,100%);margin:auto;background:var(--paper);color:var(--ink);border-radius:6px;padding:26px 22px 22px;box-shadow:0 36px 70px -24px rgba(21,34,30,.45),0 0 0 1px rgba(21,34,30,.08);
+  background-image:repeating-linear-gradient(0deg,transparent 0 27px,rgba(28,27,24,.045) 27px 28px);display:flex;flex-direction:column;gap:10px}
+.report::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,var(--cv),var(--iod),var(--alc),var(--saf));border-radius:6px 6px 0 0}
+.report h2{margin:0;font-family:var(--m);font-size:13px;letter-spacing:.16em;text-transform:uppercase}
+.rline{display:flex;justify-content:space-between;gap:12px;font-family:var(--m);font-size:13px;padding:5px 0;border-bottom:1px dotted var(--pline)}
+.rline span{color:var(--ink2)} .rline b{text-align:right}
+.big{font-weight:800;font-size:clamp(54px,13vw,80px);line-height:.9;letter-spacing:-.045em;margin-top:6px}
+.interp{font-weight:800;font-size:20px;letter-spacing:-.01em;margin-bottom:4px}
+.interp small{display:block;font-family:var(--m);font-size:11px;font-weight:400;color:var(--ink2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+.final{position:absolute;right:18px;top:24px;transform:rotate(10deg);border:3px solid var(--r);color:var(--r);font-family:var(--m);font-weight:700;font-size:13px;letter-spacing:.14em;padding:4px 10px;border-radius:4px;opacity:.85;text-transform:uppercase}
+.final.best{border-color:var(--s);color:var(--s)}
+.submit{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px}
+.postnote{font-family:var(--m);font-size:11px;color:var(--ink2);margin:0} .postnote.err{color:var(--r)}
+.posted{font-family:var(--m);color:var(--s);font-weight:700;font-size:13px}
+.lb{border:1.5px solid var(--pline);border-radius:10px;padding:10px 12px;background:var(--paper2)}
+.lb h3{margin:0 0 6px;font-family:var(--m);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.lb h3 small{color:var(--ink2);letter-spacing:.04em}
+.lb ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.lb li{display:grid;grid-template-columns:24px 1fr auto auto;gap:8px;align-items:center;font-size:14px;padding:4px 6px;border-radius:6px}
+.lb li.me{background:#F6E7C2}
+.lb .n{font-family:var(--m);color:var(--ink2);font-size:12px} .lb .who{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.lb .sv{font-family:var(--m);font-size:10px;color:var(--ink2)} .lb .sc{font-family:var(--m);font-weight:700}
+.lb .empty{color:var(--ink2);font-size:13px}
+.lbmore{display:inline-block;margin-top:6px;font-family:var(--m);font-size:12px;color:var(--cv);font-weight:700;text-decoration:none}
+.rbtns{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:4px}
+.rbtns .home{color:var(--ink2)}
+
+/* Gram stain wash on tier-up */
+.wash{position:fixed;inset:0;z-index:70;pointer-events:none;overflow:hidden}
+.wash .band{position:absolute;inset:0;transform:translateY(-100%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:14vh;font-family:var(--m);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.85);animation:band .62s cubic-bezier(.6,0,.3,1) forwards}
+@keyframes band{0%{transform:translateY(-100%)}45%,60%{transform:translateY(0)}100%{transform:translateY(100%)}}
+.wash .msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px;opacity:0;animation:msg 1.45s .95s ease forwards;background:radial-gradient(circle,rgba(250,252,251,.9),rgba(234,242,239,.97))}
+.wash .msg small{font-family:var(--m);font-size:12px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+.wash .msg b{display:block;font-weight:800;font-size:clamp(40px,9vw,84px);letter-spacing:-.045em;line-height:1;color:var(--c);margin:8px 0}
+.wash .msg span{font-family:var(--m);font-size:13px;color:var(--fg)}
+@keyframes msg{0%{opacity:0;transform:scale(.92)}20%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0}}
+.pop{position:fixed;z-index:65;pointer-events:none;font-weight:800;font-size:22px;color:var(--s);animation:pop 1s ease-out forwards}
+@keyframes pop{0%{opacity:0;transform:translateY(0) scale(.6)}20%{opacity:1;transform:translateY(-10px) scale(1.1)}100%{opacity:0;transform:translateY(-60px)}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/#games" aria-label="Boardside Reviews games"><small>Boardside Reviews · ID</small><b>Don't <i>Shrug</i> the <em>Bug</em></b></a>
+    <button class="iconbtn" id="mute" type="button" aria-label="Mute sound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path id="waves" d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg></button>
+  </header>
+
+  <div class="game">
+    <aside class="bench">
+      <div class="scope" id="scopeBox">
+        <div class="mag" id="mag"><b>10×</b><span> · objective</span></div>
+        <canvas id="scope" aria-hidden="true"></canvas>
+        <div class="scale" aria-hidden="true"><i></i>10 µm</div>
+        <div class="stamp" id="stamp" aria-hidden="true"></div>
+      </div>
+      <div class="caption" id="caption">&nbsp;</div>
+      <div class="readout">
+        <div class="ro"><span>Score</span><strong id="score">0</strong></div>
+        <div class="ro"><span>Level</span><strong id="level">1</strong></div>
+        <div class="ro"><span>Discs left</span><div class="discs" id="discs" aria-label="3 lives left"></div></div>
+      </div>
+    </aside>
+
+    <section>
+      <nav class="steps" id="steps" aria-label="Tier progress"></nav>
+      <main class="req" id="card" aria-live="polite">
+        <div class="rqhead"><span class="tag" id="tag">Gram stain</span><span id="lvlTxt">LV 1</span><span class="sp" aria-hidden="true">Speed<span class="bar"><i id="speedBar"></i></span></span></div>
+        <div class="lbl" id="lbl">Specimen</div>
+        <div class="bug" id="bug"></div>
+        <p class="ask" id="ask"></p>
+        <div class="opts" id="opts"></div>
+        <div id="fb"></div>
+      </main>
+      <p class="keys">Keys <kbd>1</kbd>–<kbd>4</kbd> answer · <kbd>Enter</kbd> next · <kbd>S</kbd> sound</p>
+      <p class="foot">Built from Boardside Notes. For education only. <a href="leaderboard.html" data-lb hidden>Leaderboard</a></p>
+    </section>
+  </div>
+</div>
+
+<div class="screen" id="startScreen">
+  <div class="intro">
+    <div class="scope"><canvas id="introScope" aria-hidden="true"></canvas></div>
+    <div>
+      <h1>Don't <i>Shrug</i><br>the <em>Bug</em></h1>
+      <p class="sub">Match the bug to the drug. Every right answer drops an antibiotic disc and levels you up.</p>
+      <ol class="proto">
+        <li><b>LV 1–3</b><i style="background:var(--t1)"></i><span><strong>Gram stain</strong> · positive or negative?</span></li>
+        <li><b>LV 4–6</b><i style="background:var(--t2)"></i><span><strong>Susceptibility</strong> · bug → drug</span></li>
+        <li><b>LV 7–9</b><i style="background:var(--t3)"></i><span><strong>Resistance</strong> · how it resists, how to beat it</span></li>
+        <li><b>LV 10–12</b><i style="background:var(--t4)"></i><span><strong>Clinical clue</strong> · the most likely agent</span></li>
+        <li><b>LV 13+</b><i style="background:var(--t5)"></i><span><strong>Attending rounds</strong> · best management</span></li>
+      </ol>
+      <p class="rules">3 antibiotic discs. A miss costs one, drops a level, and the culture grows.<br>Answer fast for a speed bonus. 5 in a row earns a streak bonus.</p>
+      <div class="ctas"><button class="go violet" id="startBtn" type="button">Start the culture</button><a class="home" href="/#games">← All games</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="endScreen" hidden><div class="report" id="endPanel"></div></div>
+
+<script>
+/* ============================================================
+   DON'T SHRUG THE BUG — question bank
+   Source: Boardside Notes (ID, pulmonary infections, GI, ENT),
+   plus standard microbiology for Gram stains and resistance.
+   Tiers:
+     1 Gram stain      (levels 1–3)
+     2 Susceptibility  (levels 4–6)   bug → drug
+     3 Resistance      (levels 7–9)   mechanism / how to beat it
+     4 Clinical clue   (levels 10–12) scenario → most likely bug
+     5 Attending rounds(levels 13+)   scenario → best management
+   Each item: {id, q (prompt), bug (headline, optional), a (answer),
+               d (3 distractors), w (why)}
+   ============================================================ */
+
+/* ---------- Tier 1: Gram stain (options built from these categories) ---------- */
+const GRAM_CATS = {
+  gpcl: "Gram-positive cocci in clusters",
+  gpch: "Gram-positive cocci in pairs or chains",
+  gpr:  "Gram-positive rods",
+  gnr:  "Gram-negative rods or coccobacilli",
+  gnd:  "Gram-negative diplococci",
+  none: "Not seen on a Gram stain"
+};
+const T1 = [
+  ["Staphylococcus aureus","gpcl","Grape-like clusters. Coagulase-positive. Every S. aureus bacteremia gets an echo."],
+  ["Staphylococcus epidermidis","gpcl","Coagulase-negative staph: the classic line and prosthetic-device organism."],
+  ["Streptococcus pneumoniae","gpch","Lancet-shaped diplococci: Gram-positive pairs."],
+  ["Streptococcus pyogenes (group A strep)","gpch","Chains. The cause of nonpurulent cellulitis and streptococcal toxic shock."],
+  ["Enterococcus faecalis","gpch","Pairs and short chains. Intrinsically resistant to every cephalosporin."],
+  ["Streptococcus gallolyticus","gpch","Chains. Bacteremia or endocarditis → colonoscopy."],
+  ["Listeria monocytogenes","gpr","Gram-positive rod. Why meningitis over age 50 gets ampicillin."],
+  ["Clostridioides difficile","gpr","Spore-forming anaerobic Gram-positive rod."],
+  ["Clostridium septicum","gpr","Gram-positive rod. Bacteremia → colonoscopy, like S. gallolyticus."],
+  ["Bacillus anthracis","gpr","Large, spore-forming Gram-positive rod."],
+  ["Nocardia","gpr","Branching Gram-positive rod, weakly acid-fast. Subacute cavitary pneumonia ± brain abscess in the immunocompromised."],
+  ["Actinomyces israelii","gpr","Branching Gram-positive rod with sulfur granules."],
+  ["Corynebacterium diphtheriae","gpr","Club-shaped Gram-positive rod."],
+  ["Cutibacterium acnes","gpr","Gram-positive rod: shunt and prosthetic-joint infections."],
+  ["Escherichia coli","gnr","Gram-negative rod: the most common cause of UTI."],
+  ["Klebsiella pneumoniae","gnr","Gram-negative rod: necrotizing, cavitary pneumonia."],
+  ["Pseudomonas aeruginosa","gnr","Gram-negative rod: hot tubs, sneaker punctures, malignant otitis externa."],
+  ["Enterobacter cloacae","gnr","Gram-negative rod with chromosomal AmpC: cefepime, not ceftriaxone."],
+  ["Proteus mirabilis","gnr","Gram-negative rod: urease, struvite stones."],
+  ["Salmonella","gnr","Gram-negative rod: osteomyelitis in sickle cell disease."],
+  ["Campylobacter jejuni","gnr","Curved Gram-negative rod: poultry, then Guillain-Barré."],
+  ["Vibrio vulnificus","gnr","Curved Gram-negative rod: cirrhosis + raw oysters + bullae."],
+  ["Haemophilus influenzae","gnr","Gram-negative coccobacillus."],
+  ["Acinetobacter baumannii","gnr","Gram-negative coccobacillus: ICU and ventilator infections."],
+  ["Bacteroides fragilis","gnr","Anaerobic Gram-negative rod: abdominal abscesses."],
+  ["Capnocytophaga canimorsus","gnr","Gram-negative rod: dog bite + asplenia → sepsis."],
+  ["Serratia marcescens","gnr","Gram-negative rod with chromosomal AmpC."],
+  ["Citrobacter freundii","gnr","Gram-negative rod with chromosomal AmpC."],
+  ["Stenotrophomonas maltophilia","gnr","Gram-negative rod, intrinsically carbapenem-resistant."],
+  ["Neisseria meningitidis","gnd","Gram-negative diplococci. Close contacts get prophylaxis."],
+  ["Neisseria gonorrhoeae","gnd","Gram-negative diplococci: urethritis, septic arthritis, tenosynovitis."],
+  ["Moraxella catarrhalis","gnd","Gram-negative diplococci that make β-lactamase."],
+  ["Mycoplasma pneumoniae","none","No cell wall, so it doesn't Gram stain and β-lactams can't touch it."],
+  ["Mycobacterium tuberculosis","none","Waxy, acid-fast wall: needs an AFB stain, not a Gram stain."],
+  ["Treponema pallidum","none","Too thin to see: diagnose with serology (or darkfield)."]
+];
+
+/* ---------- Tier 2: Susceptibility — bug → drug ---------- */
+const T2 = [
+  {bug:"MSSA bacteremia", q:"Drug of choice?", a:"Cefazolin (or nafcillin / oxacillin)", d:["Vancomycin","Ceftriaxone","Linezolid"], w:"For MSSA a β-lactam beats vancomycin. Then: echo, repeat cultures until negative, ≥14 days IV."},
+  {bug:"MRSA bacteremia", q:"Drug of choice?", a:"Vancomycin or daptomycin", d:["Cefazolin","Nafcillin","TMP-SMX"], w:"MRSA: vancomycin or daptomycin. ≥14 days IV; 4–6 weeks if complicated or cultures stay positive >72 h."},
+  {bug:"MRSA pneumonia", q:"Which drug works?", a:"Vancomycin or linezolid", d:["Daptomycin","Cefazolin","Ceftriaxone"], w:"Daptomycin is inactivated by surfactant: never use it for pneumonia."},
+  {bug:"Listeria monocytogenes meningitis", q:"Which drug must be on board?", a:"Ampicillin", d:["Ceftriaxone","Vancomycin","Cefepime"], w:"Cephalosporins don't cover Listeria. Add ampicillin for age >50 or impaired cellular immunity (TMP-SMX if β-lactam allergic)."},
+  {bug:"Borrelia burgdorferi: erythema migrans", q:"Treatment?", a:"Doxycycline for 10 days", d:["IV ceftriaxone","Atovaquone + azithromycin","TMP-SMX"], w:"Treat erythema migrans clinically: doxycycline 10 days, no serology."},
+  {bug:"Rickettsia rickettsii (RMSF)", q:"Treatment?", a:"Doxycycline now, at any age", d:["Ceftriaxone","Azithromycin","Hold antibiotics until serology returns"], w:"Suspected rickettsial disease gets doxycycline immediately, at any age. Waiting for serology kills."},
+  {bug:"Babesia microti", q:"Treatment?", a:"Atovaquone + azithromycin", d:["Doxycycline","Artemether-lumefantrine","Ceftriaxone"], w:"Babesiosis (Maltese cross, hemolysis): atovaquone + azithromycin. Exchange transfusion if severe."},
+  {bug:"Ehrlichia / Anaplasma", q:"Treatment?", a:"Doxycycline", d:["Atovaquone + azithromycin","Ceftriaxone","TMP-SMX"], w:"Leukopenia, low platelets, high AST/ALT, morulae: PCR and doxycycline."},
+  {bug:"Leptospira interrogans", q:"Treatment?", a:"Doxycycline or penicillin", d:["Vancomycin","Fluconazole","Metronidazole"], w:"Floodwater, conjunctival suffusion, calf pain, kidney and lung involvement: doxycycline or penicillin."},
+  {bug:"Chlamydia trachomatis (not pregnant)", q:"Treatment?", a:"Doxycycline for 7 days", d:["Ceftriaxone 500 mg IM once","Benzathine penicillin G","Metronidazole for 7 days"], w:"Chlamydia: doxycycline 7 days is preferred. Azithromycin 1 g is an alternative, and the drug of choice in pregnancy."},
+  {bug:"Neisseria gonorrhoeae", q:"Treatment?", a:"Ceftriaxone 500 mg IM once", d:["Azithromycin 1 g alone","Ciprofloxacin","Benzathine penicillin G"], w:"Gonorrhea: ceftriaxone 500 mg IM once; add doxycycline if chlamydia isn't excluded."},
+  {bug:"Treponema pallidum: primary chancre", q:"Treatment?", a:"Benzathine penicillin G once", d:["Benzathine penicillin weekly ×3","IV penicillin for 10–14 days","Ceftriaxone 500 mg IM once"], w:"Primary, secondary and early latent syphilis: one dose of benzathine penicillin."},
+  {bug:"Pneumocystis jirovecii", q:"Treatment?", a:"TMP-SMX (plus steroids if PaO₂ <70)", d:["Azithromycin","Voriconazole","Fluconazole"], w:"PJP: TMP-SMX; add steroids when PaO₂ <70."},
+  {bug:"Invasive Aspergillus", q:"Treatment?", a:"Voriconazole", d:["Fluconazole","TMP-SMX","Flucytosine"], w:"Invasive aspergillosis (neutropenia, halo sign, galactomannan): voriconazole."},
+  {bug:"Mucorales (mucormycosis)", q:"Treatment?", a:"Amphotericin B + surgical debridement", d:["Voriconazole","Fluconazole","Caspofungin"], w:"Mucor: amphotericin plus surgery. Voriconazole doesn't cover it."},
+  {bug:"Histoplasma capsulatum (mild–moderate)", q:"Treatment?", a:"Itraconazole", d:["Caspofungin","TMP-SMX","Nystatin"], w:"Histoplasmosis: itraconazole; amphotericin if severe."},
+  {bug:"Blastomyces dermatitidis", q:"Treatment?", a:"Itraconazole", d:["Caspofungin","TMP-SMX","Nystatin"], w:"Blastomycosis (pneumonia + verrucous skin + bone): itraconazole."},
+  {bug:"Coccidioides pneumonia in a high-risk host (not critically ill)", q:"Treatment?", a:"Fluconazole", d:["Caspofungin","TMP-SMX","Nystatin"], w:"Valley fever needing treatment: fluconazole. Amphotericin B for severe, rapidly progressive or disseminated disease."},
+  {bug:"Candida in the blood", q:"Treatment?", a:"An echinocandin + remove the line", d:["Nystatin swish and swallow","Clotrimazole troche","Nothing: it's a contaminant"], w:"Candida in the blood is never a contaminant: echinocandin, pull the catheter, dilated eye exam, 14 days from the first negative culture."},
+  {bug:"Clostridioides difficile (first episode)", q:"Treatment?", a:"Oral fidaxomicin or oral vancomycin", d:["IV vancomycin","Ciprofloxacin","Loperamide"], w:"C. difficile: oral fidaxomicin or oral vancomycin. IV vancomycin doesn't reach the colon."},
+  {bug:"Campylobacter jejuni", q:"Treatment when needed?", a:"Azithromycin", d:["Oral vancomycin","Metronidazole","Fidaxomicin"], w:"Campylobacter (poultry; Guillain-Barré later): azithromycin."},
+  {bug:"Giardia lamblia", q:"Treatment?", a:"Tinidazole or nitazoxanide", d:["Azithromycin","Oral vancomycin","TMP-SMX"], w:"Giardia (stream water, greasy stools, gas): tinidazole or nitazoxanide."},
+  {bug:"Cyclospora cayetanensis", q:"Treatment?", a:"TMP-SMX", d:["Tinidazole","Azithromycin","Oral vancomycin"], w:"Cyclospora (imported produce, weeks of diarrhea): TMP-SMX."},
+  {bug:"Yersinia enterocolitica", q:"Treatment when needed?", a:"A fluoroquinolone", d:["Oral vancomycin","Metronidazole","Fidaxomicin"], w:"Yersinia (pork; RLQ pain that mimics appendicitis): fluoroquinolone."},
+  {bug:"Herpes simplex encephalitis", q:"Treatment?", a:"IV acyclovir now", d:["Oral valacyclovir","Ganciclovir","Supportive care only"], w:"HSV encephalitis: IV acyclovir immediately, CSF PCR, 14–21 days."},
+  {bug:"Influenza in a hospitalized patient (day 5)", q:"Treatment?", a:"Oseltamivir", d:["No antiviral: past 48 hours","Amantadine","Acyclovir"], w:"Treat every hospitalized patient with oseltamivir regardless of symptom duration. Amantadine is obsolete."},
+  {bug:"Toxoplasma gondii encephalitis", q:"Treatment?", a:"Pyrimethamine + sulfadiazine", d:["Amphotericin + flucytosine","Voriconazole","Azithromycin"], w:"Ring-enhancing lesions, CD4 <100: pyrimethamine + sulfadiazine. No response → biopsy for CNS lymphoma."},
+  {bug:"Cryptococcus neoformans meningitis", q:"Induction treatment?", a:"Amphotericin + flucytosine, then fluconazole", d:["Fluconazole alone","Voriconazole","Pyrimethamine + sulfadiazine"], w:"Cryptococcal meningitis: amphotericin + flucytosine, then fluconazole. Serial LPs for high pressure."},
+  {bug:"Active pulmonary tuberculosis", q:"Treatment?", a:"RIPE ×2 months, then rifampin + isoniazid ×4", d:["Isoniazid alone ×9 months","Rifampin alone ×4 months","Moxifloxacin alone"], w:"Active TB: four drugs for 2 months, then two for 4 months; add pyridoxine."},
+  {bug:"P. falciparum, uncomplicated", q:"Treatment?", a:"Artemether-lumefantrine or atovaquone-proguanil", d:["Primaquine alone","Doxycycline alone","IV artesunate"], w:"Uncomplicated falciparum: artemether-lumefantrine or atovaquone-proguanil. IV artesunate is for severe malaria."},
+  {bug:"Vibrio vulnificus", q:"Treatment?", a:"Doxycycline + ceftriaxone", d:["Vancomycin alone","Cefazolin","Metronidazole"], w:"Cirrhosis + raw oysters + hemorrhagic bullae: doxycycline + ceftriaxone."},
+  {bug:"Group A strep: mild nonpurulent cellulitis", q:"Treatment?", a:"Cephalexin (or penicillin)", d:["TMP-SMX alone","Ciprofloxacin","Metronidazole"], w:"Nonpurulent cellulitis is strep: cephalexin, penicillin or amoxicillin. TMP-SMX alone misses strep."},
+  {bug:"MRSA skin abscess", q:"Treatment?", a:"Incision and drainage ± TMP-SMX or doxycycline", d:["Cephalexin alone","Penicillin VK","Ciprofloxacin"], w:"Purulent = S. aureus: drain it, ± TMP-SMX or doxycycline."},
+  {bug:"Cryptosporidium in advanced AIDS", q:"Treatment?", a:"ART ± nitazoxanide", d:["Metronidazole","Oral vancomycin","Ciprofloxacin"], w:"Cryptosporidium in AIDS: restore immunity with ART; nitazoxanide may help."},
+  {bug:"β-lactamase H. influenzae / Moraxella sinusitis", q:"Best oral choice?", a:"Amoxicillin-clavulanate", d:["Azithromycin","Amoxicillin alone","Cephalexin"], w:"Bacterial sinusitis: amoxicillin-clavulanate. Avoid macrolides."}
+];
+
+/* ---------- Tier 3: Resistance ---------- */
+const T3 = [
+  {bug:"MRSA", q:"How does it resist β-lactams?", a:"mecA → altered penicillin-binding protein (PBP2a)", d:["A β-lactamase that destroys cefazolin","An efflux pump for β-lactams","A thickened cell wall"], w:"mecA encodes PBP2a, which β-lactams can't bind. Vancomycin, daptomycin or linezolid still work."},
+  {bug:"Vancomycin-resistant Enterococcus (VRE)", q:"Mechanism?", a:"Cell-wall precursors end in D-Ala-D-Lac (vanA / vanB)", d:["A β-lactamase","Altered PBP2a (mecA)","Ribosomal methylation"], w:"Vancomycin binds D-Ala-D-Ala. Swap it for D-Ala-D-Lac and vancomycin can't grab on."},
+  {bug:"VISA (vancomycin-intermediate S. aureus)", q:"Mechanism?", a:"A thickened cell wall that traps vancomycin", d:["A β-lactamase","D-Ala-D-Lac precursors","Loss of a porin"], w:"VISA builds extra peptidoglycan that soaks up vancomycin before it reaches its target."},
+  {bug:"ESBL-producing E. coli", q:"Mechanism?", a:"A β-lactamase that destroys third-generation cephalosporins", d:["Loss of a porin","Altered PBP2a","A carbapenemase"], w:"Extended-spectrum β-lactamases hydrolyze ceftriaxone and friends; carbapenems survive."},
+  {bug:"ESBL E. coli bacteremia", q:"Best drug for a serious infection?", a:"A carbapenem", d:["Ceftriaxone","Cefazolin","Ampicillin"], w:"ESBL: carbapenem for serious infections."},
+  {bug:"Enterobacter cloacae bacteremia on ceftriaxone, getting worse", q:"Best move?", a:"Switch to cefepime", d:["Raise the ceftriaxone dose","Switch to cefazolin","Add metronidazole"], w:"Enterobacter is an AmpC producer: it can break through ceftriaxone. Cefepime holds up (carbapenem if cefepime MIC ≥4)."},
+  {bug:"Chromosomal AmpC β-lactamase", q:"Which group carries it?", a:"Enterobacter, K. aerogenes, Citrobacter freundii", d:["E. coli, K. pneumoniae, Proteus mirabilis","Neisseria, Moraxella, H. influenzae","Staph, strep, enterococcus"], w:"IDSA's moderate-to-high-risk AmpC group: Enterobacter cloacae, K. aerogenes, Citrobacter freundii. Treat serious infections with cefepime, not ceftriaxone."},
+  {bug:"KPC-producing Klebsiella (CRE)", q:"Mechanism?", a:"A carbapenemase that destroys carbapenems", d:["An ESBL alone","mecA (PBP2a)","vanA (D-Ala-D-Lac)"], w:"Klebsiella pneumoniae carbapenemase hydrolyzes carbapenems: carbapenem-resistant Enterobacterales."},
+  {bug:"Pseudomonas resistant to imipenem only", q:"Classic mechanism?", a:"Loss of the OprD porin", d:["mecA (PBP2a)","D-Ala-D-Lac precursors","Ribosomal methylation"], w:"Imipenem enters Pseudomonas through OprD. Lose the porin, lose the drug."},
+  {bug:"Fluoroquinolone-resistant E. coli", q:"Mechanism?", a:"Mutations in DNA gyrase / topoisomerase IV", d:["A β-lactamase","Altered PBPs","A thickened cell wall"], w:"Fluoroquinolones target DNA gyrase and topoisomerase IV; point mutations there (gyrA, parC) block them."},
+  {bug:"Aminoglycoside-resistant gram-negative", q:"Most common mechanism?", a:"Aminoglycoside-modifying enzymes", d:["Altered PBP2a","D-Ala-D-Lac precursors","A carbapenemase"], w:"Acetyl-, phospho- and adenylyl-transferases chemically modify the aminoglycoside."},
+  {bug:"Macrolide-resistant S. pneumoniae", q:"Mechanism?", a:"Ribosomal methylation (erm) or efflux (mef)", d:["A β-lactamase","Altered PBPs","DNA gyrase mutation"], w:"erm methylates the ribosome target; mef pumps the drug out."},
+  {bug:"Penicillin-resistant S. pneumoniae", q:"Mechanism?", a:"Altered penicillin-binding proteins", d:["β-lactamase production","An efflux pump","Loss of a porin"], w:"Pneumococcus doesn't make β-lactamase. Mosaic PBPs lower penicillin binding."},
+  {bug:"MRSA pneumonia that fails daptomycin", q:"Why?", a:"Daptomycin is inactivated by surfactant", d:["MRSA is intrinsically daptomycin-resistant","Daptomycin doesn't reach the blood","Daptomycin needs a β-lactamase inhibitor"], w:"Surfactant binds and inactivates daptomycin. Never for pneumonia."},
+  {bug:"Enterococcus faecalis on ceftriaxone", q:"Why doesn't it work?", a:"Enterococci are intrinsically resistant to cephalosporins", d:["Only VRE resists cephalosporins","Enterococci make ESBLs","Ceftriaxone can't reach the urine"], w:"Low-affinity PBPs make every enterococcus cephalosporin-resistant. Think ampicillin."},
+  {bug:"Mycoplasma pneumoniae on amoxicillin", q:"Why does it fail?", a:"No cell wall: β-lactams have nothing to hit", d:["It makes a β-lactamase","Altered PBP2a","Efflux pumps"], w:"No peptidoglycan, no target. Cover atypicals with a macrolide, doxycycline or a respiratory fluoroquinolone."},
+  {bug:"Anaerobic abscess on gentamicin", q:"Why does it fail?", a:"Aminoglycoside uptake needs oxygen", d:["Anaerobes make ESBLs","Gentamicin can't enter abscesses at all","Anaerobes lack ribosomes"], w:"Aminoglycosides are pulled in by oxygen-dependent transport, so anaerobes are intrinsically resistant."},
+  {bug:"Stenotrophomonas maltophilia VAP", q:"Best drug?", a:"TMP-SMX", d:["Meropenem","Ceftriaxone","Vancomycin"], w:"Stenotrophomonas makes the L1 metallo-β-lactamase, which destroys carbapenems. TMP-SMX is the backbone; for moderate–severe infection IDSA suggests combination therapy (TMP-SMX + minocycline, cefiderocol, or ceftazidime-avibactam + aztreonam)."},
+  {bug:"Rifampin-resistant TB", q:"Which mutation (what the rapid NAAT detects)?", a:"rpoB", d:["katG","mecA","vanA"], w:"rpoB mutations alter RNA polymerase, rifampin's target. Rapid NAATs screen for them."},
+  {bug:"Isoniazid-resistant TB", q:"Most common mutation?", a:"katG (or inhA)", d:["rpoB","mecA","erm"], w:"Isoniazid is a prodrug activated by KatG. No activation, no drug."},
+  {bug:"β-lactamase-producing H. influenzae", q:"Why add clavulanate to amoxicillin?", a:"Clavulanate inhibits the β-lactamase", d:["It widens anaerobic coverage only","It blocks efflux pumps","It binds PBP2a"], w:"Clavulanate sacrifices itself to the β-lactamase so amoxicillin survives."},
+  {bug:"MRSA: erythromycin-resistant, clindamycin-susceptible", q:"Before using clindamycin?", a:"Do a D-test for inducible (erm) resistance", d:["Nothing: trust the report","Check a vancomycin MIC","Add rifampin"], w:"erm can be switched on by clindamycin. A flattened 'D' zone means clindamycin will fail."}
+];
+
+/* ---------- Tier 4: Clinical clue → most likely agent ---------- */
+const T4 = [
+  {q:"CLL on fludarabine, deep lymphopenia, subacute dyspnea, ground-glass opacities.", a:"Pneumocystis jirovecii", d:["Cytomegalovirus","Aspergillus fumigatus","Streptococcus pneumoniae"], w:"Fludarabine wipes out T cells: PJP risk. Treat with TMP-SMX (+ steroids if PaO₂ <70)."},
+  {q:"Kidney transplant 3 months ago: fever, leukopenia, diarrhea with colitis on biopsy.", a:"Cytomegalovirus", d:["Pneumocystis jirovecii","Clostridioides difficile","Norovirus"], w:"Months 1–6 after a solid-organ transplant are prime time for CMV: fever, leukopenia, colitis, pneumonitis."},
+  {q:"Cirrhosis, ate raw oysters, now hemorrhagic bullae and shock.", a:"Vibrio vulnificus", d:["Streptococcus pyogenes","Staphylococcus aureus","Pseudomonas aeruginosa"], w:"Vibrio vulnificus: doxycycline + ceftriaxone."},
+  {q:"Cleans a home fish tank; chronic nodules on the hand.", a:"Mycobacterium marinum", d:["Sporothrix schenckii","Nocardia","Staphylococcus aureus"], w:"Fish tank granuloma: Mycobacterium marinum."},
+  {q:"Gardener pricked by rose thorns; nodules marching up the arm.", a:"Sporothrix schenckii", d:["Mycobacterium marinum","Bartonella henselae","Pasteurella multocida"], w:"Rose thorns and soil, nodules up the lymphatics: sporotrichosis."},
+  {q:"Dog bite in a patient without a spleen; now septic.", a:"Capnocytophaga canimorsus", d:["Pasteurella multocida","Staphylococcus aureus","Eikenella corrodens"], w:"Dog bite + asplenia + sepsis: Capnocytophaga."},
+  {q:"Itchy truncal pustules two days after a hot tub party.", a:"Pseudomonas aeruginosa", d:["Staphylococcus aureus","Candida albicans","Malassezia"], w:"Hot tub folliculitis: Pseudomonas."},
+  {q:"Stepped on a nail through a sneaker; now calcaneal osteomyelitis.", a:"Pseudomonas aeruginosa", d:["Staphylococcus aureus","Pasteurella multocida","Salmonella"], w:"Sneaker puncture → Pseudomonas (it lives in the foam sole)."},
+  {q:"Sickle cell disease with osteomyelitis: the classic board association.", a:"Salmonella", d:["Pseudomonas aeruginosa","Escherichia coli","Mycobacterium tuberculosis"], w:"Sickle cell → Salmonella osteomyelitis."},
+  {q:"Cleaned up after a flood: red eyes without pus, calf pain, kidney injury.", a:"Leptospira interrogans", d:["Hantavirus","Coxiella burnetii","Rickettsia rickettsii"], w:"Fresh water, floods, conjunctival suffusion, kidneys: leptospirosis."},
+  {q:"Keeps pet parrots; atypical pneumonia with headache.", a:"Chlamydia psittaci", d:["Coxiella burnetii","Legionella pneumophila","Hantavirus"], w:"Birds: psittacosis."},
+  {q:"Helped with lambing on a sheep farm; fever, pneumonia, hepatitis.", a:"Coxiella burnetii (Q fever)", d:["Leptospira interrogans","Chlamydia psittaci","Hantavirus"], w:"Birthing cattle, sheep or goats: Q fever."},
+  {q:"Swept out a mouse-infested cabin; days later fever, then rapid ARDS.", a:"Hantavirus", d:["Coxiella burnetii","Chlamydia psittaci","Influenza A"], w:"Rodent feces and urine: hantavirus pulmonary syndrome."},
+  {q:"Works on a horse farm, on chronic steroids; cavitary pneumonia.", a:"Rhodococcus equi", d:["Nocardia","Aspergillus fumigatus","Mycobacterium tuberculosis"], w:"Horses: Rhodococcus equi."},
+  {q:"Pneumonia a week after the flu, with new cavities and Gram-positive cocci in clusters.", a:"Staphylococcus aureus", d:["Legionella pneumophila","Mycoplasma pneumoniae","Pseudomonas aeruginosa"], w:"Post-influenza pneumonia: think S. aureus, including MRSA."},
+  {q:"Injects drugs; multiple peripheral cavitating nodules on CT.", a:"Staphylococcus aureus (tricuspid endocarditis)", d:["Mycobacterium tuberculosis","Aspergillus fumigatus","Nocardia"], w:"Septic emboli from tricuspid endocarditis."},
+  {q:"Prolonged neutropenia: nodules with a halo sign, galactomannan positive.", a:"Aspergillus", d:["Mucorales","Candida albicans","Pneumocystis jirovecii"], w:"Halo sign + galactomannan: invasive aspergillosis → voriconazole."},
+  {q:"DKA with a black, necrotic eschar on the palate.", a:"Mucorales (mucormycosis)", d:["Aspergillus fumigatus","Pseudomonas aeruginosa","Candida albicans"], w:"DKA + necrotic sinus: mucor → amphotericin + surgery."},
+  {q:"Explored caves in the Ohio River Valley; hilar nodes, positive urine antigen.", a:"Histoplasma capsulatum", d:["Blastomyces dermatitidis","Coccidioides immitis","Cryptococcus neoformans"], w:"Caves, bird or bat droppings, Ohio/Mississippi valleys: histoplasmosis."},
+  {q:"Great Lakes hunter: pneumonia, warty skin lesions, broad-based budding yeast.", a:"Blastomyces dermatitidis", d:["Histoplasma capsulatum","Coccidioides immitis","Sporothrix schenckii"], w:"Pneumonia + verrucous skin + bone, broad-based budding: blastomycosis."},
+  {q:"Just moved to Arizona: fever, cough, erythema nodosum, eosinophilia.", a:"Coccidioides", d:["Histoplasma capsulatum","Blastomyces dermatitidis","Mycobacterium tuberculosis"], w:"Southwest US, valley fever, erythema nodosum: coccidioidomycosis."},
+  {q:"Old TB cavity now holds a mobile ball with an air crescent; hemoptysis.", a:"Aspergillus (aspergilloma)", d:["Mucorales","Nocardia","Pseudomonas aeruginosa"], w:"Fungus ball in an old cavity. Observe; resect or embolize for bleeding."},
+  {q:"Endocarditis, and the workup finds a colon mass.", a:"Streptococcus gallolyticus", d:["Staphylococcus aureus","Staphylococcus epidermidis","HACEK organisms"], w:"S. gallolyticus (or C. septicum) bacteremia → colonoscopy."},
+  {q:"Culture-negative endocarditis in a sheep farmer.", a:"Coxiella burnetii", d:["Staphylococcus aureus","Enterococcus faecalis","Candida albicans"], w:"Culture-negative IE: prior antibiotics, Bartonella, Coxiella, HACEK, Brucella, Tropheryma."},
+  {q:"Undercooked chicken, bloody diarrhea; ascending paralysis 3 weeks later.", a:"Campylobacter jejuni", d:["Salmonella","Enterotoxigenic E. coli","Clostridioides difficile"], w:"Campylobacter → Guillain-Barré."},
+  {q:"Ate undercooked pork; fever and RLQ pain that looks like appendicitis.", a:"Yersinia enterocolitica", d:["Campylobacter jejuni","Salmonella","Clostridioides difficile"], w:"Yersinia: pseudoappendicitis."},
+  {q:"Healthy camper drank stream water: greasy, foul stools and gas for weeks.", a:"Giardia lamblia", d:["Cyclospora cayetanensis","Enterotoxigenic E. coli","Clostridioides difficile"], w:"Giardia: tinidazole or nitazoxanide."},
+  {q:"AIDS, CD4 30: months of profuse watery diarrhea.", a:"Cryptosporidium", d:["Giardia lamblia","Campylobacter jejuni","Yersinia enterocolitica"], w:"Cryptosporidium in AIDS: ART ± nitazoxanide."},
+  {q:"AIDS, CD4 70, Toxoplasma IgG positive: multiple ring-enhancing brain lesions.", a:"Toxoplasma gondii", d:["Cryptococcus neoformans","Nocardia","Mycobacterium tuberculosis"], w:"Toxo → pyrimethamine + sulfadiazine; no response → biopsy for CNS lymphoma."},
+  {q:"AIDS with headache; CSF opening pressure 34, India ink positive.", a:"Cryptococcus neoformans", d:["Toxoplasma gondii","Mycobacterium tuberculosis","Histoplasma capsulatum"], w:"Cryptococcal meningitis: amphotericin + flucytosine, serial LPs."},
+  {q:"72-year-old with meningitis: the organism that ceftriaxone misses.", a:"Listeria monocytogenes", d:["Neisseria meningitidis","Haemophilus influenzae","Streptococcus pneumoniae"], w:"Age >50: add ampicillin for Listeria."},
+  {q:"Summer on Nantucket: fever, hemolysis, Maltese cross on smear.", a:"Babesia microti", d:["Plasmodium falciparum","Ehrlichia chaffeensis","Borrelia burgdorferi"], w:"Babesiosis: atovaquone + azithromycin."},
+  {q:"Tick bite: fever, leukopenia, low platelets, high AST/ALT, morulae in white cells.", a:"Ehrlichia / Anaplasma", d:["Babesia microti","Rickettsia rickettsii","Borrelia burgdorferi"], w:"Morulae: ehrlichiosis or anaplasmosis → doxycycline."},
+  {q:"Tampon use, then fever, shock and diffuse sunburn-like rash.", a:"Staphylococcus aureus (toxic shock)", d:["Streptococcus pyogenes","Neisseria meningitidis","Clostridium perfringens"], w:"Staph TSS: remove the source, anti-staph β-lactam or vancomycin + clindamycin."},
+  {q:"Older adult in late summer: encephalitis with flaccid paralysis.", a:"West Nile virus", d:["Herpes simplex virus","Listeria monocytogenes","Enterovirus"], w:"West Nile: CSF IgM; supportive care."},
+  {q:"Fever, confusion, MRI changes in the temporal lobe.", a:"Herpes simplex virus", d:["West Nile virus","Toxoplasma gondii","Listeria monocytogenes"], w:"HSV encephalitis: IV acyclovir now."},
+  {q:"Diabetic with ear pain, granulation tissue in the canal, new facial palsy.", a:"Pseudomonas aeruginosa", d:["Staphylococcus aureus","Streptococcus pneumoniae","Moraxella catarrhalis"], w:"Necrotizing (malignant) otitis externa: imaging + antipseudomonal therapy."},
+  {q:"Migratory arthritis, tenosynovitis and a few pustules in a sexually active adult.", a:"Neisseria gonorrhoeae (disseminated)", d:["Staphylococcus aureus","Borrelia burgdorferi","Chlamydia trachomatis"], w:"The disseminated gonococcal triad: tenosynovitis, dermatitis, migratory arthritis."},
+  {q:"Young adult, second episode of meningitis with a petechial rash; CH50 is undetectable.", a:"Neisseria meningitidis", d:["Streptococcus pneumoniae","Listeria monocytogenes","Haemophilus influenzae"], w:"Terminal complement (C5–C9) deficiency (or eculizumab) → recurrent Neisseria. Check CH50 and vaccinate."}
+];
+
+/* ---------- Tier 5: Attending rounds — scenario → best management ---------- */
+const T5 = [
+  {q:"68-year-old, fever, stiff neck, confusion. Empiric treatment?", a:"Vancomycin + ceftriaxone + ampicillin + dexamethasone", d:["Vancomycin + ceftriaxone + dexamethasone","Ceftriaxone + dexamethasone","Vancomycin + cefepime"], w:"Over 50: add ampicillin for Listeria. Dexamethasone before or with the first dose."},
+  {q:"Meningitis after a craniotomy. Empiric treatment?", a:"Vancomycin + cefepime (or ceftazidime / meropenem)", d:["Vancomycin + ceftriaxone","Vancomycin + ceftriaxone + ampicillin","Ceftriaxone alone"], w:"Neurosurgery, shunt or head trauma: vancomycin + an antipseudomonal β-lactam."},
+  {q:"30-year-old with meningitis and β-lactam anaphylaxis. Empiric treatment?", a:"Vancomycin + moxifloxacin + dexamethasone", d:["Vancomycin + ceftriaxone + dexamethasone","Vancomycin + TMP-SMX","Clindamycin + gentamicin"], w:"Moxifloxacin replaces ceftriaxone (TMP-SMX replaces ampicillin if Listeria is a concern)."},
+  {q:"Roommate of a student with meningococcal meningitis. What do you give?", a:"One dose of ciprofloxacin (or rifampin / ceftriaxone)", d:["Meningococcal vaccine only","Nothing unless symptoms start","Doxycycline for 7 days"], w:"Close contacts: rifampin, ciprofloxacin or ceftriaxone."},
+  {q:"Pain out of proportion, crepitus, skin changing by the hour. Next step?", a:"Emergency surgery + vancomycin + pip-tazo + clindamycin", d:["MRI first, then antibiotics","IV cefazolin and recheck in 6 hours","Vanc + pip-tazo; surgery if no better in 48 h"], w:"Necrotizing fasciitis: imaging never delays surgery."},
+  {q:"Tampon-associated toxic shock. Management?", a:"Remove the tampon + anti-staph β-lactam (or vanc) + clindamycin", d:["Remove the tampon + IV hydrocortisone","Ceftriaxone alone","Vancomycin alone"], w:"Clindamycin shuts down toxin production. No steroids."},
+  {q:"Streptococcal toxic shock from a cellulitis. Antibiotics?", a:"Penicillin + clindamycin (+ source control)", d:["Penicillin alone","Vancomycin alone","Ceftriaxone + hydrocortisone"], w:"Strep TSS: source control, penicillin + clindamycin."},
+  {q:"Hiker in North Carolina: fever, headache, rash on wrists spreading to palms. Next step?", a:"Start doxycycline now", d:["Send serology and wait","Start ceftriaxone","Start amoxicillin"], w:"RMSF: doxycycline empirically. Waiting is how patients die."},
+  {q:"Pregnant patient with chlamydia. Treatment?", a:"Azithromycin", d:["Doxycycline for 7 days","Ceftriaxone 500 mg IM","Levofloxacin"], w:"Chlamydia: doxycycline, but azithromycin in pregnancy."},
+  {q:"Gonorrhea on NAAT; chlamydia not yet excluded. Treatment?", a:"Ceftriaxone 500 mg IM + doxycycline for 7 days", d:["Ceftriaxone 500 mg IM alone","Azithromycin 2 g alone","Ciprofloxacin"], w:"Add doxycycline whenever chlamydia isn't excluded."},
+  {q:"Outpatient pelvic inflammatory disease. Regimen?", a:"Ceftriaxone IM + doxycycline + metronidazole for 14 days", d:["Ceftriaxone IM alone","Doxycycline alone for 14 days","Azithromycin + metronidazole"], w:"PID: all three, metronidazole included."},
+  {q:"Epididymitis after insertive anal sex. Regimen?", a:"Ceftriaxone + levofloxacin", d:["Ceftriaxone + doxycycline","Nitrofurantoin","Azithromycin alone"], w:"Insertive anal sex adds enteric organisms: ceftriaxone + levofloxacin."},
+  {q:"Positive RPR and treponemal test; duration of infection unknown. Treatment?", a:"Benzathine penicillin weekly ×3", d:["Benzathine penicillin once","IV penicillin for 10–14 days","Ceftriaxone 500 mg IM once"], w:"Late latent or unknown duration: weekly × 3."},
+  {q:"Positive RPR with new uveitis. Treatment?", a:"IV penicillin for 10–14 days", d:["Benzathine penicillin once","Benzathine penicillin weekly ×3","Doxycycline for 28 days"], w:"Ocular, otic or neurosyphilis: IV penicillin."},
+  {q:"Outpatient pyelonephritis, healthy adult. Treatment?", a:"Ciprofloxacin 7 days (or levofloxacin 5 days)", d:["Nitrofurantoin 5 days","Fosfomycin once","Amoxicillin 7 days"], w:"Pyelonephritis: culture, then a fluoroquinolone. Nitrofurantoin and fosfomycin don't reach the kidney."},
+  {q:"75-year-old woman, no urinary symptoms, urine culture grows E. coli. Treatment?", a:"No treatment", d:["Nitrofurantoin 5 days","Ciprofloxacin 7 days","Fosfomycin once"], w:"Treat asymptomatic bacteriuria only in pregnancy and before urologic procedures."},
+  {q:"Catheterized patient, no symptoms, urine grows Candida. Next step?", a:"Change the catheter; no antifungal", d:["Fluconazole for 14 days","An echinocandin","Amphotericin bladder irrigation"], w:"Candida in the urine is usually colonization. Candida in the blood never is."},
+  {q:"MSSA bacteremia; blood cultures still positive on day 4. Duration?", a:"4–6 weeks of IV therapy", d:["14 days from the first culture","7 days, then oral","Switch to vancomycin for 14 days"], w:"Bacteremia persisting >72 h makes it complicated: 4–6 weeks."},
+  {q:"New AV block in aortic-valve endocarditis. Next step?", a:"TEE and surgery: think root abscess", d:["Add rifampin","Permanent pacemaker and continue antibiotics","Repeat a TTE in 1 week"], w:"New heart block = perivalvular abscess → TEE and surgery."},
+  {q:"Ventilator-associated pneumonia; got IV pip-tazo 30 days ago. Empiric regimen?", a:"MRSA coverage + two antipseudomonals of different classes", d:["Pip-tazo alone","Vancomycin + pip-tazo","Ceftriaxone + azithromycin"], w:"IV antibiotics within 90 days is the main MDR risk factor. Narrow once cultures return; 7 days."},
+  {q:"HAP, no MDR risk, low MRSA prevalence. Empiric regimen?", a:"Cefepime, pip-tazo or levofloxacin alone", d:["Vancomycin + pip-tazo + tobramycin","Meropenem + vancomycin","Ceftriaxone + azithromycin"], w:"No MDR risk: monotherapy."},
+  {q:"CAP on the ward, no MRSA or Pseudomonas risk. Regimen?", a:"β-lactam + macrolide (or doxycycline), or a respiratory FQ alone", d:["Vancomycin + pip-tazo","Azithromycin alone","Cefepime alone"], w:"Group 1: ceftriaxone or amp-sulbactam + macrolide/doxy, or levofloxacin/moxifloxacin alone."},
+  {q:"CAP; Pseudomonas grew from this patient's sputum 6 months ago. Regimen?", a:"Antipseudomonal β-lactam + atypical coverage", d:["Ceftriaxone + azithromycin","Ampicillin-sulbactam + doxycycline","Vancomycin + ceftriaxone"], w:"The strongest Pseudomonas risk: a prior respiratory culture in the past year."},
+  {q:"Severe CAP in the ICU. Best regimen?", a:"β-lactam + macrolide + hydrocortisone", d:["β-lactam + macrolide; steroids are harmful","Respiratory fluoroquinolone alone","Vancomycin + pip-tazo"], w:"Hydrocortisone lowers mortality in severe CAP (CAPE COD); not for influenza pneumonia."},
+  {q:"Aspiration pneumonia, no abscess or empyema. Add anaerobic coverage?", a:"No: standard CAP therapy is enough", d:["Yes: add metronidazole","Yes: add clindamycin","Yes: switch to a carbapenem"], w:"Don't routinely add anaerobic coverage unless there's an abscess or empyema."},
+  {q:"Hospitalized COVID-19, saturating fine on room air. Therapy?", a:"Supportive care (no dexamethasone)", d:["Dexamethasone 6 mg","Dexamethasone + remdesivir","Tocilizumab"], w:"Dexamethasone only once oxygen is needed."},
+  {q:"Hospitalized COVID-19 on 3 L nasal cannula. Therapy?", a:"Dexamethasone + remdesivir", d:["Supportive care only","Nirmatrelvir-ritonavir","Baricitinib alone"], w:"Low-flow oxygen: dexamethasone up to 10 days + remdesivir."},
+  {q:"High-risk outpatient with COVID-19, day 3 of symptoms. Treatment?", a:"Nirmatrelvir-ritonavir (check interactions)", d:["Dexamethasone","Azithromycin","Oseltamivir"], w:"High-risk outpatient within 5 days: nirmatrelvir-ritonavir; remdesivir or molnupiravir if it can't be used."},
+  {q:"COPD patient with influenza, day 4, high risk, outpatient. Treatment?", a:"Oseltamivir", d:["Zanamivir","No antiviral: it's past 48 hours","Amantadine"], w:"Treat high-risk outpatients regardless of duration. Zanamivir causes bronchospasm in lung disease."},
+  {q:"Returned from Ghana: falciparum, confused, parasitemia 8%. Treatment?", a:"IV artesunate", d:["Oral artemether-lumefantrine","Chloroquine","Primaquine"], w:"Severe malaria: IV artesunate."},
+  {q:"P. vivax malaria, acute phase treated. What else?", a:"Primaquine or tafenoquine after G6PD testing", d:["Nothing more","Repeat artemether-lumefantrine in 2 weeks","Doxycycline for 4 weeks"], w:"Kill the liver hypnozoites, but check G6PD first."},
+  {q:"Babesiosis with 12% parasitemia and severe hemolysis. Management?", a:"Atovaquone + azithromycin + exchange transfusion", d:["Atovaquone + azithromycin alone","Doxycycline","IV artesunate"], w:"Exchange transfusion for parasitemia >10%, severe hemolysis or organ failure."},
+  {q:"Lyme disease with facial palsy, no meningitis. Treatment?", a:"Oral doxycycline for 14–21 days", d:["IV ceftriaxone","Prednisone alone","No antibiotics"], w:"Facial palsy without meningitis: oral doxycycline."},
+  {q:"Lyme carditis with high-grade AV block. Treatment?", a:"IV ceftriaxone + temporary pacing", d:["Oral doxycycline","Permanent pacemaker now","Amiodarone"], w:"High-grade block: IV ceftriaxone and a temporary wire. It usually resolves."},
+  {q:"Engorged Ixodes tick attached ≥36 h, removed 24 h ago, endemic area. Next step?", a:"One dose of doxycycline", d:["Doxycycline for 10 days","Lyme serology today","Nothing"], w:"Prophylaxis: single-dose doxycycline within 72 hours of removal."},
+  {q:"Lyme arthritis of the knee, serology positive. Treatment?", a:"Oral doxycycline for 28 days", d:["IV ceftriaxone first-line","NSAIDs only","Intra-articular steroids"], w:"Late Lyme arthritis: oral doxycycline 28 days."},
+  {q:"Fulminant C. difficile: hypotension and ileus. Treatment?", a:"Oral vanc + IV metronidazole ± rectal vanc", d:["Oral metronidazole","IV vancomycin","Fidaxomicin alone"], w:"Fulminant: oral (and rectal if ileus) vancomycin plus IV metronidazole."},
+  {q:"Third episode of C. difficile (second recurrence). Best option?", a:"Fecal microbiota transplant", d:["Oral metronidazole again","IV vancomycin","Probiotics alone"], w:"FMT after ≥2 recurrences."},
+  {q:"Candidemia in a patient with a central line. Management?", a:"Echinocandin, remove line, eye exam, 14 d from first negative culture", d:["Remove the line; no antifungal if fever resolves","Echinocandin, keep the line","Repeat cultures: likely contaminant"], w:"The full candidemia bundle."},
+  {q:"Cryptococcal meningitis, opening pressure 32. How do you lower the pressure?", a:"Serial lumbar punctures", d:["Acetazolamide","Mannitol","Dexamethasone"], w:"Avoid acetazolamide, mannitol and steroids in cryptococcal meningitis."},
+  {q:"New HIV with cryptococcal meningitis. When do you start ART?", a:"Defer 4–6 weeks", d:["Within 2 weeks","Today","After CD4 >200"], w:"Defer ART 4–6 weeks in cryptococcal and TB meningitis; most other OIs within 2 weeks."},
+  {q:"New HIV with chronic hepatitis B. ART?", a:"INSTI + tenofovir + FTC (or 3TC)", d:["Dolutegravir + abacavir/3TC","Wait until CD4 <350","Dolutegravir + 3TC (2-drug)"], w:"With HBV the backbone must include tenofovir + FTC/3TC."},
+  {q:"HIV, CD4 40, Toxoplasma IgG negative; declines ART for now. Prophylaxis?", a:"TMP-SMX + azithromycin", d:["TMP-SMX alone","Azithromycin alone","Fluconazole"], w:"PJP below 200 (TMP-SMX). MAC prophylaxis (azithromycin) below 50 only if ART is not started right away; skip it if ART begins immediately."},
+  {q:"HIV with PJP; PaO₂ 62 on room air. Treatment?", a:"TMP-SMX + corticosteroids", d:["TMP-SMX alone","Azithromycin + corticosteroids","Voriconazole"], w:"Add steroids when PaO₂ <70."},
+  {q:"Presumed CNS toxo; lesions unchanged after 2 weeks of therapy. Next step?", a:"Brain biopsy for CNS lymphoma", d:["Add dexamethasone and continue","Switch to amphotericin","Continue 6 more weeks"], w:"No response → biopsy for CNS lymphoma."},
+  {q:"Diabetic foot ulcer, mild cellulitis, no MRSA risk. Treatment?", a:"Cephalexin or dicloxacillin", d:["Pip-tazo","Vancomycin + meropenem","Ciprofloxacin alone"], w:"Mild diabetic foot infection: cephalexin or dicloxacillin; check an ABI."},
+  {q:"Dog bite to the hand. Management?", a:"Amoxicillin-clavulanate; leave the wound open", d:["Cephalexin + primary closure","TMP-SMX","No antibiotics; close the wound"], w:"Bites: amoxicillin-clavulanate; don't close hand bites."},
+  {q:"Sinus symptoms for 12 days without improvement. Treatment?", a:"Amoxicillin-clavulanate", d:["Azithromycin","Cephalexin","Ciprofloxacin"], w:"≥10 days, severe onset or double worsening = bacterial. Amoxicillin-clavulanate (IDSA); avoid macrolides and first-generation cephalosporins."},
+  {q:"Positive IGRA, no symptoms, normal chest x-ray. Treatment?", a:"Rifampin for 4 months", d:["RIPE for 6 months","Isoniazid for 1 month","No treatment"], w:"Latent TB: 4R, 3HP or 3HR."},
+  {q:"Patient on warfarin starts rifampin for TB. What happens to the INR?", a:"It falls: rifampin speeds warfarin metabolism", d:["It rises sharply","No interaction","It rises only with isoniazid"], w:"Rifampin induces metabolism of warfarin, DOACs, contraceptives, many antiretrovirals and azoles."},
+  {q:"On TB treatment, new numbness of the feet. Which drug, and the fix?", a:"Isoniazid: add pyridoxine", d:["Ethambutol: stop it","Rifampin: lower the dose","Pyrazinamide: add thiamine"], w:"Isoniazid neuropathy is prevented with pyridoxine. Ethambutol hits the optic nerve."},
+  {q:"Peritonsillar abscess: hot-potato voice, uvula pushed away. Management?", a:"Drain it + antibiotics", d:["Antibiotics alone","Steroids alone","Tonsillectomy tonight"], w:"Peritonsillar abscess: drainage plus antibiotics."},
+  {q:"Fever with ANC 300 after chemotherapy. First move?", a:"Antipseudomonal β-lactam within 1 hour", d:["Vancomycin + ceftriaxone","Wait for culture results","Cefazolin"], w:"Febrile neutropenia: antipseudomonal β-lactam within the hour."},
+  {q:"S. gallolyticus bacteremia, treated and cleared. What else?", a:"Colonoscopy", d:["Repeat echo in 6 months","Dental evaluation only","Nothing more"], w:"S. gallolyticus or C. septicum → look for colon cancer."}
+];
+
+
+/* ---------- Helpers ---------- */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Tiers ---------- */
+const TIERS=[
+  {n:1,name:"Gram stain",      short:"Gram",  ask:"Gram stain?",          from:1, to:3,  pts:100,mag:"10×",     sub:"Positive or negative?"},
+  {n:2,name:"Susceptibility",  short:"Drug",  ask:"",                     from:4, to:6,  pts:200,mag:"20×",     sub:"Match the bug to the drug"},
+  {n:3,name:"Resistance",      short:"Resist",ask:"",                     from:7, to:9,  pts:300,mag:"40×",     sub:"How it resists and how to beat it"},
+  {n:4,name:"Clinical clue",   short:"Clue",  ask:"Most likely organism?",from:10,to:12, pts:400,mag:"60×",     sub:"Find the most likely agent"},
+  {n:5,name:"Attending rounds",short:"Rounds",ask:"",                     from:13,to:Infinity,pts:500,mag:"100× oil",sub:"Full cases. Best management."}
+];
+const tierOf=lv=>TIERS.find(t=>lv>=t.from&&lv<=t.to);
+const TCOL=['--t1','--t2','--t3','--t4','--t5'];
+
+/* ---------- Bank ---------- */
+const CAT_KEYS=Object.keys(GRAM_CATS);
+const BANK={1:[],2:[],3:[],4:[],5:[]};
+T1.forEach((r,i)=>BANK[1].push({id:'g'+i,tier:1,bug:r[0],q:'Gram stain?',a:GRAM_CATS[r[1]],cat:r[1],w:r[2]}));
+[[T2,2,'s'],[T3,3,'r'],[T4,4,'c'],[T5,5,'a']].forEach(([arr,t,p])=>arr.forEach((r,i)=>BANK[t].push({id:p+i,tier:t,bug:r.bug||'',q:r.q,a:r.a,d:r.d,w:r.w})));
+function optionsFor(item){
+  if(item.tier===1){const others=shuffle(CAT_KEYS.filter(k=>k!==item.cat)).slice(0,3).map(k=>GRAM_CATS[k]);return shuffle([item.a,...others]);}
+  return shuffle([item.a,...item.d]);
+}
+
+/* ---------- What the specimen looks like under the scope ---------- */
+const MORPH_RX=[
+  ['gpch',/strep|pneumococ|s\. pneumoniae|enterococ|\bvre\b|gallolyticus/i],
+  ['gpcl',/staph|\bmrsa\b|\bmssa\b|\bvisa\b|s\. aureus|tampon|toxic shock/i],
+  ['gpr', /listeria|clostrid|c\. diff|bacillus|nocardia|actinomyces|coryne|cutibact|rhodococ/i],
+  ['gnd', /neisseria|gonorr|meningitidis|meningococ|moraxella/i],
+  ['gnr', /e\. coli|escherichia|klebsiella|pseudomonas|enterobacter|proteus|salmonella|campylobacter|vibrio|haemophilus|h\. influenzae|acinetobacter|bacteroides|capnocytophaga|serratia|citrobacter|stenotroph|yersinia|gram-negative|\bcre\b|\besbl\b|\bkpc\b|ampc/i],
+  ['yeast',/candid|cryptococ|histoplasm|blastomyc|coccidioid|sporothrix/i],
+  ['mold',/aspergill|mucor/i],
+  ['spiro',/borrelia|lyme|treponem|leptospir|syphilis|chancre|\brpr\b/i]
+];
+const MORPH_LABEL={
+  gpcl:['pos','Gram + cocci','clusters'], gpch:['pos','Gram + cocci','pairs / chains'], gpr:['pos','Gram + rods',''],
+  gnr:['neg','Gram − rods',''], gnd:['neg','Gram − diplococci',''], yeast:['','Yeast',''],
+  mold:['','Hyphae','mold'], spiro:['','Spirochetes','too thin to Gram stain'], ghost:['','Not seen on Gram stain','']
+};
+function morphOf(item){
+  if(item.tier===1&&item.cat!=='none') return item.cat;
+  const txt=item.tier===4?item.a:item.tier===1?item.bug:(item.bug||item.q);
+  const clean=txt.replace(/\b(no|low|without)\b[^.?;,]*/gi,''); // 'no MRSA risk' is not MRSA
+  for(const [k,rx] of MORPH_RX) if(rx.test(clean)) return k;
+  return 'ghost';
+}
+const hiddenTier=t=>t===1||t===4; // slide stays unstained and out of focus until you answer
+
+/* ---------- Microscope engine ---------- */
+const COL={pos:[92,46,196],posE:[52,22,128],neg:[230,64,120],negE:[160,30,76],un:[150,144,132],unE:[104,99,90],fun:[120,90,170],funE:[80,56,124]};
+const KIND={gpcl:'pos',gpch:'pos',gpr:'pos',gnr:'neg',gnd:'neg',yeast:'fun',mold:'fun',spiro:'un',ghost:'un',blob:'un'};
+const COUNT={gpcl:15,gpch:13,gpr:18,gnr:26,gnd:18,yeast:14,mold:6,spiro:14,ghost:16,blob:20,mix:22};
+const lerpC=(a,b,t)=>`rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*t)).join(',')})`;
+function geom(type){
+  if(type==='gpcl'){const base=[[0,0],[6.2,0],[3.1,5.3],[-3.1,5.3],[-6.2,0],[-3.1,-5.3],[3.1,-5.3],[9.3,5.3],[0,10.6]];return shuffle(base).slice(0,5+Math.floor(Math.random()*4)).map(([x,y])=>[x+rnd(-.6,.6),y+rnd(-.6,.6)]);}
+  if(type==='gpch'){const n=2+Math.floor(Math.random()*5),c=rnd(-.35,.35);let a=0,x=0,y=0;const p=[[0,0]];for(let i=1;i<n;i++){a+=c;x+=Math.cos(a)*6.4;y+=Math.sin(a)*6.4;p.push([x,y]);}return p.map(([u,v])=>[u-x/2,v-y/2]);}
+  if(type==='mold'){const segs=[];let x=-22,y=0,a=rnd(-.2,.2);for(let i=0;i<6;i++){const nx=x+Math.cos(a)*8,ny=y+Math.sin(a)*8;segs.push([x,y,nx,ny]);if(i===2||i===4){const b=a+(Math.random()<.5?-.8:.8);segs.push([nx,ny,nx+Math.cos(b)*14,ny+Math.sin(b)*14]);}x=nx;y=ny;a+=rnd(-.15,.15);}return segs;}
+  return null;
+}
+class Scope{
+  constructor(cv){this.cv=cv;this.ctx=cv.getContext('2d');this.orgs=[];this.zones=[];this.bits=[];this.stain=1;this.hidden=false;this.morph='mix';this.over=0;this.base=20;this.on=false;this.resize();addEventListener('resize',()=>this.resize());}
+  resize(){
+    const w=this.cv.getBoundingClientRect().width;if(!w)return;
+    const d=Math.min(devicePixelRatio||1,2),old=this.S||w;
+    this.S=w;this.cv.width=w*d;this.cv.height=w*d;this.ctx.setTransform(d,0,0,d,0,0);this.R=w/2;this.k=w/340;
+    const f=w/old;this.orgs.forEach(o=>{o.x*=f;o.y*=f;});this.zones.forEach(z=>{z.x*=f;z.y*=f;z.max*=f;});
+    this.debris=Array.from({length:46},()=>{const a=Math.random()*6.283,r=Math.sqrt(Math.random())*this.R*.95;return{x:this.R+Math.cos(a)*r,y:this.R+Math.sin(a)*r,r:rnd(.3,1.5),a:rnd(.05,.25)};});
+  }
+  pickType(){return this.hidden?'blob':this.morph==='mix'?['gpcl','gpch','gpr','gnr','gnd'][Math.floor(Math.random()*5)]:this.morph;}
+  spawn(x,y,type,born=0){
+    if(!this.S)return;
+    if(x==null){const a=Math.random()*6.283,r=Math.sqrt(Math.random())*(this.R-24*this.k);x=this.R+Math.cos(a)*r;y=this.R+Math.sin(a)*r;}
+    type=type||this.pickType();
+    const o={x,y,vx:0,vy:0,ang:Math.random()*6.283,va:rnd(-.012,.012),type,sc:rnd(.85,1.2),born,dying:0,g:geom(type)};
+    this.orgs.push(o);return o;
+  }
+  target(){return Math.round(this.base*(1+this.over*.35));}
+  setSpecimen(morph,hidden){
+    this.morph=morph;this.hidden=hidden;this.stain=hidden?0:1;
+    this.cv.classList.toggle('blur',hidden);
+    this.orgs.forEach(o=>{if(!o.dying)o.dying=.001;});
+    this.base=COUNT[hidden?'blob':morph]||20;
+    const n=this.target();clearTimeout(this._sp);
+    this._sp=setTimeout(()=>{for(let i=0;i<n;i++)this.spawn(null,null,null,-i*.04);},160);
+  }
+  reveal(){
+    if(!this.hidden)return;
+    this.hidden=false;this.cv.classList.remove('blur');
+    this.orgs.forEach(o=>{if(!o.dying){o.type=this.pickType();o.g=geom(o.type);}});
+    const t0=performance.now(),step=now=>{this.stain=Math.min(1,(now-t0)/800);if(this.stain<1)requestAnimationFrame(step);};requestAnimationFrame(step);
+  }
+  kill(){
+    const a=Math.random()*6.283,r=rnd(0,this.R*.25);
+    this.zones.push({x:this.R+Math.cos(a)*r,y:this.R+Math.sin(a)*r,r:0,max:this.R*rnd(.62,.78),t0:performance.now()});
+    clearTimeout(this._re);
+    this._re=setTimeout(()=>{const need=this.target()-this.orgs.filter(o=>!o.dying).length;for(let i=0;i<need;i++)this.spawn(null,null,null,-i*.06);},1700);
+  }
+  grow(){
+    this.over=Math.min(3,this.over+1);
+    this.orgs.filter(o=>!o.dying).slice(0,40).forEach((o,i)=>setTimeout(()=>{
+      if(this.orgs.length>110||o.dying)return;const a=Math.random()*6.283;
+      const c=this.spawn(o.x+Math.cos(a)*9*this.k,o.y+Math.sin(a)*9*this.k,o.type,.25);c.vx=Math.cos(a)*1.2*this.k;c.vy=Math.sin(a)*1.2*this.k;
+    },i*22));
+  }
+  reset(){this.over=0;this.zones=[];this.bits=[];}
+  start(){if(this.on)return;this.on=true;const loop=()=>{if(!this.on)return;if(this.S){this.tick();this.draw();}requestAnimationFrame(loop);};requestAnimationFrame(loop);}
+  stop(){this.on=false;}
+  tick(){
+    const R=this.R,k=this.k,lim=R-16*k,now=performance.now();
+    for(const z of this.zones){const t=(now-z.t0)/650;z.r=z.max*(1-Math.pow(1-Math.min(1,t),3));
+      for(const o of this.orgs){if(!o.dying&&o.born>0&&Math.hypot(o.x-z.x,o.y-z.y)<z.r){o.dying=.001;
+        for(let j=0;j<5;j++){const a=Math.random()*6.283,s=rnd(.6,2.2)*k;this.bits.push({x:o.x,y:o.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:1,c:KIND[o.type]});}}}}
+    this.zones=this.zones.filter(z=>now-z.t0<2300);
+    for(const o of this.orgs){
+      if(o.born<1)o.born=Math.min(1,o.born+.035);
+      if(o.dying){o.dying+=.05;continue;}
+      if(o.born<=0)continue;
+      o.vx+=rnd(-.05,.05)*k;o.vy+=rnd(-.05,.05)*k;o.vx*=.965;o.vy*=.965;
+      const sp=Math.hypot(o.vx,o.vy),cap=.55*k;if(sp>cap&&o.born>=1){o.vx*=cap/sp;o.vy*=cap/sp;}
+      o.x+=o.vx;o.y+=o.vy;o.ang+=o.va;
+      const dx=o.x-R,dy=o.y-R,d=Math.hypot(dx,dy);if(d>lim){o.x=R+dx/d*lim;o.y=R+dy/d*lim;o.vx-=dx/d*.25*k;o.vy-=dy/d*.25*k;}
+    }
+    this.orgs=this.orgs.filter(o=>o.dying<1);
+    for(const b of this.bits){b.x+=b.vx;b.y+=b.vy;b.vx*=.94;b.vy*=.94;b.l-=.028;}
+    this.bits=this.bits.filter(b=>b.l>0);
+  }
+  draw(){
+    const c=this.ctx,R=this.R,k=this.k,S=this.S;
+    c.clearRect(0,0,S,S);c.save();c.beginPath();c.arc(R,R,R,0,6.283);c.clip();
+    const g=c.createRadialGradient(R*.85,R*.8,R*.1,R,R,R);g.addColorStop(0,'#FBF7EE');g.addColorStop(.7,'#EFE7D6');g.addColorStop(1,'#D9CDB4');c.fillStyle=g;c.fillRect(0,0,S,S);
+    for(const d of this.debris){c.fillStyle=`rgba(90,80,60,${d.a})`;c.beginPath();c.arc(d.x,d.y,d.r*k,0,6.283);c.fill();}
+    if(this.over>0){
+      c.fillStyle=`rgba(170,110,120,${.05*this.over})`;c.fillRect(0,0,S,S);
+      for(let i=0;i<7;i++){const a=i*.9+1,x=R+Math.cos(a)*R*.95,y=R+Math.sin(a)*R*.95,rr=R*(.16+.11*this.over);
+        const h=c.createRadialGradient(x,y,0,x,y,rr),col=i%2?'124,77,255':'230,64,120';h.addColorStop(0,`rgba(${col},${.16*this.over})`);h.addColorStop(1,`rgba(${col},0)`);c.fillStyle=h;c.beginPath();c.arc(x,y,rr,0,6.283);c.fill();}
+    }
+    const now=performance.now();
+    for(const z of this.zones){const age=now-z.t0,fade=age>1500?Math.max(0,1-(age-1500)/800):1;
+      const h=c.createRadialGradient(z.x,z.y,0,z.x,z.y,Math.max(1,z.r));h.addColorStop(0,`rgba(255,253,246,${.75*fade})`);h.addColorStop(.92,`rgba(255,253,246,${.5*fade})`);h.addColorStop(1,'rgba(255,253,246,0)');
+      c.fillStyle=h;c.beginPath();c.arc(z.x,z.y,z.r,0,6.283);c.fill();
+      c.strokeStyle=`rgba(31,157,99,${.6*fade})`;c.lineWidth=1.5;c.setLineDash([4,4]);c.beginPath();c.arc(z.x,z.y,z.r,0,6.283);c.stroke();c.setLineDash([]);
+      c.fillStyle=`rgba(255,255,255,${fade})`;c.strokeStyle=`rgba(120,112,98,${fade})`;c.beginPath();c.arc(z.x,z.y,12*k,0,6.283);c.fill();c.stroke();
+    }
+    for(const o of this.orgs)this.drawOrg(o);
+    for(const b of this.bits){const cc=COL[b.c]||COL.un;c.fillStyle=`rgba(${cc.join(',')},${b.l})`;c.beginPath();c.arc(b.x,b.y,1.6*k,0,6.283);c.fill();}
+    c.restore();
+  }
+  drawOrg(o){
+    const c=this.ctx;
+    const life=o.dying?Math.max(0,1-o.dying):1,bornE=o.born<=0?0:1-Math.pow(1-o.born,3);
+    const s=this.k*o.sc*bornE*(o.dying?1+o.dying*.5:1);if(s<=0)return;
+    const kind=KIND[o.type],st=kind==='un'?0:this.stain;
+    const fill=lerpC(COL.un,COL[kind],st),edge=lerpC(COL.unE,COL[kind+'E'],st);
+    c.save();c.translate(o.x,o.y);c.rotate(o.ang);c.scale(s,s);c.globalAlpha=life*(o.type==='ghost'?.55:.92);
+    c.fillStyle=fill;c.strokeStyle=edge;c.lineWidth=1.1;
+    const dot=(x,y,r)=>{c.beginPath();c.arc(x,y,r,0,6.283);c.fill();c.stroke();};
+    const cap=(L,W)=>{c.beginPath();c.moveTo(-L/2+W/2,-W/2);c.lineTo(L/2-W/2,-W/2);c.arc(L/2-W/2,0,W/2,-1.571,1.571);c.lineTo(-L/2+W/2,W/2);c.arc(-L/2+W/2,0,W/2,1.571,4.712);c.fill();c.stroke();};
+    switch(o.type){
+      case 'blob':dot(0,0,5.5);break;
+      case 'gpcl':o.g.forEach(([x,y])=>dot(x,y,3.2));break;
+      case 'gpch':o.g.forEach(([x,y])=>dot(x,y,3.1));break;
+      case 'gpr':cap(17,6);break;
+      case 'gnr':cap(11,4.6);break;
+      case 'gnd':c.beginPath();c.ellipse(-3.3,0,3,4.2,0,0,6.283);c.fill();c.stroke();c.beginPath();c.ellipse(3.3,0,3,4.2,0,0,6.283);c.fill();c.stroke();break;
+      case 'yeast':c.beginPath();c.ellipse(0,0,6.5,5.2,0,0,6.283);c.fill();c.stroke();dot(7,-3.5,2.6);break;
+      case 'mold':c.lineCap='round';c.lineWidth=3.4;c.strokeStyle=fill;c.beginPath();o.g.forEach(([a,b,x,y])=>{c.moveTo(a,b);c.lineTo(x,y);});c.stroke();break;
+      case 'spiro':c.lineWidth=1.4;c.strokeStyle=edge;c.beginPath();for(let t=0;t<=26;t+=.5){const x=t-13,y=Math.sin(t*1.1)*2.2;t?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();break;
+      case 'ghost':c.setLineDash([2,2]);c.beginPath();c.arc(0,0,4.5,0,6.283);c.stroke();c.setLineDash([]);break;
+    }
+    c.restore();
+  }
+}
+
+/* ---------- Sound: wet, bubbly lab sounds ---------- */
+let AC=null,muted=false;
+try{muted=localStorage.getItem('boardside-muted')==='1';}catch(e){}
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC;}
+function tone({f=440,type='sine',d=.12,v=.12,at=0,to=0}){
+  if(muted)return;const a=ac();if(!a)return;const t=a.currentTime+at,o=a.createOscillator(),g=a.createGain();
+  o.type=type;o.frequency.setValueAtTime(f,t);if(to)o.frequency.exponentialRampToValueAtTime(to,t+d);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.02);
+}
+const bubble=(at,f=320)=>tone({f,to:f*2.8,d:.07,v:.1,at});
+const SFX={
+  good(){tone({f:900,to:600,d:.05,v:.08});tone({f:1760,d:.35,v:.04,at:.05});for(let i=0;i<6;i++)bubble(.3+i*.05+Math.random()*.03,260+Math.random()*260);},
+  bad(){tone({f:140,to:70,d:.32,v:.16});tone({f:210,to:95,d:.26,v:.08,type:'triangle',at:.04});},
+  level(){[0,.07,.14].forEach((t,i)=>bubble(t,300+i*140));},
+  tier(){[0,.1,.2,.3].forEach((t,i)=>tone({f:[392,494,587,784][i],d:.28,v:.07,type:'triangle',at:t}));tone({f:1568,d:.6,v:.03,at:.45});},
+  over(){[0,.2,.4].forEach((t,i)=>tone({f:[300,220,150][i],to:[260,180,110][i],d:.35,v:.1,at:t}));},
+  on(){bubble(0,400);}
+};
+
+/* ---------- UI effects ---------- */
+function pop(x,y,text){const el=document.createElement('div');el.className='pop';el.textContent=text;el.style.left=(x-30)+'px';el.style.top=(y-20)+'px';document.body.appendChild(el);el.addEventListener('animationend',()=>el.remove());}
+function stamp(ok){const s=$('#stamp');s.className='stamp '+(ok?'s':'r');s.innerHTML=ok?'<b>S</b><small>Susceptible</small>':'<b>R</b><small>Resistant</small>';void s.offsetWidth;s.classList.add('go');}
+function pulse(){const b=$('#scopeBox');b.classList.add('pulse');setTimeout(()=>b.classList.remove('pulse'),220);}
+function washBanner(t){
+  return new Promise(res=>{
+    const w=document.createElement('div');w.className='wash';w.style.setProperty('--c',css(TCOL[t.n-1]));
+    const bands=[['#5B2EC4','Crystal violet'],['#7A4A1C','Gram’s iodine'],['#3E7F8C','Decolorize'],['#D93B6B','Safranin']];
+    w.innerHTML=bands.map(([c,l],i)=>`<div class="band" style="background:${c};animation-delay:${i*.2}s">${l}</div>`).join('')+`<div class="msg"><small>Tier ${t.n} · switching to ${t.mag}</small><b>${esc(t.name)}</b><span>${esc(t.sub)}</span></div>`;
+    document.body.appendChild(w);SFX.tier();
+    setTimeout(()=>{w.remove();res();},RM?600:2400);
+  });
+}
+
+/* ---------- State ---------- */
+const MAX_LIVES=3,SPEED_MS=12000,DISC_NAMES=['VAN','CRO','MEM'];
+let S,high=0,scope,intro;
+try{high=+localStorage.getItem('bugdrug-high')||0;}catch(e){}
+const SEEN_KEY='bugdrug-seen-v1';let seen={};
+try{seen=JSON.parse(localStorage.getItem(SEEN_KEY)||'{}')||{};}catch(e){seen={};}
+function draw(tier,used){
+  const pool=BANK[tier],s=new Set(seen[tier]||[]);
+  let fr=pool.filter(x=>!s.has(x.id)&&!used.has(x.id));
+  if(!fr.length){seen[tier]=[];fr=pool.filter(x=>!used.has(x.id));if(!fr.length)fr=pool.slice();}
+  const pick=fr[Math.floor(Math.random()*fr.length)];
+  seen[tier]=[...(seen[tier]||[]),pick.id];try{localStorage.setItem(SEEN_KEY,JSON.stringify(seen));}catch(e){}
+  return pick;
+}
+function fresh(){return{level:1,maxLevel:1,lives:MAX_LIVES,score:0,correct:0,attempted:0,streak:0,best:0,used:new Set(),cur:null,opts:[],answered:true,t0:0,over:false};}
+S=fresh();
+
+function paintHUD(){
+  $('#score').textContent=S.score.toLocaleString();$('#level').textContent=S.level;
+  const d=$('#discs');if(!d.children.length)d.innerHTML=DISC_NAMES.map(n=>`<span class="disc">${n}</span>`).join('');
+  [...d.children].forEach((el,i)=>{const lost=i>=S.lives;el.classList.toggle('lost',lost);el.textContent=lost?'R':DISC_NAMES[i];});
+  d.setAttribute('aria-label',S.lives+' lives left');
+  document.documentElement.style.setProperty('--og',MAX_LIVES-S.lives);
+  const t=tierOf(S.level);
+  $('#mag').innerHTML=`<b>${t.mag}</b><span> · objective</span>`;
+  $('#steps').innerHTML=TIERS.map(x=>{
+    const st=x.n<t.n?'done':x.n===t.n?'on':'';
+    const pct=x.n<t.n?100:x.n===t.n?(x.n===5?100:Math.round(100*(S.level-x.from)/3)):0;
+    return `<div class="step ${st}"><span class="fill" style="width:${pct}%"></span><b>${String(x.n).padStart(2,'0')} · ${x.mag}</b><span class="full">${esc(x.name)}</span><span class="short">${esc(x.short)}</span></div>`;
+  }).join('');
+}
+function setCaption(morph,hidden){
+  const c=$('#caption');
+  if(hidden){c.innerHTML='Unstained · <b>answer to stain the slide</b>';return;}
+  const [k,a,b]=MORPH_LABEL[morph]||MORPH_LABEL.ghost;
+  c.innerHTML=`<b class="${k}">${esc(a)}</b>${b?' · '+esc(b):''}`;
+}
+
+/* ---------- Speed bar ---------- */
+let raf=0;
+function runSpeed(on){cancelAnimationFrame(raf);if(!on)return;const bar=$('#speedBar');const tick=()=>{const f=Math.max(0,1-(performance.now()-S.t0)/SPEED_MS);bar.style.transform=`scaleX(${f})`;if(f>0&&!S.answered)raf=requestAnimationFrame(tick);};raf=requestAnimationFrame(tick);}
+
+/* ---------- Question ---------- */
+function newQuestion(){
+  const t=tierOf(S.level),item=draw(t.n,S.used);S.used.add(item.id);
+  S.cur=item;S.opts=optionsFor(item);S.answered=false;S.t0=performance.now();
+  item.morph=morphOf(item);const hid=hiddenTier(t.n);
+  scope.setSpecimen(item.morph,hid);setCaption(item.morph,hid);
+  $('#card').style.setProperty('--tc',css(TCOL[t.n-1]));document.querySelector('.bench').style.setProperty('--tc',css(TCOL[t.n-1]));
+  $('#tag').textContent=`Tier ${t.n} · ${t.name}`;
+  $('#lvlTxt').textContent=`LV ${S.level} · ${t.pts} pts`;
+  const bug=$('#bug');
+  if(item.bug){bug.textContent=item.bug;bug.classList.remove('sm');$('#ask').textContent=item.q;$('#lbl').textContent='Specimen';}
+  else{bug.textContent=item.q;bug.classList.add('sm');$('#ask').textContent=t.ask||'Best answer?';$('#lbl').textContent=t.n===5?'Consult':'Clinical history';}
+  $('#opts').innerHTML=S.opts.map((o,i)=>`<button class="opt" type="button" data-i="${i}"><span class="k">${i+1}</span><span class="t">${esc(o)}</span></button>`).join('');
+  $$('.opt').forEach(b=>b.addEventListener('click',()=>answer(+b.dataset.i)));
+  $('#fb').innerHTML='';$('#speedBar').style.transform='scaleX(1)';
+  paintHUD();runSpeed(true);
+}
+function answer(i){
+  if(S.answered||S.over)return;
+  S.answered=true;runSpeed(false);S.attempted++;
+  const item=S.cur,ok=S.opts[i]===item.a,t=tierOf(S.level),btns=$$('.opt'),ri=S.opts.indexOf(item.a);
+  btns.forEach((b,k)=>{b.disabled=true;b.classList.add(k===ri?'right':k===i?'wrong':'dim');});
+  scope.reveal();setCaption(item.morph,false);stamp(ok);
+  const r=btns[i].getBoundingClientRect();let msg='';
+  if(ok){
+    const secs=(performance.now()-S.t0)/1000,speed=Math.round(t.pts*.5*Math.max(0,1-secs/(SPEED_MS/1000)));
+    S.streak++;S.best=Math.max(S.best,S.streak);S.correct++;
+    const sb=S.streak%5===0?250:0,gained=t.pts+speed+sb;S.score+=gained;
+    S.level++;S.maxLevel=Math.max(S.maxLevel,S.level);
+    SFX.good();pop(r.left+r.width/2,r.top,'+'+gained);setTimeout(()=>scope.kill(),hiddenTier(t.n)?500:120);
+    const sc=$('#score');sc.classList.add('bump');setTimeout(()=>sc.classList.remove('bump'),150);
+    msg=`+${t.pts}${speed?` · speed +${speed}`:''}${sb?` · streak ×${S.streak} +250`:''}`;
+    paintHUD();
+    const nt=tierOf(S.level);
+    if(nt.n>t.n)setTimeout(()=>washBanner(nt),1000);else setTimeout(()=>{pulse();SFX.level();},600);
+  }else{
+    S.streak=0;S.lives--;const before=S.level;S.level=Math.max(1,S.level-1);
+    SFX.bad();const card=$('#card');card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');
+    setTimeout(()=>scope.grow(),350);
+    msg=S.level<before?`Down to level ${S.level}`:'Level 1 is the floor';
+    paintHUD();const dk=$('#discs').children[S.lives];if(dk){dk.classList.add('crack');setTimeout(()=>dk.classList.remove('crack'),500);}
+  }
+  const last=!ok&&S.lives<=0;
+  $('#fb').innerHTML=`<div class="fb ${ok?'ok':'no'}"><h3>${ok?'✓ Susceptible · correct':'✗ Resistant · not quite'}</h3>
+    ${ok?'':`<p><b>Answer:</b> ${esc(item.a)}</p>`}<p>${esc(item.w)}</p>
+    <div class="row"><small>${esc(msg)}</small><button class="go" id="next" type="button">${last?'Read the culture report →':'Next specimen →'}</button></div></div>`;
+  $('#next').addEventListener('click',next);
+  setTimeout(()=>{const n=$('#next');if(n)n.focus({preventScroll:true});$('#fb').scrollIntoView({behavior:'smooth',block:'nearest'});},60);
+}
+function next(){if(!S.answered)return;if(S.lives<=0){endGame();return;}newQuestion();if(innerWidth<=860)window.scrollTo({top:0,behavior:'smooth'});}
+
+/* ---------- End: culture report ---------- */
+function rank(lv){
+  if(lv>=20)return['Bug whisperer','Sterile field. Nothing grew.'];
+  if(lv>=13)return['ID attending','Pan-sensitive. Nicely done.'];
+  if(lv>=10)return['ID fellow','Clinical clues on lock.'];
+  if(lv>=7)return['Senior resident','Knows how bugs fight back.'];
+  if(lv>=4)return['Intern on the ID consult','Bug-drug basics in hand.'];
+  return['Gram stain rookie','Back to the stain bench.'];
+}
+const LB_GAME='bug-drug',LB_VARIANT='ladder';
+const hasLB=()=>!!(window.BLB&&window.BLB.enabled&&window.BLB.boardPoints);
+function lbRows(rows){
+  if(!rows.length)return'<div class="empty">No scores yet. Post yours and take the top spot.</div>';
+  return'<ol>'+rows.map(r=>`<li class="${r.is_me?'me':''}"><span class="n">${r.rank}</span><span class="who">${esc(r.display_name)}</span><span class="sv">${r.plays} ${r.plays==1?'play':'plays'}</span><span class="sc">${Number(r.best_score).toLocaleString()}</span></li>`).join('')+'</ol>';
+}
+async function paintBoard(){
+  const box=$('#lb');if(!box)return;
+  try{const rows=await BLB.boardPoints(LB_GAME,LB_VARIANT,null,10);box.innerHTML=`<h3>Leaderboard <small>· top 10 · all time</small></h3>${lbRows(rows)}<a class="lbmore" href="leaderboard.html#bug-drug">Full leaderboard →</a>`;}
+  catch(e){box.innerHTML=`<h3>Leaderboard</h3><div class="empty">${esc(BLB.friendly(e))}</div>`;}
+}
+function endGame(){
+  S.over=true;runSpeed(false);SFX.over();scope.grow();
+  let isHigh=false;if(S.score>high){high=S.score;isHigh=true;try{localStorage.setItem('bugdrug-high',String(high));}catch(e){}}
+  const acc=S.attempted?Math.round(100*S.correct/S.attempted):0,lb=hasLB(),[title,line]=rank(S.maxLevel),best=isHigh&&S.score>0;
+  const id='BSR-'+Date.now().toString(36).slice(-5).toUpperCase();
+  $('#endPanel').innerHTML=`
+    <span class="final ${best?'best':''}">${best?'New best':'Final'}</span>
+    <h2>Culture report</h2>
+    <div class="rline"><span>Specimen</span><b>${id}</b></div>
+    <div class="rline"><span>Growth</span><b>Overgrown · 3 discs failed</b></div>
+    <div class="big" id="bigscore">0</div>
+    <div class="interp"><small>Interpretation</small>${esc(title)}. ${esc(line)}</div>
+    <div class="rline"><span>Highest level</span><b>${S.maxLevel} · ${esc(tierOf(S.maxLevel).name)}</b></div>
+    <div class="rline"><span>Correct</span><b>${S.correct}/${S.attempted} (${acc}%)</b></div>
+    <div class="rline"><span>Best streak</span><b>×${S.best}</b></div>
+    <div class="rline"><span>Personal best</span><b>${high.toLocaleString()}</b></div>
+    ${lb?(S.score>0?`<div class="submit" id="postBox"><button class="go violet" type="button" id="postBtn">Post score</button><span class="postnote">Sign in with your email once. Only your display name is shown.</span></div>`:'<p class="postnote">Score above zero to post.</p>'):''}
+    ${lb?'<div class="lb" id="lb"><h3>Leaderboard</h3><div class="empty">Loading…</div></div>':''}
+    <div class="rbtns"><button class="go" id="againBtn" type="button">New culture</button><a class="home" href="/#games">← All games</a></div>`;
+  $('#endScreen').hidden=false;
+  const bs=$('#bigscore'),t0=performance.now();
+  (function step(now){const k=Math.min(1,(now-t0)/1100);bs.textContent=Math.round(S.score*(1-Math.pow(1-k,3))).toLocaleString();if(k<1)requestAnimationFrame(step);})(t0);
+  if(lb){
+    paintBoard();const pb=$('#postBtn');
+    if(pb)pb.addEventListener('click',async()=>{
+      pb.disabled=true;pb.textContent='Posting…';
+      try{
+        const name=await BLB.dialog({title:'Post your score',intro:"We'll email you a 6-digit code to verify it's you. No password needed."});
+        if(!name){pb.disabled=false;pb.textContent='Post score';return;}
+        const pts=Math.min(S.score,100000);await BLB.submit(LB_GAME,LB_VARIANT,pts,pts);
+        let rk=null;try{const rows=await BLB.boardPoints(LB_GAME,LB_VARIANT,null,200);const me=rows.find(r=>r.is_me);rk=me?me.rank:null;}catch(e){}
+        $('#postBox').outerHTML=`<div class="posted">Posted as ${esc(name)}${rk?` · your best ranks #${rk}`:''}</div>`;SFX.tier();paintBoard();
+      }catch(e){pb.disabled=false;pb.textContent='Post score';let n=$('#postErr');if(!n){n=document.createElement('span');n.id='postErr';n.className='postnote err';$('#postBox').appendChild(n);}n.textContent=BLB.friendly(e);}
+    });
+  }
+  $('#againBtn').addEventListener('click',start);$('#againBtn').focus({preventScroll:true});
+}
+
+/* ---------- Start ---------- */
+async function start(){
+  ac();$('#startScreen').hidden=true;$('#endScreen').hidden=true;if(intro)intro.stop();
+  S=fresh();scope.reset();scope.resize();paintHUD();newQuestion();
+  await washBanner(TIERS[0]);
+}
+
+/* ---------- Wiring ---------- */
+scope=new Scope($('#scope'));scope.start();
+intro=new Scope($('#introScope'));intro.setSpecimen('mix',false);intro.start();
+(function demo(){if(!intro.on)return;intro.kill();setTimeout(demo,3600);})();
+$('#startBtn').addEventListener('click',start);
+function paintMute(){$('#waves').style.display=muted?'none':'';$('#mute').setAttribute('aria-label',muted?'Unmute sound':'Mute sound');}
+$('#mute').addEventListener('click',()=>{muted=!muted;try{localStorage.setItem('boardside-muted',muted?'1':'0');}catch(e){}paintMute();if(!muted)SFX.on();});
+paintMute();
+addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
+  if(e.target&&e.target.tagName==='INPUT')return;
+  if(!$('#startScreen').hidden){if(e.key==='Enter'){e.preventDefault();start();}return;}
+  if(!$('#endScreen').hidden)return;
+  if(/^[1-4]$/.test(e.key)&&!S.answered){e.preventDefault();answer(+e.key-1);return;}
+  if(e.key==='Enter'&&S.answered&&!S.over){e.preventDefault();next();return;}
+  if(e.key.toLowerCase()==='s')$('#mute').click();
+});
+paintHUD();
+</script>
+</body>
+</html>
