@@ -1,0 +1,22 @@
+name: Supabase keep-alive
+
+# Pings the Boardside leaderboard database every 3 days so the
+# free Supabase project never hits the 7-day inactivity pause.
+# The URL and publishable key are already public in lb-config.js.
+
+on:
+  schedule:
+    - cron: "0 14 */3 * *"   # every 3 days, ~8-9am Central
+  workflow_dispatch:          # manual "Run workflow" button
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          curl -sf -X POST "https://kugxnegnzikqwbmxadkj.supabase.co/rest/v1/rpc/get_leaderboard" \
+            -H "apikey: sb_publishable_dUWbUHrSpZctTNT0vhPqag_Qw-PJlpb" \
+            -H "Content-Type: application/json" \
+            -d '{"p_game":"abg-blitz","p_variant":"default","p_days":null,"p_limit":1}' \
+            > /dev/null && echo "Supabase pinged OK"
