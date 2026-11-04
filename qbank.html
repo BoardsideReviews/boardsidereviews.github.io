@@ -259,6 +259,68 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
   .stem{font-size:16px}
   .calc{right:10px;bottom:10px;width:min(248px,calc(100vw - 20px))}
 }
+
+/* results list never pushes the page wider */
+.grid2>*{min-width:0}
+.res-list button{width:100%}
+
+/* side-by-side explanation */
+.playwrap{position:relative}
+.playwrap.split{max-width:1440px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;align-items:start}
+.split .side{position:sticky;top:72px;max-height:calc(100vh - 92px);overflow:auto;border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--sky2)}
+.split .side .exp{margin-top:0;border-top:0;padding-top:0}
+.side-empty{color:var(--muted);font-size:15px;text-align:center;padding:40px 10px;margin:0}
+
+/* email watermark (anti-piracy) */
+.wm{position:absolute;inset:0;pointer-events:none;user-select:none;z-index:5;background-repeat:repeat}
+@media print{body>*{display:none!important}body::after{content:"Printing is turned off for the Boardside Reviews Question Bank.";display:block;padding:40px;font:16px Inter,sans-serif}}
+
+/* settings */
+.set-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.set-row b{display:block;font-size:15px}
+.set-row small{color:var(--muted);font-size:13px}
+.swatches{display:flex;gap:8px}
+.swatches button{width:30px;height:30px;border-radius:50%;border:2px solid var(--line)}
+.swatches button[aria-pressed="true"]{outline:3px solid var(--teal);outline-offset:2px}
+.switch{position:relative;width:46px;height:26px;border-radius:13px;border:0;background:#c9d5e2;flex:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.switch[aria-checked="true"]{background:var(--teal)}
+.switch[aria-checked="true"]::after{left:23px}
+.modal .seg button{padding:7px 12px}
+
+/* night mode */
+body.dark,body.dark.playing{background:#0e1828;color:#e4ecf5}
+body.dark .top,body.dark .card,body.dark .stat,body.dark .choice,body.dark .nav .panel,body.dark .modal .card,body.dark .ad,body.dark .summ table,body.dark .summ .blk,body.dark .seg button,body.dark .chips button,body.dark .check,body.dark .btn.ghost,body.dark .btn.danger,body.dark .navgrid button,body.dark .field input{background:#16253b;color:#e4ecf5;border-color:#2a3d58}
+body.dark .btn:not(.ghost):not(.danger):not(.teal){background:#2d4a73}
+body.dark .brand,body.dark h1,body.dark h2,body.dark h3,body.dark h4,body.dark .stem{color:#eef4fb}
+body.dark .exp .narr p{color:#dbe5f0}
+body.dark .stem .data,body.dark .summ,body.dark .split .side,body.dark .ad tr:first-child td{background:#122036;border-color:#2a3d58}
+body.dark .muted,body.dark .note,body.dark .hint,body.dark .who,body.dark .setrow .meta,body.dark .refs,body.dark .stat span,body.dark .auth p,body.dark .modal p,body.dark .reasons .why,body.dark .choice .ct b,body.dark .res-list .n,body.dark .set-row small,body.dark .side-empty{color:#9fb0c6}
+body.dark .seg button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+body.dark .chips button[aria-pressed="true"]{background:#0f3f3d;border-color:#2b8a80;color:#bff0ea}
+body.dark .choice.sel{background:#123234;border-color:var(--teal-bright)}
+body.dark .choice.right{background:#123426;border-color:#3fb987}
+body.dark .choice.wrong{background:#3a1c18;border-color:#e0715c}
+body.dark .choice.struck .ct span{color:#6f8299}
+body.dark .choice .cb,body.dark .reasons,body.dark .reasons div,body.dark .subj td,body.dark .setrow,body.dark .res-list button,body.dark .set-row,body.dark .summ td,body.dark .ad td{border-color:#2a3d58}
+body.dark .reasons div.ok{background:#123426}
+body.dark .pearl{background:#0f3330;color:#d6f2ee}
+body.dark .pearl strong{color:#8fe0d6}
+body.dark .subj .bar{background:#24364f}
+body.dark .navgrid button.ans{background:#1d3553}
+body.dark .navgrid button.ok{background:#123426;color:#7fdcb0}
+body.dark .navgrid button.no{background:#3a1c18;color:#f19a88}
+body.dark .res-list button:hover{background:#1b2c45}
+body.dark .ring span{background:#16253b}
+body.dark .pill{background:#3b2f12;color:#f3cf7a}
+body.dark .pill.done{background:#0f3f3d;color:#9fe8de}
+body.dark .exp{border-top-color:#3a5070}
+body.dark .stem mark{color:#111}
+body.dark .btn.danger{color:#f19a88;border-color:#6b3a33}
+body.dark .link,body.dark .subjtag{color:var(--teal-bright)}
+body.dark .verdictbar.ok{color:#5fd3a0}
+body.dark .verdictbar.no{color:#f19a88}
+body.dark .switch{background:#3a4d68}
 </style>
 </head>
 <body>
@@ -282,12 +344,71 @@ var ICON = {
   flag: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.75.75 0 0 1 .75.75v.4l7.9-.9a.75.75 0 0 1 .8 1l-1.4 3.5 1.4 3.5a.75.75 0 0 1-.8 1l-7.9-.9V14a.75.75 0 0 1-1.5 0V2.25A.75.75 0 0 1 3 1.5z"/></svg>',
   calc: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="1.5" width="10" height="13" rx="2"/><path d="M5.5 4.5h5M5.5 8h.01M8 8h.01M10.5 8h.01M5.5 11h.01M8 11h.01M10.5 11h.01" stroke-linecap="round" stroke-width="1.9"/></svg>',
   grid: '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2"/><rect x="9" y="9" width="5.5" height="5.5" rx="1.2"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   lock: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   ok: '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>',
   no: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>'
 };
 var S = { me: null, ov: null, email: "" };          // app state
 var P = null;                                       // player state
+
+// ───────────────────────── settings (saved on this device) ─────────────────────────
+var HL = { yellow: "#ffe680", green: "#b8f0a8", blue: "#b6dcff", pink: "#ffc4e1", orange: "#ffcf96" };
+var SET = (function () {
+  var d = { dark: false, hl: "yellow", layout: "below" };
+  try { return Object.assign(d, JSON.parse(localStorage.getItem("qb_settings") || "{}")); } catch (e) { return d; }
+})();
+function applySettings() {
+  document.body.classList.toggle("dark", !!SET.dark);
+  document.body.style.setProperty("--hl", HL[SET.hl] || HL.yellow);
+  try { localStorage.setItem("qb_settings", JSON.stringify(SET)); } catch (e) {}
+}
+applySettings();
+function openSettings() {
+  var back = h("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": "Settings" });
+  function close() { back.remove(); if (P && $(".playwrap")) renderPlayer(true); }
+  function draw() {
+    var sw = h("div", { class: "swatches" }, Object.keys(HL).map(function (k) {
+      return h("button", { style: "background:" + HL[k], title: k, "aria-label": k + " highlighter", "aria-pressed": String(SET.hl === k),
+        onclick: function () { SET.hl = k; applySettings(); draw(); } });
+    }));
+    var lay = h("div", { class: "seg" }, [["below", "Below the question"], ["side", "Side by side"]].map(function (o) {
+      return h("button", { type: "button", "aria-pressed": String(SET.layout === o[0]), onclick: function () { SET.layout = o[0]; applySettings(); draw(); } }, o[1]);
+    }));
+    back.innerHTML = "";
+    back.appendChild(h("div", { class: "card" }, [
+      h("h2", null, "Settings"),
+      h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Night mode"), h("small", null, "Dark background, easier on the eyes at night")]),
+        h("button", { class: "switch", role: "switch", "aria-checked": String(!!SET.dark), "aria-label": "Night mode",
+          onclick: function () { SET.dark = !SET.dark; applySettings(); draw(); } })]),
+      h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Highlighter color"), h("small", null, "Pick the color that's easiest for you to see")]), sw]),
+      h("div", { class: "set-row", style: "flex-wrap:wrap;border-bottom:0" }, [h("div", null, [h("b", null, "Explanations"),
+        h("small", null, "Side by side keeps the question on the left (wide screens)")]), lay]),
+      h("div", { class: "row" }, h("button", { class: "btn teal", onclick: close }, "Done"))
+    ]));
+  }
+  back.addEventListener("mousedown", function (e) { if (e.target === back) close(); });
+  draw(); document.body.appendChild(back);
+}
+window.addEventListener("resize", function () {
+  clearTimeout(window.__rz);
+  window.__rz = setTimeout(function () { if (P && $(".playwrap") && SET.layout === "side") renderPlayer(true); }, 200);
+});
+
+// ───────────────────────── anti-piracy: email watermark, no copy / right-click / print ─────────────────────────
+function watermark() {
+  var t = String(S.email || "").replace(/[<>&"']/g, function (c) { return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" }[c]; });
+  var col = SET.dark ? "rgba(255,255,255,0.08)" : "rgba(11,37,69,0.08)";
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="380" height="210"><text x="190" y="110" text-anchor="middle" ' +
+    'font-family="Inter,Arial,sans-serif" font-size="15" font-weight="600" fill="' + col + '" transform="rotate(-24 190 105)">' + t + '</text></svg>';
+  return h("div", { class: "wm", "aria-hidden": "true", style: "background-image:url('data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg) + "')" });
+}
+document.addEventListener("copy", function (e) {
+  if ($(".playwrap")) { e.preventDefault(); toast("Copying is turned off in the question bank."); }
+});
+document.addEventListener("contextmenu", function (e) {
+  if (e.target.closest && e.target.closest(".playwrap")) e.preventDefault();
+});
 
 // Before launch, only these emails can get a sign-in code or use the app.
 // At launch, change LAUNCHED to true.
@@ -372,8 +493,9 @@ function modal(title, text, buttons, extra) {
 function header() {
   return h("header", { class: "top" }, h("div", { class: "wrap" }, [
     h("a", { class: "brand", href: "/", html: LOGO + '<span>Boardside Reviews <small>· Question Bank</small></span>' }),
-    S.email ? h("div", { class: "who" }, [h("span", { class: "email" }, S.email),
-      h("button", { class: "link", onclick: signOut }, "Sign out")]) : null
+    h("div", { class: "who" }, [h("button", { class: "link", onclick: openSettings }, "Settings"),
+      S.email ? h("span", { class: "email" }, S.email) : null,
+      S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null])
   ]));
 }
 function screen(nodes, playing, keepScroll) {
@@ -487,10 +609,13 @@ function segBtns(values, key, labelFn, wide) {
   });
   return wrap;
 }
+function poolN(s, p) {
+  return p === "unused" ? s.total - s.used : p === "incorrect" ? s.incorrect : p === "flagged" ? (s.flagged || 0) : s.total;
+}
 function available() {
   var subs = S.ov.subjects.filter(function (s) { return !choose.subjects.length || choose.subjects.indexOf(s.subject) >= 0; });
   var n = 0;
-  subs.forEach(function (s) { n += choose.pool === "unused" ? s.total - s.used : choose.pool === "incorrect" ? s.incorrect : s.total; });
+  subs.forEach(function (s) { n += poolN(s, choose.pool); });
   return n;
 }
 function builder() {
@@ -506,7 +631,7 @@ function fillBuilder(box) {
     var n = 0;
     ov.subjects.forEach(function (s) {
       if (choose.subjects.length && choose.subjects.indexOf(s.subject) < 0) return;
-      n += p === "unused" ? s.total - s.used : p === "incorrect" ? s.incorrect : s.total;
+      n += poolN(s, p);
     });
     return n;
   };
@@ -519,7 +644,7 @@ function fillBuilder(box) {
       if (on) choose.subjects = choose.subjects.filter(function (x) { return x !== s.subject; });
       else choose.subjects = choose.subjects.concat(s.subject);
       refreshBuilder();
-    } }, [s.subject + " ", h("small", null, String(choose.pool === "unused" ? s.total - s.used : choose.pool === "incorrect" ? s.incorrect : s.total))]));
+    } }, [s.subject + " ", h("small", null, String(poolN(s, choose.pool)))]));
   });
   var timer = h("input", { type: "checkbox" }); timer.checked = choose.timed;
   timer.onchange = function () { choose.timed = timer.checked; refreshBuilder(); };
@@ -538,8 +663,8 @@ function fillBuilder(box) {
     h("label", { class: "check" }, [timer, h("span", null, ["Time this set",
       h("small", null, "90 seconds per question" + (choose.timed ? " · " + fmtTime(n * 90) + " total" : ""))])]),
     h("div", { class: "opt-label" }, "Questions from"),
-    segBtns(["unused", "incorrect", "all"], "pool", function (v) {
-      return (v === "unused" ? "Unused" : v === "incorrect" ? "Incorrect" : "All") + " (" + poolCount(v) + ")";
+    segBtns(["unused", "incorrect", "flagged", "all"], "pool", function (v) {
+      return { unused: "Unused", incorrect: "Incorrect", flagged: "Flagged", all: "All" }[v] + " (" + poolCount(v) + ")";
     }),
     h("div", { class: "opt-label" }, "Subjects"), chips,
     h("div", { class: "startrow" }, [start,
@@ -671,20 +796,26 @@ function renderPlayer(keep) {
     h("button", { class: "tbtn", "aria-pressed": String(!!r.flagged), title: "Flag this question", onclick: function () {
       r.flagged = !r.flagged; markDirty(q); renderPlayer(true); } , html: ICON.flag + '<span class="lbl">Flag</span>' }),
     h("button", { class: "tbtn", "aria-pressed": String(P.calc), title: "Calculator", onclick: toggleCalc, html: ICON.calc + '<span class="lbl">Calculator</span>' }),
+    h("button", { class: "tbtn", title: "Settings", onclick: openSettings, html: ICON.gear + '<span class="lbl">Settings</span>' }),
     h("button", { class: "tbtn", title: "All questions", onclick: openNav, html: ICON.grid + '<span class="lbl">Questions</span>' }),
     done() ? h("button", { class: "tbtn", onclick: showResults }, "Results")
            : h("button", { class: "tbtn", onclick: endSetPrompt }, "End set")
   ]));
 
   var locked = done() || (b.mode === "learning" && r.submitted);
-  var main = h("div", { class: "playwrap" + (locked ? " locked" : "") }, [
-    h("div", { class: "subjtag" }, q.subject),
+  var side = SET.layout === "side" && window.innerWidth >= 1000;
+  var qcol = h("div", { class: "qcol" }, [
     stemArea(q),
     h("p", { class: "hint" }, "Tip: select words in the question to highlight them; tap a highlight to remove it. Tap an answer's words to cross it out."),
     choicesEl(q, locked),
-    actionsEl(q, locked),
-    q.reveal ? explanationEl(q) : null
+    actionsEl(q, locked)
   ]);
+  var exp = q.reveal ? explanationEl(q) : null;
+  var main = side
+    ? h("div", { class: "playwrap split" + (locked ? " locked" : "") }, [qcol, h("aside", { class: "side" }, exp ||
+        h("p", { class: "side-empty" }, b.mode === "learning" ? "Submit your answer to see the explanation here." : "Explanations appear here after you finish the set."))])
+    : h("div", { class: "playwrap" + (locked ? " locked" : "") }, [qcol, exp]);
+  main.appendChild(watermark());
   screen([bar, main], true, keep);
   if (P.calc) mountCalc();
 }
@@ -872,7 +1003,7 @@ async function submit(q, btn) {
     q.response.submitted = true; q.response.selected = res.selected;
     q.reveal = { answer: res.answer, explain: res.explain, correct: res.correct };
     renderPlayer(true);
-    var ex = $(".exp"); if (ex) ex.scrollIntoView({ behavior: "smooth", block: "start" });
+    var ex = $(".exp"); if (ex && !$(".split")) ex.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (e) { toast(friendly(e)); btn.disabled = false; btn.textContent = "Submit answer"; }
 }
 async function endSetPrompt() {
@@ -912,6 +1043,7 @@ function explanationEl(q) {
   });
   var narr = h("div", { class: "narr" }, paras(ex.explanation).map(function (p) { return h("p", null, p); }));
   return h("section", { class: "exp", "aria-label": "Explanation" }, [
+    h("div", { class: "subjtag", style: "margin-bottom:-6px" }, q.subject),
     h("div", { class: "verdictbar " + (om ? "om" : ok ? "ok" : "no") }, [
       h("span", { class: "dot", html: om ? "–" : ok ? ICON.ok : ICON.no }),
       h("span", null, (om ? "Omitted" : ok ? "Correct" : "Incorrect") + ". The answer is " + L + ". " + q.body.choices[L])
