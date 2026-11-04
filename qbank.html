@@ -134,6 +134,12 @@ body.playing{background:#fff}
 .tbtn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:9px;padding:7px 11px;font-size:14px;font-weight:600}
 .tbtn[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:var(--navy)}
 .tbtn svg{width:16px;height:16px}
+.tzpop{position:fixed;z-index:65;background:#fff;color:var(--navy);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(11,37,69,.22);padding:8px;display:flex;align-items:center;gap:6px}
+.tzctl button{width:40px;height:36px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:700;color:var(--navy)}
+.tzctl button:disabled{opacity:.35;cursor:default}
+.tzctl .tzv{min-width:52px;text-align:center;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;background:none;border:0;width:auto}
+body.dark .tzpop,body.dark .tzctl button{background:#16253b;color:#e4ecf5;border-color:#2a3d58}
+.playwrap{zoom:var(--tz,1)}
 .clock{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;padding:7px 11px;border-radius:9px;background:rgba(255,255,255,.1)}
 .clock.low{background:var(--coral);color:#fff}
 .playwrap{max-width:900px;margin:0 auto;padding:26px max(18px,env(safe-area-inset-left,0px)) 120px}
@@ -215,12 +221,34 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
 /* navigator */
 .nav{position:fixed;inset:0;z-index:50;background:rgba(8,16,30,.45);display:flex;justify-content:flex-end}
 .nav .panel{width:min(360px,92vw);height:100%;background:#fff;padding:20px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+/* always-on question list (left rail) */
+:root{--railw:78px}
+.qrail{position:fixed;left:0;top:var(--pbarh,56px);bottom:var(--footh,36px);width:var(--railw);z-index:20;background:#fff;border-right:1px solid var(--line);overflow-y:auto;overscroll-behavior:contain;padding:10px 8px 14px;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin}
+.qrail button{flex:none;display:flex;align-items:center;justify-content:center;gap:5px;height:34px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:700;font-size:13px;color:var(--navy);position:relative;font-variant-numeric:tabular-nums;padding:0}
+.qrail button i{font-style:normal;font-size:11px;font-weight:800;line-height:1}
+.qrail button.ans{background:var(--sky);border-color:#bcd3ea}
+.qrail button.sk{background:#eef1f5;border-style:dashed;border-color:#aab6c4;color:var(--muted)}
+.qrail button.ok{background:#e3f6ec;border-color:#9fd8bb;color:#1f7a57}
+.qrail button.no{background:var(--coral-soft);border-color:#efc2b7;color:var(--coral)}
+.qrail button.fl::after{content:"";position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--amber)}
+.qrail button.cur{outline:2.5px solid var(--navy);outline-offset:1px;z-index:1}
+.pmain{padding-left:var(--railw)}
+@media (max-width:1180px){.pbar .lbl2{display:none}}
+@media (max-width:640px){:root{--railw:46px}.qrail{padding:8px 5px 12px;gap:5px}.qrail button{height:32px;font-size:12px;border-radius:8px}.qrail button i{display:none}}
+body.dark .qrail{background:#0e1828;border-color:#2a3d58}
+body.dark .qrail button{background:#16253b;color:#e4ecf5;border-color:#2a3d58}
+body.dark .qrail button.ans{background:#1d3553}
+body.dark .qrail button.sk{background:#121d2e;color:#8fa3bb;border-color:#3a4f6b}
+body.dark .qrail button.ok{background:#123426;color:#7fdcb0;border-color:#24563f}
+body.dark .qrail button.no{background:#3a1c18;color:#f19a88;border-color:#5e2e26}
+body.dark .qrail button.cur{outline-color:#9fc3ea}
 .navgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
 .navgrid button{aspect-ratio:1;border-radius:10px;border:1px solid var(--line);background:#fff;font-weight:700;font-size:14px;position:relative}
 .navgrid button.ans{background:var(--sky);border-color:#bcd3ea}
 .navgrid button.cur{outline:2px solid var(--navy);outline-offset:1px}
 .navgrid button.ok{background:#e3f6ec;border-color:#9fd8bb;color:#1f7a57}
 .navgrid button.no{background:var(--coral-soft);border-color:#efc2b7;color:var(--coral)}
+.navgrid button.sk{background:#eef1f5;border-style:dashed;border-color:#aab6c4;color:var(--muted)}
 .navgrid button.fl::after{content:"";position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--amber)}
 .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
@@ -371,6 +399,9 @@ var ICON = {
   calc: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="1.5" width="10" height="13" rx="2"/><path d="M5.5 4.5h5M5.5 8h.01M8 8h.01M10.5 8h.01M5.5 11h.01M8 11h.01M10.5 11h.01" stroke-linecap="round" stroke-width="1.9"/></svg>',
   grid: '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2"/><rect x="9" y="9" width="5.5" height="5.5" rx="1.2"/></svg>',
   gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  zoom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M8 10.5h5M10.5 8v5"/></svg>',
+  full: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+  unfull: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
   lock: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   ok: '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>',
   no: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>'
@@ -380,13 +411,16 @@ var P = null;                                       // player state
 
 // ───────────────────────── settings (saved on this device) ─────────────────────────
 var HL = { yellow: "#ffe680", green: "#b8f0a8", blue: "#b6dcff", pink: "#ffc4e1", orange: "#ffcf96" };
+var TZ = [0.9, 1, 1.1, 1.2, 1.35];               // question text sizes (magnifying glass)
 var SET = (function () {
-  var d = { dark: false, hl: "yellow", layout: "below" };
+  var d = { dark: false, hl: "yellow", layout: "below", tz: 1 };
   try { return Object.assign(d, JSON.parse(localStorage.getItem("qb_settings") || "{}")); } catch (e) { return d; }
 })();
 function applySettings() {
   document.body.classList.toggle("dark", !!SET.dark);
   document.body.style.setProperty("--hl", HL[SET.hl] || HL.yellow);
+  if (TZ.indexOf(SET.tz) < 0) SET.tz = 1;
+  document.body.style.setProperty("--tz", String(SET.tz));
   try { localStorage.setItem("qb_settings", JSON.stringify(SET)); } catch (e) {}
 }
 applySettings();
@@ -407,6 +441,7 @@ function openSettings() {
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Night mode"), h("small", null, "Dark background, easier on the eyes at night")]),
         h("button", { class: "switch", role: "switch", "aria-checked": String(!!SET.dark), "aria-label": "Night mode",
           onclick: function () { SET.dark = !SET.dark; applySettings(); draw(); } })]),
+      h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Text size"), h("small", null, "Make the question text a little bigger or smaller")]), tzControl()]),
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Highlighter color"), h("small", null, "Pick the color that's easiest for you to see")]), sw]),
       h("div", { class: "set-row", style: "flex-wrap:wrap;border-bottom:0" }, [h("div", null, [h("b", null, "Explanations"),
         h("small", null, "Side by side keeps the question on the left (wide screens)")]), lay]),
@@ -416,6 +451,45 @@ function openSettings() {
   back.addEventListener("mousedown", function (e) { if (e.target === back) close(); });
   draw(); document.body.appendChild(back);
 }
+// Text size (magnifying glass) and full screen
+function tzControl(onchange) {
+  var box = h("div", { class: "tzctl", style: "display:flex;align-items:center;gap:6px" });
+  function draw() {
+    var i = TZ.indexOf(SET.tz);
+    box.innerHTML = "";
+    box.appendChild(h("button", { type: "button", title: "Smaller text", "aria-label": "Smaller text", disabled: i <= 0 ? "" : null,
+      onclick: function () { if (i > 0) { SET.tz = TZ[i - 1]; applySettings(); draw(); onchange && onchange(); } } }, "A−"));
+    box.appendChild(h("span", { class: "tzv", "aria-live": "polite" }, Math.round(SET.tz * 100) + "%"));
+    box.appendChild(h("button", { type: "button", title: "Larger text", "aria-label": "Larger text", disabled: i >= TZ.length - 1 ? "" : null,
+      onclick: function () { if (i < TZ.length - 1) { SET.tz = TZ[i + 1]; applySettings(); draw(); onchange && onchange(); } } }, "A+"));
+  }
+  draw(); return box;
+}
+function openTextSize(ev) {
+  var old = $(".tzpop"); if (old) { old.remove(); return; }
+  var btn = ev.currentTarget, r = btn.getBoundingClientRect();
+  var pop = h("div", { class: "tzpop", role: "dialog", "aria-label": "Text size" }, tzControl());
+  document.body.appendChild(pop);
+  var w = pop.offsetWidth;
+  pop.style.top = Math.round(r.bottom + 8) + "px";
+  pop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, Math.round(r.left + r.width / 2 - w / 2))) + "px";
+  setTimeout(function () {
+    function away(e) { if (!pop.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { pop.remove(); document.removeEventListener("mousedown", away); document.removeEventListener("touchstart", away); } }
+    document.addEventListener("mousedown", away); document.addEventListener("touchstart", away);
+  }, 0);
+}
+function fsSupported() { var d = document; return !!(d.fullscreenEnabled || d.webkitFullscreenEnabled); }
+function fsOn() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+function toggleFullscreen() {
+  var d = document, el = d.documentElement;
+  try {
+    if (fsOn()) { (d.exitFullscreen || d.webkitExitFullscreen).call(d); }
+    else { var p = (el.requestFullscreen || el.webkitRequestFullscreen).call(el); if (p && p.catch) p.catch(function () { toast("Full screen isn't available in this browser."); }); }
+  } catch (e) { toast("Full screen isn't available in this browser."); }
+}
+["fullscreenchange", "webkitfullscreenchange"].forEach(function (n) {
+  document.addEventListener(n, function () { var pop = $(".tzpop"); if (pop) pop.remove(); if (P && $(".playwrap")) renderPlayer(true); });
+});
 window.addEventListener("resize", function () {
   clearTimeout(window.__rz);
   window.__rz = setTimeout(function () { if (P && $(".playwrap") && SET.layout === "side") renderPlayer(true); }, 200);
@@ -884,8 +958,10 @@ function renderPlayer(keep) {
     h("button", { class: "tbtn", "aria-pressed": String(!!r.flagged), title: "Flag this question", onclick: function () {
       r.flagged = !r.flagged; markDirty(q); renderPlayer(true); } , html: ICON.flag + '<span class="lbl">Flag</span>' }),
     h("button", { class: "tbtn", "aria-pressed": String(P.calc), title: "Calculator", onclick: toggleCalc, html: ICON.calc + '<span class="lbl">Calculator</span>' }),
+    h("button", { class: "tbtn", title: "Text size", "aria-label": "Text size", onclick: openTextSize, html: ICON.zoom + '<span class="lbl lbl2">Text</span>' }),
+    fsSupported() ? h("button", { class: "tbtn", title: fsOn() ? "Exit full screen" : "Full screen", "aria-label": fsOn() ? "Exit full screen" : "Full screen", onclick: toggleFullscreen,
+      html: (fsOn() ? ICON.unfull : ICON.full) + '<span class="lbl lbl2">' + (fsOn() ? "Exit full screen" : "Full screen") + '</span>' }) : null,
     h("button", { class: "tbtn", title: "Settings", onclick: openSettings, html: ICON.gear + '<span class="lbl">Settings</span>' }),
-    h("button", { class: "tbtn", title: "All questions", onclick: openNav, html: ICON.grid + '<span class="lbl">Questions</span>' }),
     done() ? h("button", { class: "tbtn", onclick: showResults }, "Results")
            : h("button", { class: "tbtn", onclick: endSetPrompt }, "End set")
   ]));
@@ -905,7 +981,9 @@ function renderPlayer(keep) {
         h("p", { class: "side-empty" }, b.mode === "learning" ? "Submit your answer to see the explanation here." : "Explanations appear here after you finish the set."))])
     : h("div", { class: "playwrap" + (locked ? " locked" : "") }, [qcol, exp]);
   if (!SAMPLE) main.appendChild(watermark());
-  screen([bar, main], true, keep);
+  P.seen = P.seen || {}; P.seen[P.i] = 1;
+  screen([bar, railEl(), h("div", { class: "pmain" }, main)], true, keep);
+  placeRail();
   if (P.calc) mountCalc();
 }
 
@@ -1175,12 +1253,46 @@ function summaryEl(s) {
 }
 
 // navigator drawer
+function qStatus(q, i) {
+  var r = q.response;
+  if (q.reveal && (done() || r.submitted)) return r.selected ? (q.reveal.correct ? "ok" : "no") : "sk";
+  if (r.selected) return "ans";
+  if (P.seen && P.seen[i] && i !== P.i) return "sk";
+  return "";
+}
+var QS_LABEL = { ok: "Correct", no: "Incorrect", ans: "Answered", sk: "Skipped", "": "Not answered yet" };
+function railEl() {
+  var rail = h("nav", { class: "qrail", "aria-label": "Questions" });
+  P.qs.forEach(function (q, i) {
+    var st = qStatus(q, i), c = [st];
+    if (q.response.flagged) c.push("fl");
+    if (i === P.i) c.push("cur");
+    rail.appendChild(h("button", { class: c.join(" ").trim(), title: "Question " + (i + 1) + " · " + QS_LABEL[st] + (q.response.flagged ? " · Flagged" : ""),
+      "aria-label": "Question " + (i + 1) + ", " + QS_LABEL[st] + (q.response.flagged ? ", flagged" : ""), "aria-current": i === P.i ? "true" : null,
+      onclick: function () { P.railY = rail.scrollTop; go(i); } },
+      [String(i + 1), st === "ok" ? h("i", { "aria-hidden": "true" }, "✓") : st === "no" ? h("i", { "aria-hidden": "true" }, "✕") : null]));
+  });
+  return rail;
+}
+function placeRail() {
+  var rail = $(".qrail"), bar = $(".pbar"), foot = $(".sitefoot");
+  if (!rail) return;
+  document.body.style.setProperty("--pbarh", (bar ? bar.offsetHeight : 56) + "px");
+  document.body.style.setProperty("--footh", (foot ? foot.offsetHeight : 0) + "px");
+  if (P.railY != null) rail.scrollTop = P.railY;
+  var c = rail.querySelector(".cur");
+  if (c) {
+    var top = c.offsetTop, bot = top + c.offsetHeight;
+    if (top < rail.scrollTop + 8) rail.scrollTop = top - 8;
+    else if (bot > rail.scrollTop + rail.clientHeight - 8) rail.scrollTop = bot - rail.clientHeight + 8;
+  }
+  P.railY = rail.scrollTop;
+}
+window.addEventListener("resize", function () { if (P && $(".qrail")) placeRail(); });
 function openNav() {
   var grid = h("div", { class: "navgrid" });
   P.qs.forEach(function (q, i) {
-    var r = q.response, c = [];
-    if (q.reveal && (done() || r.submitted)) c.push(q.reveal.correct ? "ok" : "no");
-    else if (r.selected) c.push("ans");
+    var r = q.response, c = [qStatus(q, i)];
     if (r.flagged) c.push("fl");
     if (i === P.i) c.push("cur");
     grid.appendChild(h("button", { class: c.join(" "), "aria-label": "Question " + (i + 1), onclick: function () { back.remove(); go(i); } }, String(i + 1)));
@@ -1191,6 +1303,7 @@ function openNav() {
     grid,
     h("div", { class: "legend" }, [h("span", null, [h("i", { style: "background:var(--sky)" }), "Answered"]),
       h("span", null, [h("i", { style: "background:#e3f6ec" }), "Correct"]), h("span", null, [h("i", { style: "background:var(--coral-soft)" }), "Incorrect"]),
+      h("span", null, [h("i", { style: "background:#eef1f5;border:1px dashed #aab6c4" }), "Skipped"]),
       h("span", null, [h("i", { style: "background:var(--amber);border-radius:50%" }), "Flagged"])]),
     done() ? null : h("button", { class: "btn ghost", onclick: async function () { back.remove(); stopClock(); markDirty(cur(), true); await flush(); showHome(); } }, "Save and exit")
   ]));
