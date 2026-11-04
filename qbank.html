@@ -451,10 +451,6 @@ function openSettings() {
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Night mode"), h("small", null, "Dark background, easier on the eyes at night")]),
         h("button", { class: "switch", role: "switch", "aria-checked": String(!!SET.dark), "aria-label": "Night mode",
           onclick: function () { SET.dark = !SET.dark; applySettings(); draw(); } })]),
-      fsSupported() ? h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Full screen"), h("small", null, "Hide the browser bars while you work")]),
-        h("button", { class: "switch", role: "switch", "aria-checked": String(fsOn()), "aria-label": "Full screen",
-          onclick: function () { toggleFullscreen(); setTimeout(draw, 350); } })]) : null,
-      h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Text size"), h("small", null, "Make the question text a little bigger or smaller")]), tzControl()]),
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Highlighter color"), h("small", null, "Pick the color that's easiest for you to see")]), sw]),
       h("div", { class: "set-row", style: "flex-wrap:wrap;border-bottom:0" }, [h("div", null, [h("b", null, "Explanations"),
         h("small", null, "Side by side keeps the question on the left (wide screens)")]), lay]),
@@ -968,11 +964,11 @@ function renderPlayer(keep) {
       h("small", null, (b.mode === "learning" ? "Learning" : "Exam") + (done() ? " · Review" : ""))]),
     done() ? null : h("span", { class: "clock", id: "clock", title: b.timed ? "Time left" : "Time spent" },
       b.timed ? fmtTime(remaining()) : fmtTime(P.elapsed)),
-    h("button", { class: "tbtn", "aria-pressed": String(P.calc), title: "Calculator", onclick: toggleCalc, html: ICON.calc + '<span class="lbl">Calculator</span>' }),
+    h("button", { class: "tbtn", "aria-pressed": String(P.calc), title: "Calculator", "aria-label": "Calculator", onclick: toggleCalc, html: ICON.calc }),
     h("button", { class: "tbtn", title: "Text size", "aria-label": "Text size", onclick: openTextSize, html: ICON.zoom }),
     fsSupported() ? h("button", { class: "tbtn", title: fsOn() ? "Exit full screen" : "Full screen", "aria-label": fsOn() ? "Exit full screen" : "Full screen", onclick: toggleFullscreen,
       html: fsOn() ? ICON.unfull : ICON.full }) : null,
-    h("button", { class: "tbtn", title: "Settings", onclick: openSettings, html: ICON.gear + '<span class="lbl">Settings</span>' }),
+    h("button", { class: "tbtn", title: "Settings", "aria-label": "Settings", onclick: openSettings, html: ICON.gear }),
     done() ? h("button", { class: "tbtn", onclick: showResults }, "Results")
            : h("button", { class: "tbtn", onclick: endSetPrompt }, "End set")
   ]));
