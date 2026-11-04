@@ -398,7 +398,7 @@ window.addEventListener("resize", function () {
 // ───────────────────────── anti-piracy: email watermark, no copy / right-click / print ─────────────────────────
 function watermark() {
   var t = String(S.email || "").replace(/[<>&"']/g, function (c) { return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" }[c]; });
-  var col = SET.dark ? "rgba(255,255,255,0.08)" : "rgba(11,37,69,0.08)";
+  var col = SET.dark ? "rgba(255,255,255,0.045)" : "rgba(11,37,69,0.04)";
   var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="380" height="210"><text x="190" y="110" text-anchor="middle" ' +
     'font-family="Inter,Arial,sans-serif" font-size="15" font-weight="600" fill="' + col + '" transform="rotate(-24 190 105)">' + t + '</text></svg>';
   return h("div", { class: "wm", "aria-hidden": "true", style: "background-image:url('data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg) + "')" });
