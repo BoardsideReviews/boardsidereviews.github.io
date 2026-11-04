@@ -656,7 +656,7 @@ var HELLO = "hello@boardsidereviews.com";
 var submitLink = h("a", { href: "mailto:" + HELLO + "?subject=" + encodeURIComponent("Question submission for Boardside Reviews") +
   "&body=" + encodeURIComponent("Name (as you'd like to be credited):\nTraining level / institution:\n\nQuestion stem:\n\nAnswer choices (A–E):\n\nCorrect answer and explanation:\n\nReference:\n"),
   html: 'Want to submit a question and be credited? Contact <b>' + HELLO + '</b>' });
-document.body.appendChild(h("div", { class: "sitefoot", role: "contentinfo" }, [footLink, h("span", { class: "sep", "aria-hidden": "true" }, "·"), submitLink]));
+document.body.appendChild(h("div", { class: "sitefoot", role: "contentinfo" }, [submitLink, h("span", { class: "sep", "aria-hidden": "true" }, "·"), footLink]));
 function setFootContext(body) { footLink.href = supportHref(body); }
 function screen(nodes, playing, keepScroll) {
   if (!playing) setFootContext();
