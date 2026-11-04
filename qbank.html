@@ -1,22 +1,4 @@
-
-  if (!allowed(S.email)) return showNotOpen();
-
-// Before launch, only these emails can get a sign-in code or use the app.
-// At launch, change LAUNCHED to true.
-var LAUNCHED = false;
-var PREVIEW_EMAILS = ["boardsidereviews@gmail.com"];
-function allowed(email) { return LAUNCHED || PREVIEW_EMAILS.indexOf(String(email || "").toLowerCase()) >= 0; }
-function showNotOpen() {
-  stopClock();
-  screen([header(), h("main", { class: "wrap" }, h("div", { class: "auth" }, h("div", { class: "card lock" }, [
-    h("div", { class: "ic", html: ICON.lock }),
-    h("h1", null, "The Question Bank isn't open yet."),
-    h("p", null, "It opens when Boardside Reviews launches. Join the waitlist to hear first."),
-    h("a", { class: "btn teal", href: "/" }, "Back to Boardside Reviews"),
-    S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null
-  ])))]);
-}
-    if (!allowed(v)) { showNotOpen(); return; }<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -307,6 +289,22 @@ var ICON = {
 var S = { me: null, ov: null, email: "" };          // app state
 var P = null;                                       // player state
 
+// Before launch, only these emails can get a sign-in code or use the app.
+// At launch, change LAUNCHED to true.
+var LAUNCHED = false;
+var PREVIEW_EMAILS = ["boardsidereviews@gmail.com"];
+function allowed(email) { return LAUNCHED || PREVIEW_EMAILS.indexOf(String(email || "").toLowerCase()) >= 0; }
+function showNotOpen() {
+  stopClock();
+  screen([header(), h("main", { class: "wrap" }, h("div", { class: "auth" }, h("div", { class: "card lock" }, [
+    h("div", { class: "ic", html: ICON.lock }),
+    h("h1", null, "The Question Bank isn't open yet."),
+    h("p", null, "It opens when Boardside Reviews launches. Join the waitlist to hear first."),
+    h("a", { class: "btn teal", href: "/" }, "Back to Boardside Reviews"),
+    S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null
+  ])))]);
+}
+
 // tiny DOM helper: h("div", {class:"x", onclick:fn}, [children or text])
 function h(tag, props, kids) {
   var e = document.createElement(tag);
@@ -404,6 +402,7 @@ function showLogin(prefill) {
     e.preventDefault(); err.textContent = "";
     var v = input.value.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { err.textContent = "Enter a valid email address."; return; }
+    if (!allowed(v)) { showNotOpen(); return; }
     btn.disabled = true; btn.textContent = "Sending…";
     var r = await sb.auth.signInWithOtp({ email: v, options: { shouldCreateUser: true } });
     if (r.error) { err.textContent = friendly(r.error); btn.disabled = false; btn.textContent = "Email me a code"; return; }
@@ -1076,6 +1075,7 @@ async function boot() {
   var user = s.data && s.data.session && s.data.session.user;
   if (!user) return showLogin();
   S.email = (user.email || "").toLowerCase();
+  if (!allowed(S.email)) return showNotOpen();
   try { S.me = await rpc("qb_me"); } catch (e) { if (!/not_signed_in|JWT/i.test(e.message || "")) homeError(e); return; }
   if (!S.me.access) return showLocked();
   showHome();
