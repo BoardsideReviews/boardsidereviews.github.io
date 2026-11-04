@@ -1,4 +1,22 @@
-<!doctype html>
+
+  if (!allowed(S.email)) return showNotOpen();
+
+// Before launch, only these emails can get a sign-in code or use the app.
+// At launch, change LAUNCHED to true.
+var LAUNCHED = false;
+var PREVIEW_EMAILS = ["boardsidereviews@gmail.com"];
+function allowed(email) { return LAUNCHED || PREVIEW_EMAILS.indexOf(String(email || "").toLowerCase()) >= 0; }
+function showNotOpen() {
+  stopClock();
+  screen([header(), h("main", { class: "wrap" }, h("div", { class: "auth" }, h("div", { class: "card lock" }, [
+    h("div", { class: "ic", html: ICON.lock }),
+    h("h1", null, "The Question Bank isn't open yet."),
+    h("p", null, "It opens when Boardside Reviews launches. Join the waitlist to hear first."),
+    h("a", { class: "btn teal", href: "/" }, "Back to Boardside Reviews"),
+    S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null
+  ])))]);
+}
+    if (!allowed(v)) { showNotOpen(); return; }<!doctype html>
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
