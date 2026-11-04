@@ -493,7 +493,52 @@ function friendly(err) {
   if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return "Couldn't reach the server. Check your connection and try again.";
   return m || "Something went wrong. Try again.";
 }
+// ───────────────────────── free sample (no login, fixed 40 questions, runs in the browser) ─────────────────────────
+var SAMPLE = /[?&]sample(=|&|$)/.test(location.search);
+var SD = null;                                   // sample questions + images
+var SKEY = "qb_sample_v1";
+function sLoad() { try { return JSON.parse(localStorage.getItem(SKEY) || "null"); } catch (e) { return null; } }
+function sSave(st) { try { localStorage.setItem(SKEY, JSON.stringify(st)); } catch (e) {} }
+function sState() {
+  var st = sLoad();
+  if (!st || st.v !== SD.version) st = { v: SD.version, idx: 0, elapsed: 0, status: "active", resp: {} };
+  return st;
+}
+function sBlock(st) {
+  var nc = SD.questions.filter(function (q) { var r = st.resp[q.id]; return r && r.correct; }).length;
+  return {
+    block: { id: "sample", mode: "learning", timed: false, time_limit_sec: 0, status: st.status, current_idx: st.idx,
+      elapsed_sec: st.elapsed, n_correct: nc, n: SD.questions.length },
+    questions: SD.questions.map(function (q, i) {
+      var r = st.resp[q.id] || null;
+      return { id: q.id, idx: i, subject: q.subject, body: q.body, has_image: q.has_image,
+        response: r ? { selected: r.selected, struck: r.struck || "", highlights: r.highlights || [], flagged: !!r.flagged,
+          submitted: !!r.submitted, time_sec: r.time_sec || 0 } : null,
+        reveal: (st.status === "completed" || (r && r.submitted)) ? { answer: q.answer, explain: q.explain, correct: !!(r && r.correct), num: q.num } : null };
+    })
+  };
+}
+function sampleRpc(name, a) {
+  var st = sState(), q;
+  if (name === "qb_get_block") return sBlock(st);
+  if (name === "qb_save") {
+    var r = st.resp[a.p_qid] = Object.assign(st.resp[a.p_qid] || {}, { selected: a.p_selected, struck: a.p_struck,
+      highlights: a.p_highlights, flagged: a.p_flagged, time_sec: a.p_time_sec });
+    st.idx = a.p_current_idx; st.elapsed = a.p_elapsed_sec; sSave(st); return null;
+  }
+  if (name === "qb_submit") {
+    q = SD.questions.filter(function (x) { return x.id === a.p_qid; })[0];
+    var rs = st.resp[a.p_qid] = st.resp[a.p_qid] || {};
+    if (!rs.submitted) { rs.selected = a.p_selected; rs.submitted = true; rs.correct = a.p_selected === q.answer; }
+    sSave(st);
+    return { answer: q.answer, explain: q.explain, correct: rs.correct, selected: rs.selected, num: q.num };
+  }
+  if (name === "qb_finish") { st.status = "completed"; st.elapsed = a.p_elapsed_sec; sSave(st); return sBlock(st); }
+  if (name === "qb_image") { var d = SD.images[a.p_qid]; return d ? { mime: "image/jpeg", data: d } : null; }
+  throw new Error("not_available_in_sample");
+}
 async function rpc(name, args) {
+  if (SAMPLE) return sampleRpc(name, args || {});
   var r = await sb.rpc(name, args || {});
   if (r.error) {
     if (/no_access/.test(r.error.message)) { showLocked(); throw r.error; }
@@ -523,9 +568,10 @@ function supportHref(body) {
 }
 function header() {
   return h("header", { class: "top" }, [h("div", { class: "wrap" }, [
-    h("a", { class: "brand", href: "/", html: LOGO + '<span>Boardside Reviews <small>· Question Bank</small></span>' }),
+    h("a", { class: "brand", href: "/", html: LOGO + '<span>Boardside Reviews <small>· Question Bank' + (SAMPLE ? ' · Free sample' : '') + '</small></span>' }),
     h("div", { class: "who" }, [
       h("button", { class: "link", onclick: openSettings }, "Settings"),
+      SAMPLE ? h("a", { class: "link", href: "https://forms.gle/9qnowgoDevR742wB7", target: "_blank", rel: "noopener" }, "Join the waitlist") : null,
       S.email ? h("span", { class: "email" }, S.email) : null,
       S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null])
   ])]);
@@ -612,6 +658,7 @@ function showLocked() {
 var choose = { count: 20, mode: "learning", timed: false, pool: "unused", subjects: [] };
 
 async function showHome() {
+  if (SAMPLE) return showSampleHome();
   stopClock(); P = null;
   screen([header(), h("div", { class: "spin" })]);
   try { S.ov = await rpc("qb_overview"); } catch (e) { if (!/no_access|not_signed_in/.test(e.message || "")) homeError(e); return; }
@@ -857,7 +904,7 @@ function renderPlayer(keep) {
     ? h("div", { class: "playwrap split" + (locked ? " locked" : "") }, [qcol, h("aside", { class: "side" }, exp ||
         h("p", { class: "side-empty" }, b.mode === "learning" ? "Submit your answer to see the explanation here." : "Explanations appear here after you finish the set."))])
     : h("div", { class: "playwrap" + (locked ? " locked" : "") }, [qcol, exp]);
-  main.appendChild(watermark());
+  if (!SAMPLE) main.appendChild(watermark());
   screen([bar, main], true, keep);
   if (P.calc) mountCalc();
 }
@@ -1257,7 +1304,33 @@ document.addEventListener("keydown", function (e) {
 });
 
 // ───────────────────────── start ─────────────────────────
+function showSampleHome() {
+  stopClock(); P = null;
+  var st = sState(), answered = Object.keys(st.resp).filter(function (k) { return st.resp[k].submitted; }).length;
+  var n = SD.questions.length, started = answered > 0 || st.idx > 0, finished = st.status === "completed";
+  var subj = {}; SD.questions.forEach(function (q) { subj[q.subject] = 1; });
+  screen([header(), h("main", { class: "wrap page" }, h("div", { class: "stack" }, [
+    h("section", { class: "card" }, [
+      h("p", { class: "eyebrow", style: "margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--teal)" }, "FREE SAMPLE"),
+      h("h1", null, n + " questions, the real interface."),
+      h("p", { class: "muted", style: "margin:8px 0 0;max-width:720px" }, "This is the Boardside question bank, in learning mode: answer each question, then see why every choice is right or wrong, with a teaching pearl. " +
+        "It's the same " + n + " questions every time, from " + Object.keys(subj).length + " subjects. No sign-up needed; your progress stays in this browser."),
+      h("p", { class: "muted", style: "margin:10px 0 0;max-width:720px" }, "Highlight text, cross out choices, flag questions, use the calculator and change the settings, just like the full question bank. The full bank (about 1,000 questions) is coming soon."),
+      h("div", { class: "actions", style: "margin-top:18px" }, [
+        h("button", { class: "btn teal", onclick: function () { openBlock("sample"); } }, finished ? "Review your answers" : started ? "Resume (" + answered + " of " + n + " answered)" : "Start the free sample"),
+        started ? h("button", { class: "btn ghost", onclick: function () { try { localStorage.removeItem(SKEY); } catch (e) {} showSampleHome(); } }, "Start over") : null,
+        h("a", { class: "btn ghost", href: "https://forms.gle/9qnowgoDevR742wB7", target: "_blank", rel: "noopener" }, "Join the waitlist")
+      ])
+    ])
+  ]))]);
+}
 async function boot() {
+  if (SAMPLE) {
+    screen([header(), h("div", { class: "spin" })]);
+    try { SD = await (await fetch("qbank-sample.json", { cache: "no-cache" })).json(); }
+    catch (e) { screen([header(), h("main", { class: "wrap page" }, h("div", { class: "card" }, "Couldn't load the sample. Please reload the page."))]); return; }
+    return showSampleHome();
+  }
   var s = await sb.auth.getSession();
   var user = s.data && s.data.session && s.data.session.user;
   if (!user) return showLogin();
