@@ -43,15 +43,14 @@ h1,h2,h3,h4{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.01
 .btn.sm{padding:7px 12px;font-size:14px;border-radius:8px}
 .btn:disabled{opacity:.45;cursor:default}
 .link{background:none;border:0;padding:0;color:var(--teal);font-weight:600;font-size:14px}
-.support{font-size:13px;color:var(--muted);text-decoration:none;white-space:nowrap}
-.support b{color:var(--teal);font-weight:600}
-.support:hover b{text-decoration:underline}
-.support .short{display:none}
-.supbar{border-top:1px solid #eef2f6;background:#f7fafc}
 .who .link{white-space:nowrap}
-body.dark .support b{color:var(--teal-bright)}
-.supbar .wrap{display:flex;justify-content:flex-end;min-height:30px;align-items:center}
-body.dark .supbar{background:#101d31;border-color:#1f2e45}
+body{padding-bottom:calc(38px + env(safe-area-inset-bottom))}
+.sitefoot{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid #e3ebf3;text-align:center;font-size:13px;color:var(--muted);padding:8px 12px calc(8px + env(safe-area-inset-bottom));line-height:1.4}
+.sitefoot a{color:inherit;text-decoration:none}
+.sitefoot b{color:var(--teal);font-weight:600}
+.sitefoot a:hover b{text-decoration:underline}
+body.dark .sitefoot{background:#101d31;border-color:#1f2e45;color:#9fb0c6}
+body.dark .sitefoot b{color:var(--teal-bright)}
 .concern{margin-top:22px;border:1px solid #e3ebf3;border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center;background:#f7fafc}
 .concern b{display:block;color:var(--navy);font-size:15px;margin-bottom:2px}
 .concern span{font-size:14px;color:var(--muted)}
@@ -225,7 +224,7 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
 
 /* calculator */
-.calc{position:fixed;right:18px;bottom:18px;z-index:60;width:248px;background:#152f52;border-radius:16px;box-shadow:0 18px 48px rgba(0,0,0,.35);color:#fff;user-select:none;touch-action:none}
+.calc{position:fixed;right:18px;bottom:54px;z-index:60;width:248px;background:#152f52;border-radius:16px;box-shadow:0 18px 48px rgba(0,0,0,.35);color:#fff;user-select:none;touch-action:none}
 .calc .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 12px 4px;cursor:move;font-size:13px;font-weight:600;opacity:.85}
 .calc .hd button{background:none;border:0;color:#fff;font-size:18px;line-height:1;padding:2px 6px}
 .calc .scr{margin:4px 12px 10px;background:#0b2545;border-radius:10px;padding:10px 12px;text-align:right;min-height:64px}
@@ -259,7 +258,7 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
 .res-list .r{font-weight:700;font-size:12px;width:76px;text-align:right}
 .res-list .r.ok{color:#1f7a57}.res-list .r.no{color:var(--coral)}.res-list .r.om{color:var(--muted)}
 
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:95;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toast{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:95;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .spin{width:28px;height:28px;border:3px solid #d6e0ea;border-top-color:var(--teal);border-radius:50%;animation:sp 0.8s linear infinite;margin:60px auto}
 @keyframes sp{to{transform:rotate(360deg)}}
 
@@ -274,13 +273,12 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
   .choice .cb{width:46px}
 }
 @media (max-width:600px){
-  .supbar .wrap{justify-content:center}
-  .support{font-size:12px}
+  .sitefoot{font-size:12px}
 }
 @media (max-width:480px){
   .who .email{display:none}
   .stem{font-size:16px}
-  .calc{right:10px;bottom:10px;width:min(248px,calc(100vw - 20px))}
+  .calc{right:10px;bottom:46px;width:min(248px,calc(100vw - 20px))}
 }
 
 /* results list never pushes the page wider */
@@ -318,7 +316,7 @@ body.dark .btn:not(.ghost):not(.danger):not(.teal){background:#2d4a73}
 body.dark .brand,body.dark h1,body.dark h2,body.dark h3,body.dark h4,body.dark .stem{color:#eef4fb}
 body.dark .exp .narr p{color:#dbe5f0}
 body.dark .stem .data,body.dark .summ,body.dark .split .side,body.dark .ad tr:first-child td{background:#122036;border-color:#2a3d58}
-body.dark .support,body.dark .muted,body.dark .note,body.dark .hint,body.dark .who,body.dark .setrow .meta,body.dark .refs,body.dark .stat span,body.dark .auth p,body.dark .modal p,body.dark .reasons .why,body.dark .choice .ct b,body.dark .res-list .n,body.dark .set-row small,body.dark .side-empty{color:#9fb0c6}
+body.dark .muted,body.dark .note,body.dark .hint,body.dark .who,body.dark .setrow .meta,body.dark .refs,body.dark .stat span,body.dark .auth p,body.dark .modal p,body.dark .reasons .why,body.dark .choice .ct b,body.dark .res-list .n,body.dark .set-row small,body.dark .side-empty{color:#9fb0c6}
 body.dark .seg button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
 body.dark .chips button[aria-pressed="true"]{background:#0f3f3d;border-color:#2b8a80;color:#bff0ea}
 body.dark .choice.sel{background:#123234;border-color:var(--teal-bright)}
@@ -526,13 +524,14 @@ function header() {
       h("button", { class: "link", onclick: openSettings }, "Settings"),
       S.email ? h("span", { class: "email" }, S.email) : null,
       S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null])
-  ]), supportStrip()]);
+  ])]);
 }
-function supportStrip() {
-  return h("div", { class: "supbar" }, h("div", { class: "wrap" },
-    h("a", { class: "support", href: supportHref(), html: '<span class="long">Issues or errata? Contact </span><span class="short">Issues or errata? Email </span><b>' + SUPPORT + '</b>' })));
-}
+// Always-visible bottom bar (lives outside #app so every screen keeps it)
+var footLink = h("a", { href: supportHref(), html: 'Contact <b>' + SUPPORT + '</b> for concerns' });
+document.body.appendChild(h("div", { class: "sitefoot", role: "contentinfo" }, footLink));
+function setFootContext(body) { footLink.href = supportHref(body); }
 function screen(nodes, playing, keepScroll) {
+  if (!playing) setFootContext();
   var y = window.scrollY;
   document.body.classList.toggle("playing", !!playing);
   document.querySelectorAll(".calc").forEach(function (c) { c.remove(); });
@@ -830,14 +829,13 @@ function renderPlayer(keep) {
     h("button", { class: "tbtn", "aria-pressed": String(!!r.flagged), title: "Flag this question", onclick: function () {
       r.flagged = !r.flagged; markDirty(q); renderPlayer(true); } , html: ICON.flag + '<span class="lbl">Flag</span>' }),
     h("button", { class: "tbtn", "aria-pressed": String(P.calc), title: "Calculator", onclick: toggleCalc, html: ICON.calc + '<span class="lbl">Calculator</span>' }),
-    h("a", { class: "tbtn", title: "Report an issue or erratum to " + SUPPORT, style: "text-decoration:none",
-      href: supportHref((q.reveal && q.reveal.num ? "Question ID: " + q.reveal.num + "\n" : "") + "Set: " + b.id + "\nQuestion " + (P.i + 1) + " of " + n + "\n\n"), html: ICON.mail + '<span class="lbl">Report issue</span>' }),
     h("button", { class: "tbtn", title: "Settings", onclick: openSettings, html: ICON.gear + '<span class="lbl">Settings</span>' }),
     h("button", { class: "tbtn", title: "All questions", onclick: openNav, html: ICON.grid + '<span class="lbl">Questions</span>' }),
     done() ? h("button", { class: "tbtn", onclick: showResults }, "Results")
            : h("button", { class: "tbtn", onclick: endSetPrompt }, "End set")
   ]));
 
+  setFootContext((q.reveal && q.reveal.num ? "Question ID: " + q.reveal.num + "\n" : "") + "Set: " + b.id + "\nQuestion " + (P.i + 1) + " of " + n + "\n\n");
   var locked = done() || (b.mode === "learning" && r.submitted);
   var side = SET.layout === "side" && window.innerWidth >= 1000;
   var qcol = h("div", { class: "qcol" }, [
