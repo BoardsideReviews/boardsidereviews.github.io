@@ -212,6 +212,9 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
 
 .exp{margin-top:26px;border-top:2px solid var(--navy);padding-top:20px;display:flex;flex-direction:column;gap:16px}
 .verdictbar{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+.choice .cpct{flex:none;align-self:center;font-size:12px;font-weight:600;color:var(--muted);padding:0 14px 0 8px;font-variant-numeric:tabular-nums}
+.choice .cpct + .verdict{padding-left:0}
+.cstat{margin:-6px 0 0;font-size:14px;color:var(--muted)}
 .verdictbar .dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;flex:none}
 .verdictbar.ok .dot{background:#2f9e74}.verdictbar.ok{color:#1f7a57}
 .verdictbar.no .dot{background:var(--coral)}.verdictbar.no{color:var(--coral)}
@@ -1336,8 +1339,27 @@ function imageEl(q) {
 }
 
 // answer choices: box = choose, words = cross out
+// Share of learners who chose each option (first answers only, shown once 20 learners have answered).
+function choiceStats(q) {
+  if (SAMPLE || !P || !q.reveal || !q.response.submitted) return null;
+  P.stats = P.stats || {};
+  var st = P.stats[q.id];
+  if (st === undefined) {
+    P.stats[q.id] = null;                                   // loading
+    rpcQuiet("qb_choice_stats", { p_qid: q.id }).then(function (d) {
+      P.stats[q.id] = d || { ready: false };
+      if (d && d.ready && cur() && cur().id === q.id && $(".playwrap")) renderPlayer(true);
+    });
+    return null;
+  }
+  return st && st.ready ? st : null;
+}
+async function rpcQuiet(name, args) {
+  try { var r = await sb.rpc(name, args || {}); return r.error ? null : r.data; } catch (e) { return null; }
+}
 function choicesEl(q, locked) {
   var r = q.response, rv = q.reveal, list = h("div", { class: "choices", role: "radiogroup", "aria-label": "Answer choices" });
+  var cs = choiceStats(q);
   ["A", "B", "C", "D", "E"].forEach(function (L) {
     var text = q.body.choices[L]; if (text == null) return;
     var cls = "choice";
@@ -1353,6 +1375,7 @@ function choicesEl(q, locked) {
         onclick: function () { if (!locked) select(q, L); }, html: '<i>' + ICON.check + '</i>' }),
       h("button", { class: "ct", title: "Cross out", "aria-pressed": String((r.struck || "").indexOf(L) >= 0),
         onclick: function () { strike(q, L); } }, [h("b", null, L + "."), h("span", null, text)]),
+      cs ? h("span", { class: "cpct", title: "Share of learners who chose " + L }, pct(cs[L] || 0, cs.n) + "%") : null,
       verdict ? h("span", { class: "verdict" }, verdict) : null
     ]));
   });
@@ -1443,6 +1466,7 @@ function explanationEl(q) {
       h("span", { class: "dot", html: om ? "–" : ok ? ICON.ok : ICON.no }),
       h("span", null, (om ? "Omitted" : ok ? "Correct" : "Incorrect") + ". The answer is " + L + ". " + q.body.choices[L])
     ]),
+    (function () { var cs = choiceStats(q); return cs ? h("p", { class: "cstat" }, pct(cs[L] || 0, cs.n) + "% of learners answered this correctly.") : null; })(),
     narr,
     h("h3", null, "Why each choice is right or wrong"), reasons,
     ex.pearl ? h("div", { class: "pearl" }, [h("strong", null, "Teaching pearl"), ex.pearl]) : null
