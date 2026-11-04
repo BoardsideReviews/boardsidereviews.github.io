@@ -45,8 +45,10 @@ h1,h2,h3,h4{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.01
 .link{background:none;border:0;padding:0;color:var(--teal);font-weight:600;font-size:14px}
 .who .link{white-space:nowrap}
 body{padding-bottom:calc(38px + env(safe-area-inset-bottom))}
+@media (max-width:760px){body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}}
 .sitefoot{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid #e3ebf3;text-align:center;font-size:13px;color:var(--muted);padding:8px 12px calc(8px + env(safe-area-inset-bottom));line-height:1.4}
 .sitefoot a{color:inherit;text-decoration:none}
+.sitefoot .sep{margin:0 10px;opacity:.6}
 .sitefoot b{color:var(--teal);font-weight:600}
 .sitefoot a:hover b{text-decoration:underline}
 body.dark .sitefoot{background:#101d31;border-color:#1f2e45;color:#9fb0c6}
@@ -272,13 +274,15 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
   .pbar .lbl{display:none}
   .choice .cb{width:46px}
 }
-@media (max-width:600px){
+@media (max-width:760px){
   .sitefoot{font-size:12px}
+  .sitefoot .sep{display:none}
+  .sitefoot a{display:block}
 }
 @media (max-width:480px){
   .who .email{display:none}
   .stem{font-size:16px}
-  .calc{right:10px;bottom:46px;width:min(248px,calc(100vw - 20px))}
+  .calc{right:10px;bottom:80px;width:min(248px,calc(100vw - 20px))}
 }
 
 /* results list never pushes the page wider */
@@ -528,7 +532,11 @@ function header() {
 }
 // Always-visible bottom bar (lives outside #app so every screen keeps it)
 var footLink = h("a", { href: supportHref(), html: 'Contact <b>' + SUPPORT + '</b> for concerns' });
-document.body.appendChild(h("div", { class: "sitefoot", role: "contentinfo" }, footLink));
+var HELLO = "hello@boardsidereviews.com";
+var submitLink = h("a", { href: "mailto:" + HELLO + "?subject=" + encodeURIComponent("Question submission for Boardside Reviews") +
+  "&body=" + encodeURIComponent("Name (as you'd like to be credited):\nTraining level / institution:\n\nQuestion stem:\n\nAnswer choices (A–E):\n\nCorrect answer and explanation:\n\nReference:\n"),
+  html: 'Want to submit a question and be credited? Contact <b>' + HELLO + '</b>' });
+document.body.appendChild(h("div", { class: "sitefoot", role: "contentinfo" }, [footLink, h("span", { class: "sep", "aria-hidden": "true" }, "·"), submitLink]));
 function setFootContext(body) { footLink.href = supportHref(body); }
 function screen(nodes, playing, keepScroll) {
   if (!playing) setFootContext();
