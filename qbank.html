@@ -143,6 +143,13 @@ body.dark .tzpop,body.dark .tzctl button{background:#16253b;color:#e4ecf5;border
 .clock{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;padding:7px 11px;border-radius:9px;background:rgba(255,255,255,.1)}
 .clock.low{background:var(--coral);color:#fff}
 .playwrap{max-width:900px;margin:0 auto;padding:26px max(18px,env(safe-area-inset-left,0px)) 120px}
+.qtools{display:flex;align-items:center;margin:-8px 0 8px}
+.qflag{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:#fff;color:#9aa8b8;padding:0}
+.qflag svg{width:17px;height:17px}
+.qflag:hover{color:var(--navy);border-color:#b9c6d4}
+.qflag[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:var(--navy)}
+body.dark .qflag{background:#16253b;border-color:#2a3d58;color:#7f93ab}
+body.dark .qflag[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:#0e1828}
 .subjtag{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--teal);text-transform:uppercase;margin-bottom:10px}
 .stem{font-size:17px;line-height:1.65;color:#14263f}
 .stem p{margin:0 0 12px}
@@ -177,6 +184,8 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
 .choice.struck .ct span{text-decoration:line-through;text-decoration-thickness:2px;color:#93a1b2}
 .choice.struck .ct b{color:#b3bfcc}
 .choice .verdict{flex:none;align-self:center;font-size:12px;font-weight:700;padding:0 14px;white-space:nowrap}
+.choice .ct{min-width:0;overflow-wrap:anywhere}
+@media (max-width:480px){.choice .verdict{padding:0 8px 0 4px;white-space:normal;max-width:64px;text-align:right;line-height:1.2}}
 .choice.right{border-color:#2f9e74;background:#eefaf4}
 .choice.right .verdict{color:#1f7a57}
 .choice.wrong{border-color:var(--coral);background:var(--coral-soft)}
@@ -233,7 +242,8 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
 .qrail button.fl::after{content:"";position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--amber)}
 .qrail button.cur{outline:2.5px solid var(--navy);outline-offset:1px;z-index:1}
 .pmain{padding-left:var(--railw)}
-@media (max-width:1180px){.pbar .lbl2{display:none}}
+.qshort{display:none}
+@media (max-width:480px){.qlong,.pbar .qpos small{display:none}.qshort{display:inline}.pbar .wrap{gap:6px;padding-left:12px;padding-right:12px}.tbtn{padding:7px 9px}.clock{padding:7px 8px}}
 @media (max-width:640px){:root{--railw:46px}.qrail{padding:8px 5px 12px;gap:5px}.qrail button{height:32px;font-size:12px;border-radius:8px}.qrail button i{display:none}}
 body.dark .qrail{background:#0e1828;border-color:#2a3d58}
 body.dark .qrail button{background:#16253b;color:#e4ecf5;border-color:#2a3d58}
@@ -441,6 +451,9 @@ function openSettings() {
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Night mode"), h("small", null, "Dark background, easier on the eyes at night")]),
         h("button", { class: "switch", role: "switch", "aria-checked": String(!!SET.dark), "aria-label": "Night mode",
           onclick: function () { SET.dark = !SET.dark; applySettings(); draw(); } })]),
+      fsSupported() ? h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Full screen"), h("small", null, "Hide the browser bars while you work")]),
+        h("button", { class: "switch", role: "switch", "aria-checked": String(fsOn()), "aria-label": "Full screen",
+          onclick: function () { toggleFullscreen(); setTimeout(draw, 350); } })]) : null,
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Text size"), h("small", null, "Make the question text a little bigger or smaller")]), tzControl()]),
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Highlighter color"), h("small", null, "Pick the color that's easiest for you to see")]), sw]),
       h("div", { class: "set-row", style: "flex-wrap:wrap;border-bottom:0" }, [h("div", null, [h("b", null, "Explanations"),
@@ -951,16 +964,14 @@ document.addEventListener("visibilitychange", function () { if (document.hidden 
 function renderPlayer(keep) {
   var q = cur(), n = P.qs.length, b = P.b, r = q.response;
   var bar = h("div", { class: "pbar" }, h("div", { class: "wrap" }, [
-    h("div", { class: "qpos" }, ["Question " + (P.i + 1) + " of " + n,
+    h("div", { class: "qpos" }, [h("span", { class: "qlong" }, "Question " + (P.i + 1) + " of " + n), h("span", { class: "qshort", "aria-hidden": "true" }, (P.i + 1) + " / " + n),
       h("small", null, (b.mode === "learning" ? "Learning" : "Exam") + (done() ? " · Review" : ""))]),
     done() ? null : h("span", { class: "clock", id: "clock", title: b.timed ? "Time left" : "Time spent" },
       b.timed ? fmtTime(remaining()) : fmtTime(P.elapsed)),
-    h("button", { class: "tbtn", "aria-pressed": String(!!r.flagged), title: "Flag this question", onclick: function () {
-      r.flagged = !r.flagged; markDirty(q); renderPlayer(true); } , html: ICON.flag + '<span class="lbl">Flag</span>' }),
     h("button", { class: "tbtn", "aria-pressed": String(P.calc), title: "Calculator", onclick: toggleCalc, html: ICON.calc + '<span class="lbl">Calculator</span>' }),
-    h("button", { class: "tbtn", title: "Text size", "aria-label": "Text size", onclick: openTextSize, html: ICON.zoom + '<span class="lbl lbl2">Text</span>' }),
+    h("button", { class: "tbtn", title: "Text size", "aria-label": "Text size", onclick: openTextSize, html: ICON.zoom }),
     fsSupported() ? h("button", { class: "tbtn", title: fsOn() ? "Exit full screen" : "Full screen", "aria-label": fsOn() ? "Exit full screen" : "Full screen", onclick: toggleFullscreen,
-      html: (fsOn() ? ICON.unfull : ICON.full) + '<span class="lbl lbl2">' + (fsOn() ? "Exit full screen" : "Full screen") + '</span>' }) : null,
+      html: fsOn() ? ICON.unfull : ICON.full }) : null,
     h("button", { class: "tbtn", title: "Settings", onclick: openSettings, html: ICON.gear + '<span class="lbl">Settings</span>' }),
     done() ? h("button", { class: "tbtn", onclick: showResults }, "Results")
            : h("button", { class: "tbtn", onclick: endSetPrompt }, "End set")
@@ -970,6 +981,9 @@ function renderPlayer(keep) {
   var locked = done() || (b.mode === "learning" && r.submitted);
   var side = SET.layout === "side" && window.innerWidth >= 1000;
   var qcol = h("div", { class: "qcol" }, [
+    h("div", { class: "qtools" }, h("button", { class: "qflag", type: "button", "aria-pressed": String(!!r.flagged),
+      title: r.flagged ? "Unflag this question" : "Flag this question", "aria-label": r.flagged ? "Unflag this question" : "Flag this question",
+      onclick: function () { r.flagged = !r.flagged; markDirty(q); renderPlayer(true); }, html: ICON.flag })),
     stemArea(q),
     h("p", { class: "hint" }, "Tip: select words in the question to highlight them; tap a highlight to remove it. Tap an answer's words to cross it out."),
     choicesEl(q, locked),
