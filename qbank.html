@@ -43,6 +43,25 @@ h1,h2,h3,h4{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.01
 .btn.sm{padding:7px 12px;font-size:14px;border-radius:8px}
 .btn:disabled{opacity:.45;cursor:default}
 .link{background:none;border:0;padding:0;color:var(--teal);font-weight:600;font-size:14px}
+.support{font-size:13px;color:var(--muted);text-decoration:none;white-space:nowrap}
+.support b{color:var(--teal);font-weight:600}
+.support:hover b{text-decoration:underline}
+.support .short{display:none}
+.supbar{border-top:1px solid #eef2f6;background:#f7fafc}
+.who .link{white-space:nowrap}
+body.dark .support b{color:var(--teal-bright)}
+.supbar .wrap{display:flex;justify-content:flex-end;min-height:30px;align-items:center}
+body.dark .supbar{background:#101d31;border-color:#1f2e45}
+.concern{margin-top:22px;border:1px solid #e3ebf3;border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center;background:#f7fafc}
+.concern b{display:block;color:var(--navy);font-size:15px;margin-bottom:2px}
+.concern span{font-size:14px;color:var(--muted)}
+.concern .btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap}
+.concern .btn svg{width:16px;height:16px}
+.concern .btn span{color:inherit;font-size:inherit}
+.concern small{grid-column:1/-1;font-size:12px;color:var(--muted)}
+body.dark .concern{background:#152238;border-color:#24344d}
+body.dark .concern b{color:#eef4fb}
+@media (max-width:600px){.concern{grid-template-columns:1fr}}
 
 /* cards */
 .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
@@ -254,6 +273,10 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
   .pbar .lbl{display:none}
   .choice .cb{width:46px}
 }
+@media (max-width:600px){
+  .supbar .wrap{justify-content:center}
+  .support{font-size:12px}
+}
 @media (max-width:480px){
   .who .email{display:none}
   .stem{font-size:16px}
@@ -295,7 +318,7 @@ body.dark .btn:not(.ghost):not(.danger):not(.teal){background:#2d4a73}
 body.dark .brand,body.dark h1,body.dark h2,body.dark h3,body.dark h4,body.dark .stem{color:#eef4fb}
 body.dark .exp .narr p{color:#dbe5f0}
 body.dark .stem .data,body.dark .summ,body.dark .split .side,body.dark .ad tr:first-child td{background:#122036;border-color:#2a3d58}
-body.dark .muted,body.dark .note,body.dark .hint,body.dark .who,body.dark .setrow .meta,body.dark .refs,body.dark .stat span,body.dark .auth p,body.dark .modal p,body.dark .reasons .why,body.dark .choice .ct b,body.dark .res-list .n,body.dark .set-row small,body.dark .side-empty{color:#9fb0c6}
+body.dark .support,body.dark .muted,body.dark .note,body.dark .hint,body.dark .who,body.dark .setrow .meta,body.dark .refs,body.dark .stat span,body.dark .auth p,body.dark .modal p,body.dark .reasons .why,body.dark .choice .ct b,body.dark .res-list .n,body.dark .set-row small,body.dark .side-empty{color:#9fb0c6}
 body.dark .seg button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
 body.dark .chips button[aria-pressed="true"]{background:#0f3f3d;border-color:#2b8a80;color:#bff0ea}
 body.dark .choice.sel{background:#123234;border-color:var(--teal-bright)}
@@ -340,6 +363,7 @@ var sb = window.supabase.createClient(cfg.url, cfg.key, {
 var app = document.getElementById("app");
 var LOGO = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg>';
 var ICON = {
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
   check: '<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>',
   flag: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.5a.75.75 0 0 1 .75.75v.4l7.9-.9a.75.75 0 0 1 .8 1l-1.4 3.5 1.4 3.5a.75.75 0 0 1-.8 1l-7.9-.9V14a.75.75 0 0 1-1.5 0V2.25A.75.75 0 0 1 3 1.5z"/></svg>',
   calc: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="1.5" width="10" height="13" rx="2"/><path d="M5.5 4.5h5M5.5 8h.01M8 8h.01M10.5 8h.01M5.5 11h.01M8 11h.01M10.5 11h.01" stroke-linecap="round" stroke-width="1.9"/></svg>',
@@ -490,13 +514,23 @@ function modal(title, text, buttons, extra) {
     var f = card.querySelector("input") || row.lastChild; if (f) f.focus();
   });
 }
+var SUPPORT = "support@boardsidereviews.com";
+function supportHref(body) {
+  return "mailto:" + SUPPORT + "?subject=" + encodeURIComponent("Boardside Question Bank: issue or erratum") +
+    "&body=" + encodeURIComponent((body || "") + "What's wrong:\n\n");
+}
 function header() {
-  return h("header", { class: "top" }, h("div", { class: "wrap" }, [
+  return h("header", { class: "top" }, [h("div", { class: "wrap" }, [
     h("a", { class: "brand", href: "/", html: LOGO + '<span>Boardside Reviews <small>· Question Bank</small></span>' }),
-    h("div", { class: "who" }, [h("button", { class: "link", onclick: openSettings }, "Settings"),
+    h("div", { class: "who" }, [
+      h("button", { class: "link", onclick: openSettings }, "Settings"),
       S.email ? h("span", { class: "email" }, S.email) : null,
       S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null])
-  ]));
+  ]), supportStrip()]);
+}
+function supportStrip() {
+  return h("div", { class: "supbar" }, h("div", { class: "wrap" },
+    h("a", { class: "support", href: supportHref(), html: '<span class="long">Issues or errata? Contact </span><span class="short">Issues or errata? Email </span><b>' + SUPPORT + '</b>' })));
 }
 function screen(nodes, playing, keepScroll) {
   var y = window.scrollY;
@@ -796,6 +830,8 @@ function renderPlayer(keep) {
     h("button", { class: "tbtn", "aria-pressed": String(!!r.flagged), title: "Flag this question", onclick: function () {
       r.flagged = !r.flagged; markDirty(q); renderPlayer(true); } , html: ICON.flag + '<span class="lbl">Flag</span>' }),
     h("button", { class: "tbtn", "aria-pressed": String(P.calc), title: "Calculator", onclick: toggleCalc, html: ICON.calc + '<span class="lbl">Calculator</span>' }),
+    h("a", { class: "tbtn", title: "Report an issue or erratum to " + SUPPORT, style: "text-decoration:none",
+      href: supportHref((q.reveal && q.reveal.num ? "Question ID: " + q.reveal.num + "\n" : "") + "Set: " + b.id + "\nQuestion " + (P.i + 1) + " of " + n + "\n\n"), html: ICON.mail + '<span class="lbl">Report issue</span>' }),
     h("button", { class: "tbtn", title: "Settings", onclick: openSettings, html: ICON.gear + '<span class="lbl">Settings</span>' }),
     h("button", { class: "tbtn", title: "All questions", onclick: openNav, html: ICON.grid + '<span class="lbl">Questions</span>' }),
     done() ? h("button", { class: "tbtn", onclick: showResults }, "Results")
@@ -1001,7 +1037,7 @@ async function submit(q, btn) {
     await flush();
     var res = await rpc("qb_submit", { p_block: P.b.id, p_qid: q.id, p_selected: q.response.selected });
     q.response.submitted = true; q.response.selected = res.selected;
-    q.reveal = { answer: res.answer, explain: res.explain, correct: res.correct };
+    q.reveal = { answer: res.answer, explain: res.explain, correct: res.correct, num: res.num };
     renderPlayer(true);
     var ex = $(".exp"); if (ex && !$(".split")) ex.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (e) { toast(friendly(e)); btn.disabled = false; btn.textContent = "Submit answer"; }
@@ -1043,7 +1079,7 @@ function explanationEl(q) {
   });
   var narr = h("div", { class: "narr" }, paras(ex.explanation).map(function (p) { return h("p", null, p); }));
   return h("section", { class: "exp", "aria-label": "Explanation" }, [
-    h("div", { class: "subjtag", style: "margin-bottom:-6px" }, q.subject),
+    h("div", { class: "subjtag", style: "margin-bottom:-6px" }, (rv.num ? "Question ID " + rv.num + " · " : "") + q.subject),
     h("div", { class: "verdictbar " + (om ? "om" : ok ? "ok" : "no") }, [
       h("span", { class: "dot", html: om ? "–" : ok ? ICON.ok : ICON.no }),
       h("span", null, (om ? "Omitted" : ok ? "Correct" : "Incorrect") + ". The answer is " + L + ". " + q.body.choices[L])
@@ -1052,8 +1088,21 @@ function explanationEl(q) {
     h("h3", null, "Why each choice is right or wrong"), reasons,
     ex.pearl ? h("div", { class: "pearl" }, [h("strong", null, "Teaching pearl"), ex.pearl]) : null
   ].concat((ex.summaries || []).map(summaryEl)).concat([
-    ex.references ? h("div", { class: "refs" }, [h("b", null, "References: "), ex.references]) : null
+    ex.references ? h("div", { class: "refs" }, [h("b", null, "References: "), ex.references]) : null,
+    concernEl(q)
   ]));
+}
+function concernEl(q) {
+  var rv = q.reveal, r = q.response || {};
+  var body = "Question ID: " + (rv.num || "?") + "\nMy answer: " + (r.selected || "omitted") + "\n\n";
+  var href = "mailto:" + SUPPORT + "?subject=" + encodeURIComponent("Concern about Question ID " + (rv.num || "")) +
+    "&body=" + encodeURIComponent(body + "My concern (what seems wrong or unclear, and any source):\n\n");
+  return h("div", { class: "concern" }, [
+    h("div", null, [h("b", null, "See a problem with this question?"),
+      h("span", null, "An error, an outdated guideline, or a stem that seems to allow two answers. Tell us and Dr. Abdullah will review it.")]),
+    h("a", { class: "btn ghost sm", href: href, html: ICON.mail + "<span>Raise a concern</span>" }),
+    h("small", null, "Opens an email to " + SUPPORT + " with Question ID " + (rv.num || "") + " filled in.")
+  ]);
 }
 function summaryEl(s) {
   var kids = [s.title ? h("h4", null, s.title) : null];
