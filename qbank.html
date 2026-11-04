@@ -76,6 +76,19 @@ main.page{padding:28px 0 60px}
 .auth p{margin:0;color:var(--muted)}
 .field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--ink2)}
 .field input{font:inherit;font-size:16px;padding:12px 14px;border:1px solid #c9d5e2;border-radius:10px;color:var(--navy);width:100%}
+.field input[type=checkbox]{width:auto}
+.lblrow{display:flex;justify-content:space-between;align-items:baseline}
+.lblrow .link{font-size:13px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pwrules{list-style:none;margin:-4px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:13px;color:var(--muted)}
+.pwrules li{position:relative;padding-left:20px}
+.pwrules li::before{content:"";position:absolute;left:2px;top:4px;width:10px;height:10px;border-radius:50%;border:1.5px solid #b7c4d3}
+.pwrules li.ok{color:#1f7a57}
+.pwrules li.ok::before{background:#2f9e74;border-color:#2f9e74}
+.optin{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45;color:var(--ink2);cursor:pointer}
+.optin input{margin-top:3px;width:17px;height:17px;flex:none;accent-color:var(--teal)}
+.auth .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+@media (max-width:420px){.row2,.pwrules{grid-template-columns:1fr}}
 .field input:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
 .code{letter-spacing:.4em;text-align:center;font-size:22px!important;font-variant-numeric:tabular-nums}
 .err{color:var(--coral);font-size:14px}
@@ -528,10 +541,11 @@ function showNotOpen() {
   stopClock();
   screen([header(), h("main", { class: "wrap" }, h("div", { class: "auth" }, h("div", { class: "card lock" }, [
     h("div", { class: "ic", html: ICON.lock }),
-    h("h1", null, "The Question Bank isn't open yet."),
-    h("p", null, "It opens when Boardside Reviews launches. Join the waitlist to hear first."),
-    h("a", { class: "btn teal", href: "/" }, "Back to Boardside Reviews"),
-    S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null
+    h("h1", null, "Come back when we launch!"),
+    h("p", null, "Accounts open when Boardside Reviews launches. Join the waitlist and we'll email you 48 hours before we open. In the meantime, try 40 questions free."),
+    h("a", { class: "btn teal", href: "https://forms.gle/9qnowgoDevR742wB7", target: "_blank", rel: "noopener" }, "Join the waitlist"),
+    h("a", { class: "btn ghost", href: "qbank.html?sample" }, "Try 40 questions free"),
+    S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : h("button", { class: "link", onclick: function () { showLogin(); } }, "Back to sign in")
   ])))]);
 }
 
@@ -654,7 +668,7 @@ function header() {
     h("a", { class: "brand", href: "/", html: LOGO + '<span>Boardside Reviews <small>· Question Bank' + (SAMPLE ? ' · Free sample' : '') + '</small></span>' }),
     h("div", { class: "who" }, [
       h("button", { class: "link", onclick: openSettings }, "Settings"),
-      SAMPLE ? h("a", { class: "link", href: "https://forms.gle/9qnowgoDevR742wB7", target: "_blank", rel: "noopener" }, "Join the waitlist") : null,
+      SAMPLE ? h("a", { class: "link", href: "qbank.html" }, "Login / Create an account") : null,
       S.email ? h("span", { class: "email" }, S.email) : null,
       S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null])
   ])]);
@@ -679,40 +693,243 @@ function screen(nodes, playing, keepScroll) {
 async function signOut() { stopClock(); await sb.auth.signOut(); S = { me: null, ov: null, email: "" }; showLogin(); }
 
 // ───────────────────────── sign-in ─────────────────────────
+// ───────────────────────── sign-in, account creation, password reset ─────────────────────────
+// Passwords: at least 8 characters, with at least one letter and one number.
+// New accounts and password resets are confirmed with a 6-digit email code, so only the
+// owner of an email can create or take over its account.
+var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function pwRules(pw, pw2) {
+  return [
+    { ok: pw.length >= 8, t: "At least 8 characters" },
+    { ok: /[A-Za-z]/.test(pw), t: "At least one letter" },
+    { ok: /[0-9]/.test(pw), t: "At least one number" },
+    { ok: pw.length > 0 && pw === pw2, t: "Passwords match" }
+  ];
+}
+function pwFields(onchange) {
+  var p1 = h("input", { type: "password", autocomplete: "new-password", required: true });
+  var p2 = h("input", { type: "password", autocomplete: "new-password", required: true });
+  var list = h("ul", { class: "pwrules", "aria-live": "polite" });
+  function draw() {
+    list.innerHTML = "";
+    pwRules(p1.value, p2.value).forEach(function (r) { list.appendChild(h("li", { class: r.ok ? "ok" : "" }, r.t)); });
+    if (onchange) onchange();
+  }
+  p1.addEventListener("input", draw); p2.addEventListener("input", draw); draw();
+  return {
+    nodes: [h("label", { class: "field" }, ["Password", p1]), h("label", { class: "field" }, ["Confirm password", p2]), list],
+    valid: function () { return pwRules(p1.value, p2.value).every(function (r) { return r.ok; }); },
+    value: function () { return p1.value; }
+  };
+}
+function authScreen(card) {
+  card.addEventListener("input", function () { var e = card.querySelector(".err"); if (e) e.textContent = ""; });
+  screen([header(), h("main", { class: "wrap" }, h("div", { class: "auth" }, card))]);
+}
+function authFriendly(err) {
+  var m = (err && (err.message || String(err))) || "";
+  if (/Invalid login credentials/i.test(m)) return "Wrong email or password. New here? Create your account first.";
+  if (/Signups not allowed|User not found|not found/i.test(m)) return "We couldn't find an account for that email. Create your account first.";
+  if (/should be different/i.test(m)) return "Your new password must be different from your old one.";
+  if (/Email not confirmed/i.test(m)) return "Please confirm your email first, or sign in with an email code.";
+  if (/Password should be|weak/i.test(m)) return "That password is too weak. Use at least 8 characters with letters and numbers.";
+  return friendly(err);
+}
+
 function showLogin(prefill) {
+  stopClock();
+  var err = h("div", { class: "err", "aria-live": "polite" });
+  var email = h("input", { type: "email", autocomplete: "email", required: true, value: prefill || "" });
+  var pw = h("input", { type: "password", autocomplete: "current-password", required: true });
+  var btn = h("button", { class: "btn teal", type: "submit" }, "Sign in");
+  var form = h("form", { class: "card", novalidate: true }, [
+    h("h1", null, "Sign in to the Question Bank"),
+    h("label", { class: "field" }, ["Email", email]),
+    h("label", { class: "field" }, [h("span", { class: "lblrow" }, ["Password",
+      h("button", { class: "link", type: "button", onclick: function () { showForgot(email.value.trim()); } }, "Forgot password?")]), pw]),
+    err, btn,
+    h("button", { class: "btn ghost", type: "button", onclick: function () { showSignup(email.value.trim()); } }, "New here? Create your account"),
+    h("button", { class: "link", type: "button", onclick: function () { showCodeLogin(email.value.trim()); } }, "Sign in with an email code instead"),
+    h("p", { class: "small" }, ["Don't have access yet? ", h("a", { href: "/", style: "color:var(--teal);font-weight:600" }, "See Boardside Reviews")])
+  ]);
+  form.onsubmit = async function (e) {
+    e.preventDefault(); err.textContent = "";
+    var v = email.value.trim().toLowerCase();
+    if (!EMAIL_RE.test(v)) { err.textContent = "Enter a valid email address."; return; }
+    if (!pw.value) { err.textContent = "Enter your password."; return; }
+    if (!allowed(v)) { showNotOpen(); return; }
+    btn.disabled = true; btn.textContent = "Signing in…";
+    var r = await sb.auth.signInWithPassword({ email: v, password: pw.value });
+    if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Sign in"; return; }
+    boot();
+  };
+  S.email = "";
+  authScreen(form);
+  (prefill ? pw : email).focus();
+}
+
+function showSignup(prefill) {
+  stopClock();
+  var err = h("div", { class: "err", "aria-live": "polite" });
+  var first = h("input", { type: "text", autocomplete: "given-name", required: true, maxlength: "60" });
+  var last = h("input", { type: "text", autocomplete: "family-name", required: true, maxlength: "60" });
+  var email = h("input", { type: "email", autocomplete: "email", required: true, value: prefill || "" });
+  var pws = pwFields();
+  var optin = h("input", { type: "checkbox" });
+  var btn = h("button", { class: "btn teal", type: "submit" }, "Create account");
+  var form = h("form", { class: "card", novalidate: true }, [
+    h("h1", null, "Create your account"),
+    h("p", null, "Use the email you bought Boardside Reviews with."),
+    h("div", { class: "row2" }, [h("label", { class: "field" }, ["First name", first]), h("label", { class: "field" }, ["Last name", last])]),
+    h("label", { class: "field" }, ["Email", email])
+  ].concat(pws.nodes).concat([
+    h("label", { class: "optin" }, [optin, h("span", null, "Yes, send me Boardside Reviews updates and add me to the mailing list. You can unsubscribe anytime.")]),
+    err, btn,
+    h("button", { class: "link", type: "button", onclick: function () { showLogin(email.value.trim()); } }, "Already have an account? Sign in")
+  ]));
+  form.onsubmit = async function (e) {
+    e.preventDefault(); err.textContent = "";
+    var f = first.value.trim(), l = last.value.trim(), v = email.value.trim().toLowerCase();
+    if (!f || !l) { err.textContent = "Enter your first and last name."; return; }
+    if (!EMAIL_RE.test(v)) { err.textContent = "Enter a valid email address."; return; }
+    if (!pws.valid()) { err.textContent = "Your password doesn't meet all the rules yet."; return; }
+    if (!allowed(v)) { showNotOpen(); return; }
+    btn.disabled = true; btn.textContent = "Sending code…";
+    var r = await sb.auth.signInWithOtp({ email: v, options: { shouldCreateUser: true } });
+    if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Create account"; return; }
+    var pw = pws.value();
+    showCode(v, {
+      title: "Confirm your email",
+      back: function () { showSignup(v); },
+      done: async function () {
+        var u = await sb.auth.updateUser({ password: pw, data: profileData(f, l, optin.checked) });
+        if (u.error) throw u.error;
+        toast("Your account is ready.");
+        boot();
+      }
+    });
+  };
+  authScreen(form);
+  (prefill ? first : first).focus();
+}
+function profileData(first, last, optin) {
+  return { first_name: first, last_name: last, marketing_opt_in: !!optin,
+           marketing_opt_in_at: optin ? new Date().toISOString() : null, account_ready: true };
+}
+
+function showForgot(prefill) {
+  stopClock();
+  var err = h("div", { class: "err", "aria-live": "polite" });
+  var email = h("input", { type: "email", autocomplete: "email", required: true, value: prefill || "" });
+  var btn = h("button", { class: "btn teal", type: "submit" }, "Email me a reset code");
+  var form = h("form", { class: "card", novalidate: true }, [
+    h("h1", null, "Reset your password"),
+    h("p", null, "Enter your account email. We'll send a 6-digit code, then you can choose a new password."),
+    h("label", { class: "field" }, ["Email", email]), err, btn,
+    h("button", { class: "link", type: "button", onclick: function () { showLogin(email.value.trim()); } }, "Back to sign in")
+  ]);
+  form.onsubmit = async function (e) {
+    e.preventDefault(); err.textContent = "";
+    var v = email.value.trim().toLowerCase();
+    if (!EMAIL_RE.test(v)) { err.textContent = "Enter a valid email address."; return; }
+    if (!allowed(v)) { showNotOpen(); return; }
+    btn.disabled = true; btn.textContent = "Sending…";
+    var r = await sb.auth.signInWithOtp({ email: v, options: { shouldCreateUser: false } });
+    if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Email me a reset code"; return; }
+    showCode(v, { title: "Check your email", back: function () { showForgot(v); }, done: function () { showNewPassword(); } });
+  };
+  authScreen(form);
+  email.focus();
+}
+function showNewPassword() {
+  var err = h("div", { class: "err", "aria-live": "polite" });
+  var pws = pwFields();
+  var btn = h("button", { class: "btn teal", type: "submit" }, "Save new password");
+  var form = h("form", { class: "card", novalidate: true }, [
+    h("h1", null, "Choose a new password")
+  ].concat(pws.nodes).concat([err, btn]));
+  form.onsubmit = async function (e) {
+    e.preventDefault(); err.textContent = "";
+    if (!pws.valid()) { err.textContent = "Your password doesn't meet all the rules yet."; return; }
+    btn.disabled = true; btn.textContent = "Saving…";
+    var r = await sb.auth.updateUser({ password: pws.value() });
+    if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Save new password"; return; }
+    toast("Password updated.");
+    boot();
+  };
+  authScreen(form);
+}
+
+// Signed in (for example with an email code) but the account isn't set up yet:
+// ask for name, password and mailing-list choice.
+function showFinishAccount(user) {
+  stopClock();
+  var md = user.user_metadata || {};
+  var err = h("div", { class: "err", "aria-live": "polite" });
+  var first = h("input", { type: "text", autocomplete: "given-name", required: true, maxlength: "60", value: md.first_name || "" });
+  var last = h("input", { type: "text", autocomplete: "family-name", required: true, maxlength: "60", value: md.last_name || "" });
+  var pws = pwFields();
+  var optin = h("input", { type: "checkbox" });
+  var btn = h("button", { class: "btn teal", type: "submit" }, "Finish setting up");
+  var form = h("form", { class: "card", novalidate: true }, [
+    h("h1", null, "Finish setting up your account"),
+    h("p", null, ["You're signed in as ", h("b", null, S.email), ". Add your name and choose a password for next time."]),
+    h("div", { class: "row2" }, [h("label", { class: "field" }, ["First name", first]), h("label", { class: "field" }, ["Last name", last])])
+  ].concat(pws.nodes).concat([
+    h("label", { class: "optin" }, [optin, h("span", null, "Yes, send me Boardside Reviews updates and add me to the mailing list. You can unsubscribe anytime.")]),
+    err, btn,
+    h("button", { class: "link", type: "button", onclick: signOut }, "Sign out")
+  ]));
+  form.onsubmit = async function (e) {
+    e.preventDefault(); err.textContent = "";
+    var f = first.value.trim(), l = last.value.trim();
+    if (!f || !l) { err.textContent = "Enter your first and last name."; return; }
+    if (!pws.valid()) { err.textContent = "Your password doesn't meet all the rules yet."; return; }
+    btn.disabled = true; btn.textContent = "Saving…";
+    var r = await sb.auth.updateUser({ password: pws.value(), data: profileData(f, l, optin.checked) });
+    if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Finish setting up"; return; }
+    toast("Your account is ready.");
+    boot();
+  };
+  authScreen(form);
+  first.focus();
+}
+
+function showCodeLogin(prefill) {
   stopClock();
   var err = h("div", { class: "err", "aria-live": "polite" });
   var input = h("input", { type: "email", autocomplete: "email", required: true, value: prefill || "" });
   var btn = h("button", { class: "btn teal", type: "submit" }, "Email me a code");
   var form = h("form", { class: "card", novalidate: true }, [
-    h("h1", null, "Sign in to the Question Bank"),
-    h("p", null, "Enter the email you used to buy Boardside Reviews. We'll send a 6-digit code. No password needed."),
+    h("h1", null, "Sign in with an email code"),
+    h("p", null, "Enter your account email. We'll send a 6-digit code."),
     h("label", { class: "field" }, ["Email", input]), err, btn,
-    h("p", { class: "small" }, ["Don't have access yet? ", h("a", { href: "/", style: "color:var(--teal);font-weight:600" }, "See Boardside Reviews")])
+    h("button", { class: "link", type: "button", onclick: function () { showLogin(input.value.trim()); } }, "Sign in with a password instead")
   ]);
   form.onsubmit = async function (e) {
     e.preventDefault(); err.textContent = "";
     var v = input.value.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { err.textContent = "Enter a valid email address."; return; }
+    if (!EMAIL_RE.test(v)) { err.textContent = "Enter a valid email address."; return; }
     if (!allowed(v)) { showNotOpen(); return; }
     btn.disabled = true; btn.textContent = "Sending…";
     var r = await sb.auth.signInWithOtp({ email: v, options: { shouldCreateUser: true } });
-    if (r.error) { err.textContent = friendly(r.error); btn.disabled = false; btn.textContent = "Email me a code"; return; }
-    showCode(v);
+    if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Email me a code"; return; }
+    showCode(v, { back: function () { showCodeLogin(v); }, done: function () { boot(); } });
   };
-  S.email = "";
-  screen([header(), h("main", { class: "wrap" }, h("div", { class: "auth" }, form))]);
+  authScreen(form);
   input.focus();
 }
-function showCode(email) {
+
+function showCode(email, o) {
+  o = o || {};
   var err = h("div", { class: "err", "aria-live": "polite" });
   var input = h("input", { class: "code", inputmode: "numeric", autocomplete: "one-time-code", maxlength: "10" });
   var btn = h("button", { class: "btn teal", type: "submit" }, "Verify");
   var form = h("form", { class: "card", novalidate: true }, [
-    h("h1", null, "Check your email"),
+    h("h1", null, o.title || "Check your email"),
     h("p", null, ["Enter the 6-digit code sent to ", h("b", null, email), ". It can take a minute, so check spam too."]),
     h("label", { class: "field" }, ["Code", input]), err, btn,
-    h("button", { class: "link", type: "button", onclick: function () { showLogin(email); } }, "Use a different email")
+    h("button", { class: "link", type: "button", onclick: function () { (o.back || function () { showLogin(email); })(); } }, "Go back")
   ]);
   form.onsubmit = async function (e) {
     e.preventDefault(); err.textContent = "";
@@ -720,10 +937,11 @@ function showCode(email) {
     if (v.length < 6) { err.textContent = "Enter the full code from the email."; return; }
     btn.disabled = true; btn.textContent = "Checking…";
     var r = await sb.auth.verifyOtp({ email: email, token: v, type: "email" });
-    if (r.error) { err.textContent = friendly(r.error); btn.disabled = false; btn.textContent = "Verify"; return; }
-    boot();
+    if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Verify"; return; }
+    try { await (o.done || boot)(); }
+    catch (x) { err.textContent = authFriendly(x); btn.disabled = false; btn.textContent = "Verify"; }
   };
-  screen([header(), h("main", { class: "wrap" }, h("div", { class: "auth" }, form))]);
+  authScreen(form);
   input.focus();
 }
 function showLocked() {
@@ -1459,6 +1677,7 @@ async function boot() {
   if (!user) return showLogin();
   S.email = (user.email || "").toLowerCase();
   if (!allowed(S.email)) return showNotOpen();
+  if (!(user.user_metadata && user.user_metadata.account_ready)) return showFinishAccount(user);
   try { S.me = await rpc("qb_me"); } catch (e) { if (!/not_signed_in|JWT/i.test(e.message || "")) homeError(e); return; }
   if (!S.me.access) return showLocked();
   showHome();
