@@ -329,3 +329,8 @@ alter table public.scores add constraint hemo_roulette_cap
 alter table public.scores drop constraint if exists titrate_tonight_cap;
 alter table public.scores add constraint titrate_tonight_cap
   check (game <> 'titrate-tonight' or score <= 15000);
+
+-- Vent Lab Asynchrony Challenge (5 minutes of answering): cap obviously fake posts.
+alter table public.scores drop constraint if exists vent_lab_cap;
+alter table public.scores add constraint vent_lab_cap
+  check (game <> 'vent-lab' or score <= 90000);
