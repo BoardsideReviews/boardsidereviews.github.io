@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><title>Uploading…</title>
+<body style="font:16px sans-serif;padding:30px">Sending video to Meta Business Suite…<pre id="s"></pre>
+<script>
+fetch('https://raw.githubusercontent.com/BoardsideReviews/boardsidereviews.github.io/tmp-reel-upload/reel.mp4').then(r=>r.blob()).then(b=>{
+  if(window.opener){window.opener.postMessage({reelBlob:b},'https://business.facebook.com');document.getElementById('s').textContent='Sent '+b.size+' bytes. You can close this tab.';}
+  else document.getElementById('s').textContent='No opener window.';
+}).catch(e=>document.getElementById('s').textContent='Error: '+e);
+</script></body>
