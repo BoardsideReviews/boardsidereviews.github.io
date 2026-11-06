@@ -815,7 +815,7 @@ function header() {
     h("a", { class: "brand", href: "/", html: LOGO + '<span>Boardside Reviews <small>· Question Bank' + (SAMPLE ? ' · Free sample' : '') + '</small></span>' }),
     h("div", { class: "who" }, [
       h("button", { class: "link", onclick: openSettings }, "Settings"),
-      SAMPLE ? h("a", { class: "link", href: "qbank.html" }, "Login / Create an account") : null,
+      SAMPLE ? h("a", { class: "link", href: "qbank.html" }, "Login") : null,
       S.email ? h("span", { class: "email" }, S.email) : null,
       S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null])
   ])]);
