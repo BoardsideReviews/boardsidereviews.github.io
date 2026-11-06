@@ -404,6 +404,10 @@ body.dark .qrail button.cur{outline-color:#9fc3ea}
 .fc-rate .good{background:var(--navy)}
 .fc-rate .great{background:var(--teal)}
 .fc-keys{font-size:12.5px;color:var(--muted);text-align:center;margin:0}
+.fc-face .fc-tag{display:inline-block;font-size:12.5px;line-height:1.4;font-weight:600;color:#0d7070;background:var(--teal-soft);border-radius:999px;padding:3px 10px;margin:0 0 10px}
+.fc-tag.warn{color:#9a3412;background:#fff1e6}
+body.dark .fc-tag{background:#123a3a;color:#7fd8d0}
+body.dark .fc-tag.warn{background:#3a2316;color:#ffb98a}
 body.dark .fc-bar{background:#22344d}
 body.dark .fc-due b{color:#e4ecf5}
 body.dark .fc-ans{background:#123426;border-color:#1f5a40;color:#e4ecf5}
@@ -1191,6 +1195,7 @@ function fcNext(c, r) {
   var i = c.interval_days || 0;
   if (r === "repeat") return "10 min";
   if (r === "good") return fcIvText(Math.max(i, 1));
+  if (c.sure_wrong) return fcIvText(i === 0 ? 3 : Math.min(Math.max(i, 1) * 2, 180));
   return fcIvText(i === 0 ? 4 : Math.min(Math.max(i, 1) * 2.5, 180));
 }
 function fcCard(fc) {
@@ -1204,7 +1209,7 @@ function fcCard(fc) {
         h("i", { style: "width:" + Math.min(100, Math.round(100 * fc.pool / need)) + "%" })));
     return box;
   }
-  box.append(h("p", { class: "muted", style: "margin:0" }, fc.pool + " cards from your missed and flagged questions. Repeat brings a card back sooner, Good keeps its pace, Great pushes it further out."),
+  box.append(h("p", { class: "muted", style: "margin:0" }, (fc.deck || fc.pool) + " cards from your missed and flagged questions" + (fc.deck > fc.pool ? ", plus correct answers you only guessed" : "") + ". If you use confidence ratings, questions you were sure about but missed come first. Repeat brings a card back sooner, Good keeps its pace, Great pushes it further out."),
     h("div", { class: "fc-due" }, [h("b", null, String(fc.due_count)), h("span", null, fc.due_count === 1 ? "card due now" : "cards due now")]),
     fc.due_count ? h("button", { class: "btn teal", onclick: startFlashcards }, "Review flashcards")
       : h("p", { class: "muted", style: "margin:0" }, "All caught up." + (fc.next_due ? " Next card is due " + fcWhen(fc.next_due) + "." : "")));
@@ -1228,7 +1233,9 @@ function fcRender() {
       h("div", { class: "row" }, [h("button", { class: "btn teal", onclick: startFlashcards }, "Check for more"), h("button", { class: "btn ghost", onclick: showHome }, "Back to the question bank")])
     ])))]);
   }
+  var tag = c.sure_wrong ? "You were sure, but missed this one" : c.lucky_guess ? "You guessed this one right" : c.conf === "unsure" ? "You were unsure about this one" : null;
   var face = [h("div", { class: "subjtag" }, "Question ID " + c.num + " · " + c.subject)]
+    .concat(tag ? [h("p", { class: "fc-tag" + (c.sure_wrong ? " warn" : "") }, tag)] : [])
     .concat(paras(c.stem || "").map(function (t) { return h("p", null, t); }))
     .concat((c.data && c.data.length) ? [h("ul", { class: "fc-data" }, c.data.map(function (d) { return h("li", null, d); }))] : [])
     .concat([h("p", { class: "fc-ask" }, c.ask || "")]);
