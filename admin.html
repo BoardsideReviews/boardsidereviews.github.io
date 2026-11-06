@@ -58,8 +58,6 @@ td.acts .btn{padding:7px 10px;font-size:13px;margin:2px 4px 2px 0}
 .confirm{background:var(--coral-soft);border:1px solid #efc2b7;border-radius:12px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:50}
 label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2)}
-.gaframe{border:1px solid var(--line);border-radius:12px;overflow:hidden;aspect-ratio:4/3;min-height:420px}
-.gaframe iframe{width:100%;height:100%;border:0;display:block}
 .bars{display:flex;flex-direction:column;gap:8px}
 .bar{display:grid;grid-template-columns:minmax(120px,210px) 1fr 44px;gap:10px;align-items:center;font-size:14px}
 .bar .track{height:12px;background:var(--sky);border-radius:6px;overflow:hidden}
@@ -82,9 +80,6 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const dt=d=>d?new Date(d).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"—";
 let players=[],words=[],accounts=null,q="",pending=null;
-// Website traffic: paste a Looker Studio embed URL here (Share → Embed report → Enable embedding → Embed URL)
-// to show your Google Analytics charts right on this page. Leave empty to show just the link.
-const GA_EMBED_URL="";
 const GA_LINK="https://analytics.google.com/analytics/web/";
 function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2600)}
 
@@ -96,7 +91,7 @@ async function boot(){
   let ok=false;try{ok=await BLB.rpc("is_admin")}catch(e){}
   if(!ok){app.innerHTML=`<h1>Admin</h1><div class="card"><span>${esc(u.email)} doesn't have admin access.</span><div><button class="btn ghost" data-a="out">Sign out</button></div></div>`;return}
   app.innerHTML=`<div class="row"><h1>Admin</h1><span class="muted">${esc(u.email)} · <button class="linkbtn" data-a="out">Sign out</button></span></div>
-  <section class="card"><div class="row"><h2>Website traffic</h2><a class="btn ghost" href="${GA_LINK}" target="_blank" rel="noopener">Open Google Analytics ↗</a></div>${GA_EMBED_URL?`<div class="gaframe"><iframe src="${esc(GA_EMBED_URL)}" title="Google Analytics report" loading="lazy" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div><p class="muted" style="margin:0;font-size:13px">Charts load only while you're signed in to Google as the report's owner.</p>`:`<p class="muted" style="margin:0">Visitors, top pages and where traffic comes from are in Google Analytics (sign in as boardsidereviews@gmail.com).</p>`}</section>
+  <section class="card"><div class="row"><h2>Website traffic</h2><a class="btn ghost" href="${GA_LINK}" target="_blank" rel="noopener">Open Google Analytics ↗</a></div><p class="muted" style="margin:0">Visitors, top pages and where traffic comes from are in Google Analytics (sign in as boardsidereviews@gmail.com).</p></section>
   <section class="card"><div class="row"><h2>How people heard about us</h2></div><div id="heard"></div></section>
   <section class="card"><div class="row"><h2>Accounts &amp; waitlist</h2><span class="row" style="gap:8px;justify-content:flex-end"><button class="btn ghost" data-csv="waitlist">Download waitlist (CSV)</button><button class="btn ghost" data-csv="mailing">Download mailing list (CSV)</button></span></div><p class="muted" style="margin:0">Everyone with a question bank account is on the launch waitlist. The mailing list is only people who ticked the box. Leaderboard-only sign-ins aren't on either list.</p><div id="acctsum" class="muted"></div><div class="tablebox" id="accounts"></div></section>
   <section class="card"><div class="row"><h2>Players</h2><input type="search" id="q" placeholder="Search name or email" aria-label="Search players"></div><div id="confirm"></div><div class="tablebox" id="players"></div></section>
