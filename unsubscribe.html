@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Unsubscribe | Boardside Reviews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0b2545;--teal:#0d7070;--teal-soft:#e2f3f1;--coral:#b9432c;--ink2:#33465f;--muted:#52627a;--line:#dce3ea;--sky:#eef5fc}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--sky);color:var(--navy);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;padding:40px 16px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--navy);font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:19px;margin-bottom:24px}
+.brand svg{width:40px;height:40px}
+.card{width:100%;max-width:480px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px}
+h1{margin:0 0 10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:26px;line-height:1.2;letter-spacing:-.01em}
+p{margin:0 0 16px;font-size:16px;line-height:1.6;color:var(--ink2)}
+.btn{display:inline-flex;border:0;border-radius:10px;padding:12px 18px;font:600 16px Inter,system-ui,sans-serif;background:var(--teal);color:#fff;cursor:pointer;text-decoration:none}
+.btn.ghost{background:#fff;color:var(--teal);border:1px solid #b9d9d6}
+.btn:disabled{opacity:.6;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.small{font-size:14px;color:var(--muted);margin:18px 0 0}
+.small a{color:var(--teal);font-weight:600;text-decoration:none}
+</style>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LJQ2NG232B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LJQ2NG232B');
+</script>
+<script src="lb-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+</head>
+<body>
+<a class="brand" href="/" aria-label="Boardside Reviews home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Boardside Reviews mark"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg><span>Boardside Reviews</span></a>
+<main class="card" id="box" aria-live="polite"></main>
+<script>
+(function () {
+  var box = document.getElementById("box");
+  var q = new URLSearchParams(location.search), u = q.get("u"), t = q.get("t");
+  var help = '<p class="small">Questions? Email <a href="mailto:support@boardsidereviews.com">support@boardsidereviews.com</a>.</p>';
+  function show(html) { box.innerHTML = html + help; }
+  if (!u || !t) { show('<h1>This link looks incomplete</h1><p>Please use the Unsubscribe link at the bottom of one of our emails, or email us and we\'ll take you off the list.</p>'); return; }
+  show('<h1>Unsubscribe from the mailing list?</h1><p>You won\'t get Boardside Reviews mailing-list emails anymore. Your account and the free questions stay exactly as they are.</p><div class="row"><button class="btn" id="go">Unsubscribe</button><a class="btn ghost" href="/">Keep me on the list</a></div>');
+  document.getElementById("go").onclick = async function () {
+    this.disabled = true; this.textContent = "Unsubscribing…";
+    try {
+      var cfg = window.BOARDSIDE_LB, sb = window.supabase.createClient(cfg.url, cfg.key, { auth: { persistSession: false } });
+      var r = await sb.rpc("email_unsubscribe", { p_user: u, p_token: t });
+      if (r.error) throw r.error;
+      if (r.data !== true) { show('<h1>We couldn\'t confirm this link</h1><p>It may have been copied incompletely. Email us and we\'ll take you off the list right away.</p>'); return; }
+      show('<h1>You\'re unsubscribed</h1><p>You won\'t get mailing-list emails from Boardside Reviews anymore. Thank you for giving them a try, and you\'re always welcome back.</p><div class="row"><a class="btn ghost" href="/">Back to Boardside Reviews</a></div>');
+    } catch (e) {
+      show('<h1>Something went wrong</h1><p>Please try again in a minute, or email us and we\'ll take you off the list.</p>');
+    }
+  };
+})();
+</script>
+</body>
+</html>
