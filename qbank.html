@@ -2024,7 +2024,7 @@ function showSampleHome() {
       h("h1", null, n + " questions, the real interface."),
       h("p", { class: "muted", style: "margin:8px 0 0;max-width:720px" }, "This is the Boardside question bank, in learning mode: answer each question, then see why every choice is right or wrong, with a teaching pearl. " +
         "It's the same " + n + " questions every time, from " + Object.keys(subj).length + " subjects. No sign-up needed; your progress stays in this browser."),
-      h("p", { class: "muted", style: "margin:10px 0 0;max-width:720px" }, "Highlight text, cross out choices, flag questions, use the calculator and change the settings, just like the full question bank. The full bank has over 1,700 questions."),
+      h("p", { class: "muted", style: "margin:10px 0 0;max-width:720px" }, "Highlight text, cross out choices, flag questions, use the calculator and change the settings, just like the full question bank. The full bank has about 1,600 questions."),
       h("div", { class: "actions", style: "margin-top:18px" }, [
         h("button", { class: "btn teal", onclick: function () { openBlock("sample"); } }, finished ? "Review your answers" : started ? "Resume (" + answered + " of " + n + " answered)" : "Start the free sample"),
         started ? h("button", { class: "btn ghost", onclick: function () { try { localStorage.removeItem(SKEY); localStorage.removeItem(confKey()); } catch (e) {} showSampleHome(); } }, "Start over") : null,
