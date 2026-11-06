@@ -186,18 +186,23 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
 
 .choices{display:flex;flex-direction:column;gap:8px;margin:6px 0 20px}
 .choice{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:12px;background:#fff;transition:border-color .12s,background .12s}
-.choice .cb{flex:none;width:52px;display:grid;place-items:center;background:none;border:0;border-right:1px solid #eef2f6;border-radius:12px 0 0 12px}
+.choice .ct{flex:1;text-align:left;background:none;border:0;padding:0;font-size:16px;line-height:1.45;display:flex;align-items:stretch;border-radius:12px 0 0 12px;cursor:pointer;color:inherit}
+.choice .cb{flex:none;width:52px;display:grid;place-items:center;border-right:1px solid #eef2f6}
 .choice .cb i{width:22px;height:22px;border:2px solid #9aa9bb;border-radius:6px;display:grid;place-items:center;transition:all .12s}
 .choice .cb i svg{width:14px;height:14px;opacity:0}
-.choice .ct{flex:1;text-align:left;background:none;border:0;padding:13px 16px;font-size:16px;line-height:1.45;display:flex;gap:10px;align-items:baseline;border-radius:0 12px 12px 0}
+.choice .lbl{flex:1;display:flex;gap:10px;align-items:baseline;padding:13px 16px;min-width:0}
 .choice .ct b{color:var(--muted);font-weight:700;min-width:18px}
+.choice .cx{flex:none;width:46px;display:grid;place-items:center;background:none;border:0;border-left:1px solid #eef2f6;border-radius:0 12px 12px 0;color:#9aa9bb;cursor:pointer;transition:color .12s,background .12s}
+.choice .cx svg{width:16px;height:16px}
+.choice .cx:hover{color:var(--coral);background:rgba(0,0,0,.025)}
+.choice .cx[aria-pressed="true"]{color:var(--coral)}
 .choice.sel{border-color:var(--teal);background:#f3fbfa}
 .choice.sel .cb i{background:var(--teal);border-color:var(--teal)}
 .choice.sel .cb i svg{opacity:1}
-.choice.struck .ct span{text-decoration:line-through;text-decoration-thickness:2px;color:#93a1b2}
+.choice.struck .ct .tx{text-decoration:line-through;text-decoration-thickness:2px;color:#93a1b2}
 .choice.struck .ct b{color:#b3bfcc}
 .choice .verdict{flex:none;align-self:center;font-size:12px;font-weight:700;padding:0 14px;white-space:nowrap}
-.choice .ct{min-width:0;overflow-wrap:anywhere}
+.choice .ct{min-width:0;overflow-wrap:break-word}
 @media (max-width:480px){.choice .verdict{padding:0 8px 0 4px;white-space:normal;max-width:64px;text-align:right;line-height:1.2}}
 .choice.right{border-color:#2f9e74;background:#eefaf4}
 .choice.right .verdict{color:#1f7a57}
@@ -205,7 +210,26 @@ figure.ex figcaption{font-size:11px;color:var(--muted);margin-top:4px}
 .choice.wrong .verdict{color:var(--coral)}
 .choice.right.sel .cb i{background:#2f9e74;border-color:#2f9e74}
 .choice.wrong.sel .cb i{background:var(--coral);border-color:var(--coral)}
-.locked .choice .cb{cursor:default}
+.locked .choice .ct{cursor:default}
+
+/* confidence rating */
+.conf{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-8px 0 18px}
+.conf .q{font-size:14px;font-weight:600;color:var(--ink2)}
+.conf .seg button{padding:7px 14px}
+.conf .need{font-size:13px;color:var(--muted)}
+.conftag{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:2px;text-align:right}
+.confnote{margin:-6px 0 0;font-size:14px;color:var(--muted)}
+.confnote.warn{color:var(--coral);font-weight:600}
+.verified{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#085454;margin:-4px 0 0}
+.verified svg{flex:none}
+table.conft{width:100%;border-collapse:collapse;font-size:14px}
+table.conft th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:0 8px 8px 0}
+table.conft td{padding:9px 8px 9px 0;border-top:1px solid #eef2f6}
+table.conft td.num{text-align:right;font-variant-numeric:tabular-nums}
+.cwrong{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--coral-soft);font-size:14px}
+.cwrong b{color:var(--coral)}
+.cwrong .qlinks{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cwrong .qlinks button{border:1px solid #f0c2b8;background:#fff;border-radius:8px;padding:4px 10px;font-size:13px;font-weight:600;cursor:pointer}
 
 .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .actions .grow{flex:1}
@@ -326,7 +350,9 @@ body.dark .qrail button.cur{outline-color:#9fc3ea}
   .reasons div{grid-template-columns:24px 1fr}
   .reasons .why{grid-column:2}
   .pbar .lbl{display:none}
-  .choice .cb{width:46px}
+  .choice .cb{width:44px}
+  .choice .cx{width:40px}
+  .choice .lbl{padding:12px 12px}
 }
 @media (max-width:760px){
   .sitefoot{font-size:12px}
@@ -380,8 +406,14 @@ body.dark .chips button[aria-pressed="true"]{background:#0f3f3d;border-color:#2b
 body.dark .choice.sel{background:#123234;border-color:var(--teal-bright)}
 body.dark .choice.right{background:#123426;border-color:#3fb987}
 body.dark .choice.wrong{background:#3a1c18;border-color:#e0715c}
-body.dark .choice.struck .ct span{color:#6f8299}
-body.dark .choice .cb,body.dark .reasons,body.dark .reasons div,body.dark .subj td,body.dark .setrow,body.dark .res-list button,body.dark .set-row,body.dark .summ td,body.dark .ad td{border-color:#2a3d58}
+body.dark .choice.struck .ct .tx{color:#6f8299}
+body.dark .confnote.warn,body.dark .cwrong b{color:#f19a88}
+body.dark .verified{color:#8fe0d6}
+body.dark .cwrong{background:#3a1c18}
+body.dark .cwrong .qlinks button{background:#16253b;color:#e4ecf5;border-color:#6b3a33}
+body.dark table.conft td{border-color:#2a3d58}
+body.dark .conf .q{color:#dbe5f0}
+body.dark .choice .cb,body.dark .choice .cx,body.dark .reasons,body.dark .reasons div,body.dark .subj td,body.dark .setrow,body.dark .res-list button,body.dark .set-row,body.dark .summ td,body.dark .ad td{border-color:#2a3d58}
 body.dark .reasons div.ok{background:#123426}
 body.dark .pearl{background:#0f3330;color:#d6f2ee}
 body.dark .pearl strong{color:#8fe0d6}
@@ -430,7 +462,9 @@ var ICON = {
   unfull: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
   lock: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
   ok: '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>',
-  no: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>'
+  no: '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+  cross: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>'
 };
 var S = { me: null, ov: null, email: "" };          // app state
 var P = null;                                       // player state
@@ -439,7 +473,7 @@ var P = null;                                       // player state
 var HL = { yellow: "#ffe680", green: "#b8f0a8", blue: "#b6dcff", pink: "#ffc4e1", orange: "#ffcf96" };
 var TZ = [0.9, 1, 1.1, 1.2, 1.35];               // question text sizes (magnifying glass)
 var SET = (function () {
-  var d = { dark: false, hl: "yellow", layout: "below", tz: 1 };
+  var d = { dark: false, hl: "yellow", layout: "below", tz: 1, conf: false };
   try { return Object.assign(d, JSON.parse(localStorage.getItem("qb_settings") || "{}")); } catch (e) { return d; }
 })();
 function applySettings() {
@@ -467,6 +501,9 @@ function openSettings() {
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Night mode"), h("small", null, "Dark background, easier on the eyes at night")]),
         h("button", { class: "switch", role: "switch", "aria-checked": String(!!SET.dark), "aria-label": "Night mode",
           onclick: function () { SET.dark = !SET.dark; applySettings(); draw(); } })]),
+      h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Confidence rating"), h("small", null, "Before you answer, mark how sure you are. Your results then show how your confidence matched what you got right and wrong.")]),
+        h("button", { class: "switch", role: "switch", "aria-checked": String(!!SET.conf), "aria-label": "Confidence rating",
+          onclick: function () { SET.conf = !SET.conf; applySettings(); draw(); } })]),
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Highlighter color"), h("small", null, "Pick the color that's easiest for you to see")]), sw]),
       h("div", { class: "set-row", style: "flex-wrap:wrap;border-bottom:0" }, [h("div", null, [h("b", null, "Explanations"),
         h("small", null, "Side by side keeps the question on the left (wide screens)")]), lay]),
@@ -475,6 +512,113 @@ function openSettings() {
   }
   back.addEventListener("mousedown", function (e) { if (e.target === back) close(); });
   draw(); document.body.appendChild(back);
+}
+// ───────────────────────── confidence ratings ─────────────────────────
+// Saved in this browser, and also in the database (table qb_confidence) once that table exists,
+// so ratings follow the learner across devices. Shape: { [setId]: { [questionId]: { c: level, r: 1 | 0 | null } } }
+var CONF_LV = [["sure", "Sure"], ["unsure", "Unsure"], ["guess", "Guessing"]];
+var CONF_NAME = { sure: "Sure", unsure: "Unsure", guess: "Guessing" };
+var confRemote = true;                               // turned off automatically if the table isn't set up
+function confKey() { return "qb_conf_" + (SAMPLE ? "sample" : (S.email || "anon")); }
+function confAll() { try { return JSON.parse(localStorage.getItem(confKey()) || "{}") || {}; } catch (e) { return {}; } }
+function confWrite(all) { try { localStorage.setItem(confKey(), JSON.stringify(all)); } catch (e) {} }
+function confGet(bid, qid) { var a = confAll(); return a[bid] && a[bid][qid] || null; }
+function confRemoteOff(err) {
+  if (err && /qb_confidence|42P01|PGRST205|does not exist|schema cache/i.test((err.code || "") + " " + (err.message || ""))) confRemote = false;
+}
+function confPush(bid, qid, e) {
+  if (SAMPLE || !confRemote || !S.uid) return;
+  sb.from("qb_confidence").upsert({ user_id: S.uid, block_id: String(bid), qid: String(qid), level: e.c, correct: e.r == null ? null : !!e.r,
+    updated_at: new Date().toISOString() }, { onConflict: "user_id,block_id,qid" })
+    .then(function (res) { if (res.error) confRemoteOff(res.error); }, function () {});
+}
+function confSet(bid, qid, level) {
+  var a = confAll(); a[bid] = a[bid] || {};
+  var e = a[bid][qid] = Object.assign(a[bid][qid] || { r: null }, { c: level });
+  confWrite(a); confPush(bid, qid, e);
+}
+function confResult(bid, qid, r) {
+  var a = confAll(); var e = a[bid] && a[bid][qid];
+  if (!e || e.r === r) return;
+  e.r = r; confWrite(a); confPush(bid, qid, e);
+}
+async function confPullBlock(bid) {                  // bring in ratings made on another device
+  if (SAMPLE || !confRemote || !S.uid) return;
+  try {
+    var res = await sb.from("qb_confidence").select("qid,level,correct").eq("block_id", String(bid));
+    if (res.error) { confRemoteOff(res.error); return; }
+    var a = confAll(); a[bid] = a[bid] || {};
+    (res.data || []).forEach(function (row) { a[bid][row.qid] = { c: row.level, r: row.correct == null ? null : (row.correct ? 1 : 0) }; });
+    confWrite(a);
+  } catch (e) {}
+}
+async function confPullAll() {                       // every rating, for the home-page summary
+  var rows = [];
+  if (!SAMPLE && confRemote && S.uid) {
+    try {
+      var res = await sb.from("qb_confidence").select("block_id,qid,level,correct").limit(10000);
+      if (res.error) confRemoteOff(res.error);
+      else {
+        var a = {};
+        (res.data || []).forEach(function (row) {
+          a[row.block_id] = a[row.block_id] || {};
+          a[row.block_id][row.qid] = { c: row.level, r: row.correct == null ? null : (row.correct ? 1 : 0) };
+        });
+        var local = confAll();                       // keep anything not yet synced
+        Object.keys(local).forEach(function (b) { Object.keys(local[b]).forEach(function (q) { a[b] = a[b] || {}; if (!a[b][q]) a[b][q] = local[b][q]; }); });
+        confWrite(a);
+      }
+    } catch (e) {}
+  }
+  var all = confAll();
+  Object.keys(all).forEach(function (b) { Object.keys(all[b]).forEach(function (q) { rows.push(all[b][q]); }); });
+  return rows;
+}
+async function confClearAll() {
+  try { localStorage.removeItem(confKey()); } catch (e) {}
+  if (SAMPLE || !confRemote || !S.uid) return;
+  try { await sb.from("qb_confidence").delete().eq("user_id", S.uid); } catch (e) {}
+}
+function attachConf() {
+  if (!P) return;
+  P.qs.forEach(function (q) { var e = confGet(P.b.id, q.id); q.response.conf = e ? e.c : null; });
+}
+function setConf(q, level) {
+  q.response.conf = level;
+  confSet(P.b.id, q.id, level);
+  renderPlayer(true);
+}
+// "How sure are you?" row under the answer choices
+function confEl(q, locked) {
+  var r = q.response;
+  if (!SET.conf || locked || !r.selected) return null;
+  var seg = h("div", { class: "seg", role: "group", "aria-label": "How sure are you?" }, CONF_LV.map(function (o) {
+    return h("button", { type: "button", "aria-pressed": String(r.conf === o[0]), onclick: function () { setConf(q, o[0]); } }, o[1]);
+  }));
+  return h("div", { class: "conf" }, [h("span", { class: "q" }, "How sure are you?"), seg,
+    P.b.mode === "learning" && !r.conf ? h("span", { class: "need" }, "Pick one to submit.") : null]);
+}
+// Confidence vs. results table. rows: [{ c, r, i? }]. With onOpen, confidently-wrong questions are listed as links.
+function confCard(rows, title, onOpen) {
+  var rated = rows.filter(function (x) { return x && x.c && x.r != null; });
+  if (!rated.length) return null;
+  var t = h("table", { class: "conft" }, h("tr", null, ["Confidence", "Answered", "Correct", "Incorrect", "% correct"].map(function (x, k) {
+    return h("th", { style: k ? "text-align:right" : null }, x); })));
+  CONF_LV.forEach(function (o) {
+    var g = rated.filter(function (x) { return x.c === o[0]; }), ok = g.filter(function (x) { return x.r === 1; }).length;
+    t.appendChild(h("tr", null, [h("td", null, h("b", null, o[1])), h("td", { class: "num" }, String(g.length)), h("td", { class: "num" }, String(ok)),
+      h("td", { class: "num" }, String(g.length - ok)), h("td", { class: "num" }, g.length ? pct(ok, g.length) + "%" : "–")]));
+  });
+  var cw = rated.filter(function (x) { return x.c === "sure" && x.r === 0; });
+  var lucky = rated.filter(function (x) { return x.c === "guess" && x.r === 1; }).length;
+  var note = cw.length
+    ? h("div", { class: "cwrong" }, [h("b", null, cw.length + " confidently wrong"),
+        " · you were sure but got " + (cw.length === 1 ? "this one" : "these") + " wrong. These are the blind spots worth reviewing first.",
+        onOpen ? h("div", { class: "qlinks" }, cw.map(function (x) { return h("button", { type: "button", onclick: function () { onOpen(x.i); } }, "Question " + (x.i + 1)); })) : null])
+    : h("p", { class: "muted small", style: "margin:12px 0 0" }, "No confidently wrong answers. Nice.");
+  return h("section", { class: "card" }, [h("div", { class: "sec-h" }, [h("h2", null, title || "Confidence vs. results"),
+      h("span", { class: "note" }, rated.length + " rated")]), t, note,
+    lucky ? h("p", { class: "muted small", style: "margin:10px 0 0" }, lucky + " correct guess" + (lucky > 1 ? "es" : "") + ". Review " + (lucky > 1 ? "them" : "it") + " so the answer sticks next time.") : null]);
 }
 // Text size (magnifying glass) and full screen
 function tzControl(onchange) {
@@ -693,7 +837,7 @@ function screen(nodes, playing, keepScroll) {
   (Array.isArray(nodes) ? nodes : [nodes]).forEach(function (n) { if (n) app.appendChild(n); });
   window.scrollTo(0, keepScroll ? y : 0);
 }
-async function signOut() { stopClock(); await sb.auth.signOut(); S = { me: null, ov: null, email: "" }; showLogin(); }
+async function signOut() { stopClock(); await sb.auth.signOut(); S = { me: null, ov: null, email: "", uid: null }; showLogin(); }
 
 // ───────────────────────── sign-in ─────────────────────────
 // ───────────────────────── sign-in, account creation, password reset ─────────────────────────
@@ -967,6 +1111,7 @@ async function showHome() {
   screen([header(), h("div", { class: "spin" })]);
   try { S.ov = await rpc("qb_overview"); } catch (e) { if (!/no_access|not_signed_in/.test(e.message || "")) homeError(e); return; }
   S.me = S.ov.me;
+  var confRows = await confPullAll();
   var ov = S.ov, subs = ov.subjects;
   var used = 0, correct = 0, done = 0;
   subs.forEach(function (s) { used += s.used; correct += s.correct; });
@@ -984,7 +1129,7 @@ async function showHome() {
       h("div", { class: "note" }, ov.total + " questions across " + subs.length + " subjects")
     ]),
     stats,
-    h("div", { class: "grid2" }, [builder(), h("div", { class: "stack" }, [subjectCard(subs), setsCard(ov.blocks)])]),
+    h("div", { class: "grid2" }, [builder(), h("div", { class: "stack" }, [subjectCard(subs), confCard(confRows, "Your confidence"), setsCard(ov.blocks)])]),
     resetCard()
   ]))]);
 }
@@ -1122,7 +1267,7 @@ async function doReset() {
     h("label", { class: "field" }, ["Type RESET to confirm", input]));
   if (!ok) return;
   if (input.value.trim().toUpperCase() !== "RESET") { toast("Type RESET to confirm."); return; }
-  try { await rpc("qb_reset"); toast("Your question bank was reset."); showHome(); } catch (e) { toast(friendly(e)); }
+  try { await rpc("qb_reset"); await confClearAll(); toast("Your question bank was reset."); showHome(); } catch (e) { toast(friendly(e)); }
 }
 
 // ───────────────────────── player ─────────────────────────
@@ -1137,6 +1282,8 @@ async function openBlock(id) {
   P.qs.forEach(function (q) {
     q.response = q.response || { selected: null, struck: "", highlights: [], flagged: false, submitted: false, time_sec: 0 };
   });
+  await confPullBlock(id);
+  attachConf();
   P.elapsed = P.b.elapsed_sec || 0;
   if (P.b.status === "completed") { P.i = 0; showResults(); return; }
   renderPlayer();
@@ -1202,8 +1349,9 @@ function renderPlayer(keep) {
       title: r.flagged ? "Unflag this question" : "Flag this question", "aria-label": r.flagged ? "Unflag this question" : "Flag this question",
       onclick: function () { r.flagged = !r.flagged; markDirty(q); renderPlayer(true); }, html: ICON.flag })),
     stemArea(q),
-    h("p", { class: "hint" }, "Tip: select words in the question to highlight them; tap a highlight to remove it. Tap an answer's words to cross it out."),
+    h("p", { class: "hint" }, "Tip: tap an answer to choose it, or tap the ✕ on its right to cross it out. Select words in the question to highlight them; tap a highlight to remove it."),
     choicesEl(q, locked),
+    confEl(q, locked),
     actionsEl(q, locked)
   ]);
   var exp = q.reveal ? explanationEl(q) : null;
@@ -1338,7 +1486,7 @@ function imageEl(q) {
   return fig;
 }
 
-// answer choices: box = choose, words = cross out
+// answer choices: tap anywhere on a choice = choose, ✕ on the right = cross out
 // Share of learners who chose each option (first answers only, shown once 20 learners have answered).
 function choiceStats(q) {
   if (SAMPLE || !P || !q.reveal || !q.response.submitted) return null;
@@ -1370,13 +1518,18 @@ function choicesEl(q, locked) {
       if (rv.answer === L) { cls += " right"; verdict = "Correct answer"; }
       else if (r.selected === L) { cls += " wrong"; verdict = "Your answer"; }
     }
+    var isStruck = (r.struck || "").indexOf(L) >= 0;
     list.appendChild(h("div", { class: cls }, [
-      h("button", { class: "cb", role: "radio", "aria-checked": String(r.selected === L), "aria-label": "Choose " + L, disabled: locked ? true : null,
-        onclick: function () { if (!locked) select(q, L); }, html: '<i>' + ICON.check + '</i>' }),
-      h("button", { class: "ct", title: "Cross out", "aria-pressed": String((r.struck || "").indexOf(L) >= 0),
-        onclick: function () { strike(q, L); } }, [h("b", null, L + "."), h("span", null, text)]),
+      h("button", { class: "ct", type: "button", role: "radio", "aria-checked": String(r.selected === L), "aria-disabled": locked ? "true" : null,
+        onclick: function () { if (!locked) select(q, L); } }, [
+        h("span", { class: "cb", "aria-hidden": "true", html: "<i>" + ICON.check + "</i>" }),
+        h("span", { class: "lbl" }, [h("b", null, L + "."), h("span", { class: "tx" }, text)])
+      ]),
       cs ? h("span", { class: "cpct", title: "Share of learners who chose " + L }, pct(cs[L] || 0, cs.n) + "%") : null,
-      verdict ? h("span", { class: "verdict" }, verdict) : null
+      verdict ? h("span", { class: "verdict" }, verdict) : null,
+      h("button", { class: "cx", type: "button", "aria-pressed": String(isStruck),
+        title: isStruck ? "Undo cross out" : "Cross out " + L, "aria-label": (isStruck ? "Undo cross out of " : "Cross out ") + L,
+        onclick: function () { strike(q, L); }, html: ICON.cross })
     ]));
   });
   return list;
@@ -1400,7 +1553,7 @@ function actionsEl(q, locked) {
   if (done()) return h("div", { class: "actions" }, [prev, h("span", { class: "grow" }), next]);
   if (b.mode === "learning") {
     if (!r.submitted) return h("div", { class: "actions" }, [prev,
-      h("button", { class: "btn teal", disabled: r.selected ? null : true, onclick: function (e) { submit(q, e.currentTarget); } }, "Submit answer"),
+      h("button", { class: "btn teal", disabled: r.selected && (!SET.conf || r.conf) ? null : true, onclick: function (e) { submit(q, e.currentTarget); } }, "Submit answer"),
       h("span", { class: "grow" }), next]);
     return h("div", { class: "actions" }, [prev, h("span", { class: "grow" }),
       last ? h("button", { class: "btn teal", onclick: function () { finishSet(false); } }, "Finish set") : h("button", { class: "btn teal", onclick: function () { go(P.i + 1); } }, "Next question →")]);
@@ -1420,6 +1573,7 @@ async function submit(q, btn) {
     var res = await rpc("qb_submit", { p_block: P.b.id, p_qid: q.id, p_selected: q.response.selected });
     q.response.submitted = true; q.response.selected = res.selected;
     q.reveal = { answer: res.answer, explain: res.explain, correct: res.correct, num: res.num };
+    if (q.response.conf) confResult(P.b.id, q.id, q.response.selected ? (res.correct ? 1 : 0) : null);
     renderPlayer(true);
     var ex = $(".exp"); if (ex && !$(".split")) ex.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (e) { toast(friendly(e)); btn.disabled = false; btn.textContent = "Submit answer"; }
@@ -1444,6 +1598,7 @@ async function finishSet(auto) {
     var imgs = P.images;
     P = { b: data.block, qs: data.questions, i: 0, dirty: {}, images: imgs, calc: false };
     P.qs.forEach(function (q) { q.response = q.response || { selected: null, struck: "", highlights: [], flagged: false, submitted: true, time_sec: 0 }; });
+    attachConf();
     P.elapsed = P.b.elapsed_sec;
     showResults(auto);
   } catch (e) { toast(friendly(e)); renderPlayer(); }
@@ -1462,11 +1617,18 @@ function explanationEl(q) {
   var narr = h("div", { class: "narr" }, paras(ex.explanation).map(function (p) { return h("p", null, p); }));
   return h("section", { class: "exp", "aria-label": "Explanation" }, [
     h("div", { class: "subjtag", style: "margin-bottom:-6px" }, (rv.num ? "Question ID " + rv.num + " · " : "") + q.subject),
+    h("div", { class: "verified" }, [h("span", { html: ICON.shield, style: "display:flex" }), "Reviewed and verified by Khaled M. Abdullah, MD"]),
     h("div", { class: "verdictbar " + (om ? "om" : ok ? "ok" : "no") }, [
       h("span", { class: "dot", html: om ? "–" : ok ? ICON.ok : ICON.no }),
       h("span", null, (om ? "Omitted" : ok ? "Correct" : "Incorrect") + ". The answer is " + L + ". " + q.body.choices[L])
     ]),
     (function () { var cs = choiceStats(q); return cs ? h("p", { class: "cstat" }, pct(cs[L] || 0, cs.n) + "% of learners answered this correctly.") : null; })(),
+    (function () {
+      var c = r.conf; if (!c || om) return null;
+      var sureWrong = c === "sure" && !ok, luckyGuess = c === "guess" && ok;
+      return h("p", { class: "confnote" + (sureWrong ? " warn" : "") }, "Your confidence: " + CONF_NAME[c] + "." +
+        (sureWrong ? " You were sure but got this wrong, so it's worth a second look." : luckyGuess ? " You guessed right, so review it until you know why." : ""));
+    })(),
     narr,
     h("h3", null, "Why each choice is right or wrong"), reasons,
     ex.pearl ? h("div", { class: "pearl" }, [h("strong", null, "Teaching pearl"), ex.pearl]) : null
@@ -1575,12 +1737,20 @@ function showResults(auto) {
       h("td", null, h("div", { class: "bar" }, h("i", { style: "width:" + pct(s.c, s.n) + "%" }))),
       h("td", { class: "num" }, s.c + "/" + s.n)]));
   });
+  var confRows = [];
+  P.qs.forEach(function (q, i) {
+    if (!q.response.conf) return;
+    var rr = q.response.selected ? (q.reveal && q.reveal.correct ? 1 : 0) : null;
+    confResult(b.id, q.id, rr);
+    confRows.push({ c: q.response.conf, r: rr, i: i });
+  });
   var list = h("div", { class: "res-list" });
   P.qs.forEach(function (q, i) {
     var om = !q.response.selected, ok = q.reveal && q.reveal.correct;
     list.appendChild(h("button", { onclick: function () { P.i = i; renderPlayer(); } }, [
       h("span", { class: "n" }, String(i + 1)), h("span", { class: "t" }, q.subject + " · " + q.body.stem),
-      h("span", { class: "r " + (om ? "om" : ok ? "ok" : "no") }, om ? "Omitted" : ok ? "Correct" : "Incorrect")]));
+      h("span", { class: "r " + (om ? "om" : ok ? "ok" : "no") }, [om ? "Omitted" : ok ? "Correct" : "Incorrect",
+        q.response.conf && !om ? h("span", { class: "conftag" }, CONF_NAME[q.response.conf]) : null])]));
   });
   screen([header(), h("main", { class: "wrap page" }, h("div", { class: "stack" }, [
     auto ? h("div", { class: "card", style: "background:var(--amber-soft);border-color:#f0d9a6" }, "Time ran out, so the set was ended for you.") : null,
@@ -1592,6 +1762,7 @@ function showResults(auto) {
         h("div", { class: "actions" }, [h("button", { class: "btn teal", onclick: function () { P.i = 0; renderPlayer(); } }, "Review questions"),
           h("button", { class: "btn ghost", onclick: showHome }, "Back to home")])])
     ]),
+    confCard(confRows, "Confidence vs. results", function (i) { P.i = i; renderPlayer(); }),
     h("div", { class: "grid2" }, [
       h("section", { class: "card" }, [h("div", { class: "sec-h" }, h("h2", null, "Every question")), list]),
       h("section", { class: "card" }, [h("div", { class: "sec-h" }, h("h2", null, "By subject")), subjT])
@@ -1683,7 +1854,7 @@ function showSampleHome() {
       h("p", { class: "muted", style: "margin:10px 0 0;max-width:720px" }, "Highlight text, cross out choices, flag questions, use the calculator and change the settings, just like the full question bank. The full bank (about 1,000 questions) is coming soon."),
       h("div", { class: "actions", style: "margin-top:18px" }, [
         h("button", { class: "btn teal", onclick: function () { openBlock("sample"); } }, finished ? "Review your answers" : started ? "Resume (" + answered + " of " + n + " answered)" : "Start the free sample"),
-        started ? h("button", { class: "btn ghost", onclick: function () { try { localStorage.removeItem(SKEY); } catch (e) {} showSampleHome(); } }, "Start over") : null,
+        started ? h("button", { class: "btn ghost", onclick: function () { try { localStorage.removeItem(SKEY); localStorage.removeItem(confKey()); } catch (e) {} showSampleHome(); } }, "Start over") : null,
         h("a", { class: "btn ghost", href: "https://forms.gle/9qnowgoDevR742wB7", target: "_blank", rel: "noopener" }, "Join the waitlist")
       ])
     ])
@@ -1700,6 +1871,7 @@ async function boot() {
   var user = s.data && s.data.session && s.data.session.user;
   if (!user) return showLogin();
   S.email = (user.email || "").toLowerCase();
+  S.uid = user.id;
   if (!allowed(S.email)) return showNotOpen();
   if (!(user.user_metadata && user.user_metadata.account_ready)) return showFinishAccount(user);
   try { S.me = await rpc("qb_me"); } catch (e) { if (!/not_signed_in|JWT/i.test(e.message || "")) homeError(e); return; }
