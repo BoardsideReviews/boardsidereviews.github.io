@@ -821,8 +821,18 @@ async function fLoadSet(set) {
   d.questions.forEach(function (q) { q.body = fParse(q.body); q.explain = fParse(q.explain); });
   return (FREE.data[set] = d);
 }
+function fShuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+// questions in this learner's shuffled order (any not in the saved order go at the end)
+function fOrdered(set, st) {
+  var qs = FREE.data[set].questions;
+  if (!st.order) return qs;
+  var byId = {}; qs.forEach(function (q) { byId[q.id] = q; });
+  var out = st.order.map(function (id) { return byId[id]; }).filter(Boolean);
+  qs.forEach(function (q) { if (st.order.indexOf(q.id) < 0) out.push(q); });
+  return out;
+}
 function fBlock(set, st) {
-  var qs = FREE.data[set].questions, done = st.status === "completed";
+  var qs = fOrdered(set, st), done = st.status === "completed";
   var nc = qs.filter(function (q) { var r = st.resp[q.id]; return r && r.selected === q.answer && (done || r.submitted); }).length;
   return {
     block: { id: "free:" + set, mode: st.mode, timed: !!st.timed, time_limit_sec: st.timed ? qs.length * 90 : 0, status: st.status,
@@ -2113,7 +2123,8 @@ function showSampleHome() {
       try { await fLoadSet(fs.set_key); }
       catch (x) { toast(friendly(x)); if (btn) { btn.disabled = false; btn.textContent = t; } return; }
       if (!st || again) {
-        st = { mode: choose.freeMode || "learning", timed: !!choose.freeTimed, idx: 0, elapsed: 0, status: "active", resp: {} };
+        st = { mode: choose.freeMode || "learning", timed: !!choose.freeTimed, idx: 0, elapsed: 0, status: "active", resp: {},
+               order: fShuffle(FREE.data[fs.set_key].questions.map(function (q) { return q.id; })) };
         try { localStorage.removeItem(confKey()); } catch (x) {}
         fSave(fs.set_key, st);
       }

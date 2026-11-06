@@ -5,9 +5,13 @@
 -- What it does
 --   1. Builds 4 free sets of 20 questions from the question bank:
 --        Pulmonary & Critical Care (10 Pulm + 10 Crit Care, alternating), Cardiology,
---        Gastroenterology, Nephrology. Each takes the first questions of the subject's
---        lowest-numbered sets, skipping image questions and hidden (inactive) ones.
---      The picks are saved in qb_free_items, so they stay fixed. To swap a question:
+--        Gastroenterology, Nephrology. Questions are picked AT RANDOM from across all of the
+--        subject's sets, skipping image questions and hidden (inactive) ones.
+--      The random picks are saved once in qb_free_items and then stay fixed, so free users
+--      can't keep re-rolling their way through the paid bank. (The order is shuffled for each
+--      learner every time they start a set.) To re-roll all 80:
+--        delete from public.qb_free_items;   then run this file again.
+--      To swap one question:
 --        update public.qb_free_items set question_id = 'Cardiology-2-04'
 --         where set_key = 'cardiology' and ord = 7;
 --   2. Anyone (no account) can load the first 10 questions of each set.
@@ -45,22 +49,34 @@ insert into public.qb_free_sets (set_key, title, blurb, sort) values
   ('renal',      'Nephrology',                '20 questions from the Nephrology sets.', 4)
 on conflict (set_key) do nothing;
 
--- candidate questions for one subject prefix (e.g. 'Cardiology' matches Cardiology-1-01),
--- lowest set first, then question number; no images, active only
+-- random questions for one subject prefix (e.g. 'Cardiology' matches Cardiology-3-07),
+-- from any of its sets; no images, active only
 create or replace function public.qb_free_pick(p_prefix text, p_n integer)
-returns table (question_id text, rn bigint) language sql stable security definer set search_path = public as $$
-  select x.id, row_number() over (order by x.s, x.n)
+returns table (question_id text, rn bigint) language sql volatile security definer set search_path = public as $$
+  select x.id, row_number() over ()
   from (
-    select q.id, split_part(q.id, '-', 2)::int as s, split_part(q.id, '-', 3)::int as n
+    select q.id
     from public.qb_questions q
     where q.id ~ ('^' || p_prefix || '-[0-9]+-[0-9]+$')
       and q.active
       and coalesce((to_jsonb(q) ->> 'has_image')::boolean, false) = false
-    order by 2, 3
+    order by random()
     limit p_n
   ) x;
 $$;
 revoke execute on function public.qb_free_pick(text, integer) from public, anon, authenticated;
+
+-- one-time switch to random picks: clears any earlier first-of-set picks, once
+create table if not exists public.qb_free_meta (k text primary key, v text);
+alter table public.qb_free_meta enable row level security;
+revoke all on public.qb_free_meta from anon, authenticated;
+do $$
+begin
+  if not exists (select 1 from public.qb_free_meta where k = 'random_picks') then
+    delete from public.qb_free_items;
+    insert into public.qb_free_meta (k, v) values ('random_picks', now()::text);
+  end if;
+end $$;
 
 -- fill a set only if it is empty (so your manual swaps are never overwritten)
 do $$
