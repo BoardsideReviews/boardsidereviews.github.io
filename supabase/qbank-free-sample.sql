@@ -171,10 +171,12 @@ create policy "free samples: verified accounts can download" on storage.objects
 -- ─────────────────────────────────────────────────────────────
 -- Everyone who created a question bank account is on the launch waitlist.
 -- mailing_list is true only for people who ticked the mailing-list box.
+-- heard_from is their answer to "How did you hear about Boardside Reviews?" (null if skipped).
 drop function if exists public.admin_accounts();
 create or replace function public.admin_accounts()
 returns table (email text, first_name text, last_name text, verified boolean,
-               waitlist boolean, mailing_list boolean, created_at timestamptz, kind text)
+               waitlist boolean, mailing_list boolean, created_at timestamptz, kind text,
+               heard_from text, heard_from_other text)
 language plpgsql stable security definer set search_path = public, auth as $$
 begin
   if not public.is_admin() then raise exception 'not_admin'; end if;
@@ -187,7 +189,9 @@ begin
            coalesce((u.raw_user_meta_data ->> 'marketing_opt_in')::boolean, false),
            u.created_at,
            case when coalesce((u.raw_user_meta_data ->> 'account_ready')::boolean, false)
-                then 'Account' else 'Leaderboard only' end
+                then 'Account' else 'Leaderboard only' end,
+           u.raw_user_meta_data ->> 'heard_from',
+           u.raw_user_meta_data ->> 'heard_from_other'
     from auth.users u
     order by u.created_at desc;
 end;

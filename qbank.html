@@ -91,6 +91,11 @@ main.page{padding:28px 0 60px}
 .optin input{margin-top:3px;width:17px;height:17px;flex:none;accent-color:var(--teal)}
 .wlnote{font-size:13.5px;line-height:1.5;color:var(--ink2);background:var(--teal-soft);border:1px solid #bfe3df;border-radius:10px;padding:10px 12px}
 .wlnote b{color:var(--navy)}
+.hopts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hopt{font:inherit;font-size:14.5px;text-align:left;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink2);cursor:pointer}
+.hopt:hover{border-color:#b9d9d6}
+.hopt[aria-pressed=true]{border-color:var(--teal);background:var(--teal-soft);color:var(--navy);font-weight:600}
+@media (max-width:420px){.hopts{grid-template-columns:1fr}}
 .fnote{margin-top:16px;font-size:14.5px;line-height:1.5;color:var(--ink2);background:var(--amber-soft);border:1px solid #f0d9a6;border-radius:12px;padding:12px 14px}
 .fnote.ok{background:var(--teal-soft);border-color:#bfe3df}
 .fnote b{color:var(--navy)}
@@ -1136,6 +1141,42 @@ function showNewPassword() {
 
 // Signed in (for example with an email code) but the account isn't set up yet:
 // ask for name, password and mailing-list choice.
+// One question after an account is created: how did you hear about Boardside Reviews?
+// Saved on the account (heard_from); skipping saves nothing but doesn't ask again.
+var HEARD_OPTIONS = ["Instagram", "YouTube", "X (Twitter)", "TikTok", "Google search", "A friend or co-resident",
+  "My residency program", "An attending or faculty member", "Reddit", "Other"];
+function showHeardAbout(user) {
+  stopClock();
+  var picked = null, err = h("div", { class: "err", "aria-live": "polite" });
+  var other = h("input", { type: "text", maxlength: "120", placeholder: "Tell us where", "aria-label": "Where did you hear about us?" });
+  var otherWrap = h("label", { class: "field", style: "display:none" }, ["Where?", other]);
+  var btns = HEARD_OPTIONS.map(function (o) {
+    return h("button", { type: "button", class: "hopt", "aria-pressed": "false", onclick: function () {
+      picked = o; btns.forEach(function (b) { b.setAttribute("aria-pressed", String(b.textContent === o)); });
+      otherWrap.style.display = o === "Other" ? "" : "none"; if (o === "Other") other.focus(); err.textContent = "";
+    } }, o);
+  });
+  var btn = h("button", { class: "btn teal", type: "submit" }, "Continue");
+  async function save(choice) {
+    btn.disabled = true;
+    var data = { heard_asked: true, heard_at: new Date().toISOString() };
+    if (choice) { data.heard_from = choice; data.heard_from_other = choice === "Other" ? other.value.trim().slice(0, 120) : null; }
+    await sb.auth.updateUser({ data: data });          // best effort: never block someone from the questions
+    boot();
+  }
+  var form = h("form", { class: "card", novalidate: true }, [
+    h("h1", null, "One quick question"),
+    h("p", null, "How did you hear about Boardside Reviews?"),
+    h("div", { class: "hopts" }, btns), otherWrap, err, btn,
+    h("button", { class: "link", type: "button", onclick: function () { save(null); } }, "Skip")
+  ]);
+  form.onsubmit = function (e) {
+    e.preventDefault();
+    if (!picked) { err.textContent = "Pick one, or tap Skip."; return; }
+    save(picked);
+  };
+  authScreen(form);
+}
 function showFinishAccount(user) {
   stopClock();
   var md = user.user_metadata || {};
@@ -2218,6 +2259,7 @@ async function boot() {
   S.email = user ? (user.email || "").toLowerCase() : ""; S.uid = user ? user.id : null;
   FREE.data = {};
   if (user && !(user.user_metadata && user.user_metadata.account_ready)) return showFinishAccount(user);
+  if (user && !user.user_metadata.heard_asked && PREVIEW_EMAILS.indexOf(S.email) < 0) return showHeardAbout(user);
   if (user) { var m = await sb.rpc("qb_me"); S.me = m.error ? null : m.data; }
   if (SAMPLE) return freeBoot();
   if (!user) return showLogin();
