@@ -484,7 +484,7 @@ var P = null;                                       // player state
 var HL = { yellow: "#ffe680", green: "#b8f0a8", blue: "#b6dcff", pink: "#ffc4e1", orange: "#ffcf96" };
 var TZ = [0.9, 1, 1.1, 1.2, 1.35];               // question text sizes (magnifying glass)
 var SET = (function () {
-  var d = { dark: false, hl: "yellow", layout: "below", tz: 1, conf: false };
+  var d = { dark: false, hl: "yellow", layout: "below", tz: 1, conf: false, expand: false };
   try { return Object.assign(d, JSON.parse(localStorage.getItem("qb_settings") || "{}")); } catch (e) { return d; }
 })();
 function applySettings() {
@@ -515,6 +515,9 @@ function openSettings() {
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Confidence rating"), h("small", null, "Before you answer, mark how sure you are. Your results then show how your confidence matched what you got right and wrong.")]),
         h("button", { class: "switch", role: "switch", "aria-checked": String(!!SET.conf), "aria-label": "Confidence rating",
           onclick: function () { SET.conf = !SET.conf; applySettings(); draw(); } })]),
+      h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Expand in-depth explanations"), h("small", null, "On: every answer choice shows its in-depth explanation open. Off: they stay collapsed until you tap a choice.")]),
+        h("button", { class: "switch", role: "switch", "aria-checked": String(!!SET.expand), "aria-label": "Expand in-depth explanations",
+          onclick: function () { SET.expand = !SET.expand; applySettings(); draw(); } })]),
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Highlighter color"), h("small", null, "Pick the color that's easiest for you to see")]), sw]),
       h("div", { class: "set-row", style: "flex-wrap:wrap;border-bottom:0" }, [h("div", null, [h("b", null, "Explanations"),
         h("small", null, "Side by side keeps the question on the left (wide screens)")]), lay]),
@@ -1623,9 +1626,10 @@ function explanationEl(q) {
   ["A", "B", "C", "D", "E"].forEach(function (k) {
     if (!q.body.choices[k]) return;
     var det = (ex.details || {})[k];
-    var row = h("div", { class: (k === L ? "ok" : "") + (det ? " has" : ""), role: det ? "button" : null, tabindex: det ? "0" : null, "aria-expanded": det ? "false" : null },
+    var startOpen = !!(det && SET.expand);
+    var row = h("div", { class: (k === L ? "ok" : "") + (det ? " has" : "") + (startOpen ? " open" : ""), role: det ? "button" : null, tabindex: det ? "0" : null, "aria-expanded": det ? String(startOpen) : null },
       [h("b", null, k), h("span", null, q.body.choices[k]), h("span", { class: "why" }, (ex.reasons || {})[k] || "")]
-        .concat(det ? [h("span", { class: "tog" }, "Explain in depth \u25BE"), h("div", { class: "more" }, det)] : []));
+        .concat(det ? [h("span", { class: "tog" }, startOpen ? "Hide \u25B4" : "Explain in depth \u25BE"), h("div", { class: "more" }, det)] : []));
     if (det) {
       var flip = function () {
         var open = row.classList.toggle("open");
@@ -1654,7 +1658,7 @@ function explanationEl(q) {
     })(),
     narr,
     h("h3", null, "Why each choice is right or wrong"),
-    (ex.details && Object.keys(ex.details).length) ? h("p", { class: "reasons-hint" }, "Tap any choice to see the in-depth explanation.") : null,
+    (ex.details && Object.keys(ex.details).length) ? h("p", { class: "reasons-hint" }, SET.expand ? "In-depth explanations are expanded (change this in Settings). Tap a choice to collapse it." : "Tap any choice to see the in-depth explanation, or turn on \u201cExpand in-depth explanations\u201d in Settings.") : null,
     reasons,
     ex.pearl ? h("div", { class: "pearl" }, [h("strong", null, "Teaching pearl"), ex.pearl]) : null
   ].concat((ex.summaries || []).map(summaryEl)).concat([
@@ -1876,7 +1880,7 @@ function showSampleHome() {
       h("h1", null, n + " questions, the real interface."),
       h("p", { class: "muted", style: "margin:8px 0 0;max-width:720px" }, "This is the Boardside question bank, in learning mode: answer each question, then see why every choice is right or wrong, with a teaching pearl. " +
         "It's the same " + n + " questions every time, from " + Object.keys(subj).length + " subjects. No sign-up needed; your progress stays in this browser."),
-      h("p", { class: "muted", style: "margin:10px 0 0;max-width:720px" }, "Highlight text, cross out choices, flag questions, use the calculator and change the settings, just like the full question bank. The full bank (about 1,000 questions) is coming soon."),
+      h("p", { class: "muted", style: "margin:10px 0 0;max-width:720px" }, "Highlight text, cross out choices, flag questions, use the calculator and change the settings, just like the full question bank. The full bank has over 1,700 questions."),
       h("div", { class: "actions", style: "margin-top:18px" }, [
         h("button", { class: "btn teal", onclick: function () { openBlock("sample"); } }, finished ? "Review your answers" : started ? "Resume (" + answered + " of " + n + " answered)" : "Start the free sample"),
         started ? h("button", { class: "btn ghost", onclick: function () { try { localStorage.removeItem(SKEY); localStorage.removeItem(confKey()); } catch (e) {} showSampleHome(); } }, "Start over") : null,
