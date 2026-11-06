@@ -53,6 +53,9 @@ button{font:inherit;color:inherit}
 .ib{width:36px;height:36px;border-radius:10px;border:1px solid var(--edge);background:var(--bezel);cursor:pointer;display:grid;place-items:center;font-weight:700;color:var(--dim)}
 .ib:hover{color:var(--ink);border-color:var(--edge2)}
 .ib.off .sw{display:none}
+.ib .fs-out{display:none}
+.ib.on .fs-in{display:none}
+.ib.on .fs-out{display:block}
 
 /* lab layout */
 .lab{display:grid;grid-template-columns:minmax(0,1fr) 370px;grid-template-rows:minmax(0,1fr);gap:12px;padding:12px;flex:none;min-height:0;height:calc(100vh - 62px);height:calc(100dvh - 62px)}
@@ -195,6 +198,9 @@ input[type=range]{accent-color:var(--teal);height:22px}
 /* lessons */
 .les-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .les-top select{flex:1;min-width:0;background:#0b1117;color:var(--ink);border:1px solid var(--edge2);border-radius:10px;padding:8px;font:inherit;font-size:13px}
+.les-restart{flex:0 0 auto;border:1px solid var(--edge2);background:#0b1117;color:var(--dim);border-radius:10px;padding:8px 10px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.les-restart:hover{color:var(--ink);border-color:#4a5b6c}
+.les-restart.arm{color:var(--amber);border-color:var(--amber);background:rgba(255,179,64,.1)}
 .les-prog{display:flex;gap:3px;margin:0 0 10px;flex-wrap:wrap}
 .les-prog i{height:5px;flex:1;min-width:6px;border-radius:3px;background:#24303c}
 .les-prog i.done{background:var(--teal2)}
@@ -419,6 +425,7 @@ body.learning #sideLesson{order:-1}
   </nav>
   <div class="top-r">
     <button class="ib" id="helpBtn" type="button" aria-label="How to use Vent Lab" title="How to use">?</button>
+    <button class="ib" id="fsBtn" type="button" aria-label="Enter full screen" title="Full screen" hidden><svg class="fs-in" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="fs-out" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
     <button class="ib" id="sndBtn" type="button" aria-label="Sound on" title="Sound"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path class="sw" d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg></button>
   </div>
 </header>
@@ -2808,7 +2815,7 @@ $$('.tabs button').forEach(function (b) { b.addEventListener('click', function (
 
 /* ───────── lessons runner ───────── */
 var Lessons = (function () {
-  var L = window.VL_LESSONS || [], idx = store.get('lesson', 0), done = store.get('done', {}), revealed = {}, active = false;
+  var L = window.VL_LESSONS || [], idx = store.get('lesson', 0), done = store.get('done', {}), revealed = {}, active = false, restartT = 0;
   if (idx >= L.length) idx = 0;
   function key(i, j) { return L[i].id + ':' + j; }
   function render() {
@@ -2817,7 +2824,7 @@ var Lessons = (function () {
     var opts = L.map(function (x, i) { var all = (x.tasks || []).every(function (t, j) { return done[key(i, j)]; }); return '<option value="' + i + '"' + (i === idx ? ' selected' : '') + '>' + (all && x.tasks && x.tasks.length ? '✓ ' : '') + (i + 1) + '. ' + esc(x.short || x.q) + '</option>'; });
     var prog = L.map(function (x, i) { var all = (x.tasks || []).length ? x.tasks.every(function (t, j) { return done[key(i, j)]; }) : !!done[x.id + ':seen']; return '<i class="' + (i === idx ? 'cur' : all ? 'done' : '') + '" title="' + (i + 1) + '"></i>'; }).join('');
     var shown = revealed[les.id] || les.open;
-    box.innerHTML = '<div class="les-top"><select id="lesSel" aria-label="Choose a lesson">' + opts.join('') + '</select></div><div class="les-prog">' + prog + '</div>' +
+    box.innerHTML = '<div class="les-top"><select id="lesSel" aria-label="Choose a lesson">' + opts.join('') + '</select><button class="les-restart" type="button" id="lesRestart" title="Clear all progress and start from step 1">↺ Start over</button></div><div class="les-prog">' + prog + '</div>' +
       '<div class="les-sess">' + esc(les.session) + '</div><div class="les-obj">' + esc(les.objective || '') + '</div>' +
       (les.caseText ? '<div class="les-case">' + les.caseText + '</div>' : '') +
       '<div class="les-q">' + esc(les.q) + '</div>' +
@@ -2855,6 +2862,11 @@ var Lessons = (function () {
     if (e.target.id === 'lesNext') load(idx + 1);
     if (e.target.id === 'lesPrev') load(idx - 1);
     if (e.target.id === 'lesReset') load(idx);
+    if (e.target.id === 'lesRestart') {
+      var rb = e.target;
+      if (!rb.classList.contains('arm')) { rb.classList.add('arm'); rb.textContent = 'Tap again to reset'; clearTimeout(restartT); restartT = setTimeout(function () { if (rb.isConnected) { rb.classList.remove('arm'); rb.textContent = '↺ Start over'; } }, 3000); return; }
+      clearTimeout(restartT); done = {}; revealed = {}; store.set('done', done); load(0); toast('<b>Progress reset.</b> Starting again from step 1.', 'good');
+    }
     var b = e.target.closest('[data-lb]'); if (b) { var bt = L[idx].buttons[+b.dataset.lb]; if (bt.config) applyConfig(bt.config); if (bt.run) bt.run(window.VL, sim); fire('lessonButton', { label: bt.label }); }
   });
   $('#sideLesson').addEventListener('change', function (e) { if (e.target.id === 'lesSel') load(+e.target.value); });
@@ -2878,6 +2890,21 @@ function openHelp() {
   M.hidden = false; M.onclick = function (e) { if (e.target === M || e.target.closest('[data-x]')) M.hidden = true; };
 }
 $('#helpBtn').addEventListener('click', openHelp);
+(function () {
+  var fsBtn = $('#fsBtn'), de = document.documentElement;
+  var req = de.requestFullscreen || de.webkitRequestFullscreen;
+  var exit = document.exitFullscreen || document.webkitExitFullscreen;
+  if (!req || !exit) return;
+  var cur = function () { return document.fullscreenElement || document.webkitFullscreenElement; };
+  fsBtn.hidden = false;
+  fsBtn.addEventListener('click', function () {
+    try { var r = cur() ? exit.call(document) : req.call(de); if (r && r.catch) r.catch(function () {}); } catch (e) {}
+    this.blur();
+  });
+  var sync = function () { var on = !!cur(); fsBtn.classList.toggle('on', on); fsBtn.setAttribute('aria-label', on ? 'Exit full screen' : 'Enter full screen'); fsBtn.title = on ? 'Exit full screen' : 'Full screen'; };
+  document.addEventListener('fullscreenchange', sync);
+  document.addEventListener('webkitfullscreenchange', sync);
+})();
 
 /* ───────── boot ───────── */
 applyConfig({ mode: 'vc-cmv', vent: { VT: 0.45, RR: 16, PEEP: 5, flow: 60 }, warm: 2 });
