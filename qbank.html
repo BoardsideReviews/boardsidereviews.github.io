@@ -35,6 +35,8 @@ h1,h2,h3,h4{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.01
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--navy);font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:17px}
 .brand svg{width:34px;height:34px}
 .brand small{font-weight:600;color:var(--teal);font-size:14px}
+@media (max-width:560px){.brand small{display:none}.brand{font-size:15px;gap:8px}.brand svg{width:30px;height:30px;flex:none}.who{gap:10px}.who .btn.sm{padding:7px 10px;font-size:13px;white-space:nowrap}}
+@media (max-width:400px){.brand > span{display:none}}
 .who{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--muted)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:10px;padding:11px 18px;font-weight:600;font-size:15px;background:var(--navy);color:#fff;text-decoration:none;white-space:nowrap}
 .btn.teal{background:var(--teal)}
@@ -87,6 +89,22 @@ main.page{padding:28px 0 60px}
 .pwrules li.ok::before{background:#2f9e74;border-color:#2f9e74}
 .optin{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45;color:var(--ink2);cursor:pointer}
 .optin input{margin-top:3px;width:17px;height:17px;flex:none;accent-color:var(--teal)}
+.wlnote{font-size:13.5px;line-height:1.5;color:var(--ink2);background:var(--teal-soft);border:1px solid #bfe3df;border-radius:10px;padding:10px 12px}
+.wlnote b{color:var(--navy)}
+.fnote{margin-top:16px;font-size:14.5px;line-height:1.5;color:var(--ink2);background:var(--amber-soft);border:1px solid #f0d9a6;border-radius:12px;padding:12px 14px}
+.fnote.ok{background:var(--teal-soft);border-color:#bfe3df}
+.fnote b{color:var(--navy)}
+.fmode{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;margin-bottom:18px}
+.fmode .seg button small{display:block;font-weight:500;font-size:12px;opacity:.8}
+.fsets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.fset{display:flex;flex-direction:column;gap:6px;padding:18px;background:var(--sky2)}
+.fset p{margin:0}
+.fset-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fset-h h3{margin:0;font-size:18px}
+.fset .actions{margin-top:auto;padding-top:8px}
+.fnotes{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.fnotes > div{flex:1 1 320px}
+@media (max-width:640px){.fsets{grid-template-columns:1fr}}
 .auth .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
 @media (max-width:420px){.row2,.pwrules{grid-template-columns:1fr}}
 .field input:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
@@ -563,7 +581,7 @@ function openSettings() {
 var CONF_LV = [["sure", "Sure"], ["unsure", "Unsure"], ["guess", "Guessing"]];
 var CONF_NAME = { sure: "Sure", unsure: "Unsure", guess: "Guessing" };
 var confRemote = true;                               // turned off automatically if the table isn't set up
-function confKey() { return "qb_conf_" + (SAMPLE ? "sample" : (S.email || "anon")); }
+function confKey() { return "qb_conf_" + (SAMPLE ? "free_" + (S.uid || "anon") : (S.email || "anon")); }
 function confAll() { try { return JSON.parse(localStorage.getItem(confKey()) || "{}") || {}; } catch (e) { return {}; } }
 function confWrite(all) { try { localStorage.setItem(confKey(), JSON.stringify(all)); } catch (e) {} }
 function confGet(bid, qid) { var a = confAll(); return a[bid] && a[bid][qid] || null; }
@@ -723,22 +741,12 @@ document.addEventListener("contextmenu", function (e) {
   if (e.target.closest && e.target.closest(".playwrap")) e.preventDefault();
 });
 
-// Before launch, only these emails can get a sign-in code or use the app.
-// At launch, change LAUNCHED to true.
+// Anyone can create a free account (verified by email code) and use the free sample.
+// Before launch, only these emails can open the full question bank; everyone else lands on
+// the free sample. At launch, change LAUNCHED to true (paid access is still checked by the server).
 var LAUNCHED = false;
 var PREVIEW_EMAILS = ["boardsidereviews@gmail.com"];
 function allowed(email) { return LAUNCHED || PREVIEW_EMAILS.indexOf(String(email || "").toLowerCase()) >= 0; }
-function showNotOpen() {
-  stopClock();
-  screen([header(), h("main", { class: "wrap" }, h("div", { class: "auth" }, h("div", { class: "card lock" }, [
-    h("div", { class: "ic", html: ICON.lock }),
-    h("h1", null, "Come back when we launch!"),
-    h("p", null, "Accounts open when Boardside Reviews launches. Join the waitlist and we'll email you 48 hours before we open. In the meantime, try 40 questions free."),
-    h("a", { class: "btn teal", href: "https://forms.gle/9qnowgoDevR742wB7", target: "_blank", rel: "noopener" }, "Join the waitlist"),
-    h("a", { class: "btn ghost", href: "qbank.html?sample" }, "Try 40 questions free"),
-    S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : h("button", { class: "link", onclick: function () { showLogin(); } }, "Back to sign in")
-  ])))]);
-}
 
 // tiny DOM helper: h("div", {class:"x", onclick:fn}, [children or text])
 function h(tag, props, kids) {
@@ -781,49 +789,105 @@ function friendly(err) {
   if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return "Couldn't reach the server. Check your connection and try again.";
   return m || "Something went wrong. Try again.";
 }
-// ───────────────────────── free sample (no login, fixed 40 questions, runs in the browser) ─────────────────────────
+// ───────────────────────── free sample: 80 questions in 4 sets of 20 ─────────────────────────
+// Sets come from the database (qb_free_sets / qb_free_set). Without an account a visitor gets the
+// first 10 questions of each set and may answer 10 questions in total; a free, verified account
+// unlocks all 80 and the Cardiology notes PDF. Progress is kept in this browser, per account.
 var SAMPLE = /[?&]sample(=|&|$)/.test(location.search);
-var SD = null;                                   // sample questions + images
-var SKEY = "qb_sample_v1";
-function sLoad() { try { return JSON.parse(localStorage.getItem(SKEY) || "null"); } catch (e) { return null; } }
-function sSave(st) { try { localStorage.setItem(SKEY, JSON.stringify(st)); } catch (e) {} }
-function sState() {
-  var st = sLoad();
-  if (!st || st.v !== SD.version) st = { v: SD.version, idx: 0, elapsed: 0, status: "active", resp: {} };
-  return st;
+var FREE = { sets: null, data: {} };              // set list + loaded sets (questions with answers)
+var ANON_LIMIT = 10;
+var NOTES_BUCKET = "free-samples", NOTES_FILE = "boardside-notes-cardiology-sample.pdf";
+function fWho() { return S.uid || "anon"; }
+function fKey(set, who) { return "qb_free_v2_" + (who || fWho()) + "_" + set; }
+function fLoad(set, who) { try { return JSON.parse(localStorage.getItem(fKey(set, who)) || "null"); } catch (e) { return null; } }
+function fSave(set, st) { try { localStorage.setItem(fKey(set), JSON.stringify(st)); } catch (e) {} }
+function fClear(set) { try { localStorage.removeItem(fKey(set)); } catch (e) {} }
+function fSetOf(id) { return String(id).replace(/^free:/, ""); }
+function fParse(v) { if (typeof v === "string") { try { return JSON.parse(v); } catch (e) { return v; } } return v; }
+function anonUsed(skip) {                          // questions answered without an account, across all sets
+  var n = 0;
+  (FREE.sets || []).forEach(function (fs) {
+    if (fs.set_key === skip) return;
+    var st = fLoad(fs.set_key, "anon"); if (!st) return;
+    Object.keys(st.resp || {}).forEach(function (k) { if (st.resp[k].selected) n++; });
+  });
+  return n;
 }
-function sBlock(st) {
-  var nc = SD.questions.filter(function (q) { var r = st.resp[q.id]; return r && r.correct; }).length;
+async function fLoadSet(set) {
+  if (FREE.data[set]) return FREE.data[set];
+  var r = await sb.rpc("qb_free_set", { p_set: set });
+  if (r.error) throw r.error;
+  var d = r.data;
+  d.questions.forEach(function (q) { q.body = fParse(q.body); q.explain = fParse(q.explain); });
+  return (FREE.data[set] = d);
+}
+function fBlock(set, st) {
+  var qs = FREE.data[set].questions, done = st.status === "completed";
+  var nc = qs.filter(function (q) { var r = st.resp[q.id]; return r && r.selected === q.answer && (done || r.submitted); }).length;
   return {
-    block: { id: "sample", mode: "learning", timed: false, time_limit_sec: 0, status: st.status, current_idx: st.idx,
-      elapsed_sec: st.elapsed, n_correct: nc, n: SD.questions.length },
-    questions: SD.questions.map(function (q, i) {
-      var r = st.resp[q.id] || null;
-      return { id: q.id, idx: i, subject: q.subject, body: q.body, has_image: q.has_image,
+    block: { id: "free:" + set, mode: st.mode, timed: !!st.timed, time_limit_sec: st.timed ? qs.length * 90 : 0, status: st.status,
+      current_idx: Math.min(st.idx || 0, qs.length - 1), elapsed_sec: st.elapsed || 0, n_correct: nc, n: qs.length },
+    questions: qs.map(function (q, i) {
+      var r = st.resp[q.id] || null, show = done || (st.mode === "learning" && r && r.submitted);
+      return { id: q.id, idx: i, subject: q.subject, body: q.body, has_image: false,
         response: r ? { selected: r.selected, struck: r.struck || "", highlights: r.highlights || [], flagged: !!r.flagged,
-          submitted: !!r.submitted, time_sec: r.time_sec || 0 } : null,
-        reveal: (st.status === "completed" || (r && r.submitted)) ? { answer: q.answer, explain: q.explain, correct: !!(r && r.correct), num: q.num } : null };
+          submitted: !!r.submitted || done, time_sec: r.time_sec || 0 } : null,
+        reveal: show ? { answer: q.answer, explain: q.explain, correct: !!(r && r.selected === q.answer), num: q.num } : null };
     })
   };
 }
 function sampleRpc(name, a) {
-  var st = sState(), q;
-  if (name === "qb_get_block") return sBlock(st);
+  var set = fSetOf(a.p_block || ""), st = fLoad(set), q;
+  if (!st || !FREE.data[set]) throw new Error("Couldn't load this set. Go back and open it again.");
+  if (name === "qb_get_block") return fBlock(set, st);
   if (name === "qb_save") {
-    var r = st.resp[a.p_qid] = Object.assign(st.resp[a.p_qid] || {}, { selected: a.p_selected, struck: a.p_struck,
+    st.resp[a.p_qid] = Object.assign(st.resp[a.p_qid] || {}, { selected: a.p_selected, struck: a.p_struck,
       highlights: a.p_highlights, flagged: a.p_flagged, time_sec: a.p_time_sec });
-    st.idx = a.p_current_idx; st.elapsed = a.p_elapsed_sec; sSave(st); return null;
+    st.idx = a.p_current_idx; st.elapsed = a.p_elapsed_sec; fSave(set, st); return null;
   }
   if (name === "qb_submit") {
-    q = SD.questions.filter(function (x) { return x.id === a.p_qid; })[0];
+    q = FREE.data[set].questions.filter(function (x) { return x.id === a.p_qid; })[0];
     var rs = st.resp[a.p_qid] = st.resp[a.p_qid] || {};
-    if (!rs.submitted) { rs.selected = a.p_selected; rs.submitted = true; rs.correct = a.p_selected === q.answer; }
-    sSave(st);
-    return { answer: q.answer, explain: q.explain, correct: rs.correct, selected: rs.selected, num: q.num };
+    if (!rs.submitted) { rs.selected = a.p_selected; rs.submitted = true; }
+    fSave(set, st);
+    return { answer: q.answer, explain: q.explain, correct: rs.selected === q.answer, selected: rs.selected, num: q.num };
   }
-  if (name === "qb_finish") { st.status = "completed"; st.elapsed = a.p_elapsed_sec; sSave(st); return sBlock(st); }
-  if (name === "qb_image") { var d = SD.images[a.p_qid]; return d ? { mime: "image/jpeg", data: d } : null; }
+  if (name === "qb_finish") { st.status = "completed"; st.elapsed = a.p_elapsed_sec; fSave(set, st); return fBlock(set, st); }
+  if (name === "qb_image") return null;
   throw new Error("not_available_in_sample");
+}
+// Without an account: stop at 10 answered questions and ask them to create a free account.
+function anonBlocked(q) {
+  if (!SAMPLE || S.uid) return false;
+  if (q.response.selected) return false;           // changing an answer they already gave is fine
+  var cur = P && P.b && fSetOf(P.b.id), n = anonUsed(cur);
+  if (P) P.qs.forEach(function (x) { if (x.response.selected) n++; });
+  return n >= ANON_LIMIT;
+}
+async function gateModal(reason) {
+  var v = await modal(reason === "limit" ? "You've used your 10 free questions" : "Create a free account",
+    (reason === "limit" ? "Create a free account to keep going. " : "") +
+    "A free account unlocks all 80 sample questions (4 sets of 20) and the 15-page Boardside Notes Cardiology sample. We'll send a code to verify your email.",
+    [{ label: "Not now", cls: "ghost", value: null }, { label: "Sign in", cls: "ghost", value: "in" }, { label: "Create free account", cls: "teal", value: "up" }]);
+  if (v) { stopClock(); if (P && !done()) { markDirty(cur(), true); await flush(); } }
+  if (v === "up") showSignup(); else if (v === "in") showLogin();
+}
+// Signed in for the first time on this browser: carry unfinished no-account sets over to the account.
+function migrateAnon() {
+  if (!S.uid || !FREE.sets) return;
+  FREE.sets.forEach(function (fs) {
+    var a = fLoad(fs.set_key, "anon"); if (!a) return;
+    if (a.status !== "completed" && !fLoad(fs.set_key)) fSave(fs.set_key, a);
+    try { localStorage.removeItem(fKey(fs.set_key, "anon")); } catch (e) {}
+  });
+}
+async function downloadNotes(btn) {
+  if (!S.uid) return gateModal("notes");
+  var t = btn.textContent; btn.disabled = true; btn.textContent = "Preparing…";
+  var r = await sb.storage.from(NOTES_BUCKET).createSignedUrl(NOTES_FILE, 120, { download: "Boardside Notes - Cardiology Sample.pdf" });
+  btn.disabled = false; btn.textContent = t;
+  if (r.error || !r.data || !r.data.signedUrl) { toast("The notes sample isn't available right now. Please try again later."); return; }
+  location.href = r.data.signedUrl;
 }
 async function rpc(name, args) {
   if (SAMPLE) return sampleRpc(name, args || {});
@@ -859,7 +923,9 @@ function header() {
     h("a", { class: "brand", href: "/", html: LOGO + '<span>Boardside Reviews <small>· Question Bank' + (SAMPLE ? ' · Free sample' : '') + '</small></span>' }),
     h("div", { class: "who" }, [
       h("button", { class: "link", onclick: openSettings }, "Settings"),
-      SAMPLE ? h("a", { class: "link", href: "qbank.html" }, "Login") : null,
+      SAMPLE && !S.email ? h("button", { class: "link", onclick: function () { showLogin(); } }, "Sign in") : null,
+      SAMPLE && !S.email ? h("button", { class: "btn teal sm", onclick: function () { showSignup(); } }, "Create free account") : null,
+      SAMPLE && S.me && S.me.access && allowed(S.email) ? h("a", { class: "link", href: "qbank.html" }, "Full question bank") : null,
       S.email ? h("span", { class: "email" }, S.email) : null,
       S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null])
   ])]);
@@ -881,7 +947,7 @@ function screen(nodes, playing, keepScroll) {
   (Array.isArray(nodes) ? nodes : [nodes]).forEach(function (n) { if (n) app.appendChild(n); });
   window.scrollTo(0, keepScroll ? y : 0);
 }
-async function signOut() { stopClock(); await sb.auth.signOut(); S = { me: null, ov: null, email: "", uid: null }; showLogin(); }
+async function signOut() { stopClock(); await sb.auth.signOut(); S = { me: null, ov: null, email: "", uid: null }; FREE.data = {}; if (SAMPLE) boot(); else showLogin(); }
 
 // ───────────────────────── sign-in ─────────────────────────
 // ───────────────────────── sign-in, account creation, password reset ─────────────────────────
@@ -934,21 +1000,20 @@ function showLogin(prefill) {
   var pw = h("input", { type: "password", autocomplete: "current-password", required: true });
   var btn = h("button", { class: "btn teal", type: "submit" }, "Sign in");
   var form = h("form", { class: "card", novalidate: true }, [
-    h("h1", null, "Sign in to the Question Bank"),
+    h("h1", null, "Sign in"),
     h("label", { class: "field" }, ["Email", email]),
     h("label", { class: "field" }, [h("span", { class: "lblrow" }, ["Password",
       h("button", { class: "link", type: "button", onclick: function () { showForgot(email.value.trim()); } }, "Forgot password?")]), pw]),
     err, btn,
     h("button", { class: "btn ghost", type: "button", onclick: function () { showSignup(email.value.trim()); } }, "New here? Create your account"),
     h("button", { class: "link", type: "button", onclick: function () { showCodeLogin(email.value.trim()); } }, "Sign in with an email code instead"),
-    h("p", { class: "small" }, ["Don't have access yet? ", h("a", { href: "/", style: "color:var(--teal);font-weight:600" }, "See Boardside Reviews")])
+    h("p", { class: "small" }, ["No account yet? ", h("a", { href: "qbank.html?sample", style: "color:var(--teal);font-weight:600" }, "Try 10 questions free, no sign-up")])
   ]);
   form.onsubmit = async function (e) {
     e.preventDefault(); err.textContent = "";
     var v = email.value.trim().toLowerCase();
     if (!EMAIL_RE.test(v)) { err.textContent = "Enter a valid email address."; return; }
     if (!pw.value) { err.textContent = "Enter your password."; return; }
-    if (!allowed(v)) { showNotOpen(); return; }
     btn.disabled = true; btn.textContent = "Signing in…";
     var r = await sb.auth.signInWithPassword({ email: v, password: pw.value });
     if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Sign in"; return; }
@@ -967,14 +1032,14 @@ function showSignup(prefill) {
   var email = h("input", { type: "email", autocomplete: "email", required: true, value: prefill || "" });
   var pws = pwFields();
   var optin = h("input", { type: "checkbox" });
-  var btn = h("button", { class: "btn teal", type: "submit" }, "Create account");
+  var btn = h("button", { class: "btn teal", type: "submit" }, "Create free account");
   var form = h("form", { class: "card", novalidate: true }, [
-    h("h1", null, "Create your account"),
-    h("p", null, "Use the email you bought Boardside Reviews with."),
+    h("h1", null, "Create your free account"),
+    h("p", null, "Unlock all 80 free questions and the 15-page Boardside Notes Cardiology sample. We'll email you a 6-digit code to verify your address. Already bought Boardside Reviews? Use the email you bought it with."),
     h("div", { class: "row2" }, [h("label", { class: "field" }, ["First name", first]), h("label", { class: "field" }, ["Last name", last])]),
     h("label", { class: "field" }, ["Email", email])
   ].concat(pws.nodes).concat([
-    h("label", { class: "optin" }, [optin, h("span", null, "Yes, send me Boardside Reviews updates and add me to the mailing list. You can unsubscribe anytime.")]),
+    waitlistNote(), h("label", { class: "optin" }, [optin, h("span", null, "Also add me to the Boardside Reviews mailing list for occasional teaching emails and updates. You can unsubscribe anytime.")]),
     err, btn,
     h("button", { class: "link", type: "button", onclick: function () { showLogin(email.value.trim()); } }, "Already have an account? Sign in")
   ]));
@@ -984,13 +1049,12 @@ function showSignup(prefill) {
     if (!f || !l) { err.textContent = "Enter your first and last name."; return; }
     if (!EMAIL_RE.test(v)) { err.textContent = "Enter a valid email address."; return; }
     if (!pws.valid()) { err.textContent = "Your password doesn't meet all the rules yet."; return; }
-    if (!allowed(v)) { showNotOpen(); return; }
     btn.disabled = true; btn.textContent = "Sending code…";
     var r = await sb.auth.signInWithOtp({ email: v, options: { shouldCreateUser: true } });
-    if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Create account"; return; }
+    if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Create free account"; return; }
     var pw = pws.value();
     showCode(v, {
-      title: "Confirm your email",
+      title: "Verify your email",
       back: function () { showSignup(v); },
       done: async function () {
         var u = await sb.auth.updateUser({ password: pw, data: profileData(f, l, optin.checked) });
@@ -1005,7 +1069,13 @@ function showSignup(prefill) {
 }
 function profileData(first, last, optin) {
   return { first_name: first, last_name: last, marketing_opt_in: !!optin,
-           marketing_opt_in_at: optin ? new Date().toISOString() : null, account_ready: true };
+           marketing_opt_in_at: optin ? new Date().toISOString() : null, account_ready: true,
+           waitlist: true, waitlist_at: new Date().toISOString() };
+}
+// Everyone with an account is on the launch waitlist; the mailing list is a separate, unticked choice.
+function waitlistNote() {
+  return h("div", { class: "wlnote" }, [h("b", null, "You'll be on the launch waitlist. "),
+    "Creating an account adds you to the Boardside Reviews waitlist: we'll email you 48 hours before launch and again when we're live, so you can catch the founders price."]);
 }
 
 function showForgot(prefill) {
@@ -1023,7 +1093,6 @@ function showForgot(prefill) {
     e.preventDefault(); err.textContent = "";
     var v = email.value.trim().toLowerCase();
     if (!EMAIL_RE.test(v)) { err.textContent = "Enter a valid email address."; return; }
-    if (!allowed(v)) { showNotOpen(); return; }
     btn.disabled = true; btn.textContent = "Sending…";
     var r = await sb.auth.signInWithOtp({ email: v, options: { shouldCreateUser: false } });
     if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Email me a reset code"; return; }
@@ -1067,7 +1136,7 @@ function showFinishAccount(user) {
     h("p", null, ["You're signed in as ", h("b", null, S.email), ". Add your name and choose a password for next time."]),
     h("div", { class: "row2" }, [h("label", { class: "field" }, ["First name", first]), h("label", { class: "field" }, ["Last name", last])])
   ].concat(pws.nodes).concat([
-    h("label", { class: "optin" }, [optin, h("span", null, "Yes, send me Boardside Reviews updates and add me to the mailing list. You can unsubscribe anytime.")]),
+    waitlistNote(), h("label", { class: "optin" }, [optin, h("span", null, "Also add me to the Boardside Reviews mailing list for occasional teaching emails and updates. You can unsubscribe anytime.")]),
     err, btn,
     h("button", { class: "link", type: "button", onclick: signOut }, "Sign out")
   ]));
@@ -1101,7 +1170,6 @@ function showCodeLogin(prefill) {
     e.preventDefault(); err.textContent = "";
     var v = input.value.trim().toLowerCase();
     if (!EMAIL_RE.test(v)) { err.textContent = "Enter a valid email address."; return; }
-    if (!allowed(v)) { showNotOpen(); return; }
     btn.disabled = true; btn.textContent = "Sending…";
     var r = await sb.auth.signInWithOtp({ email: v, options: { shouldCreateUser: true } });
     if (r.error) { err.textContent = authFriendly(r.error); btn.disabled = false; btn.textContent = "Email me a code"; return; }
@@ -1701,6 +1769,7 @@ function choicesEl(q, locked) {
 }
 function select(q, L) {
   var r = q.response;
+  if (anonBlocked(q)) { gateModal("limit"); return; }
   r.selected = r.selected === L ? null : L;                 // one choice only; tap again to clear
   if (r.selected) r.struck = (r.struck || "").replace(L, "");
   markDirty(q); renderPlayer(true);
@@ -1905,6 +1974,16 @@ function openNav() {
 }
 
 // results
+function freeResultsCta() {
+  if (!S.uid) return h("section", { class: "card fnote", style: "margin-top:0" }, [
+    h("b", null, "Want the rest? "), "A free account unlocks all 80 sample questions and the 15-page Cardiology notes sample, and puts you on the launch waitlist.",
+    h("div", { class: "actions", style: "margin-top:10px" }, [
+      h("button", { class: "btn teal sm", onclick: function () { showSignup(); } }, "Create free account"),
+      h("button", { class: "btn ghost sm", onclick: function () { showLogin(); } }, "Sign in")])]);
+  return h("section", { class: "card fnote ok", style: "margin-top:0" }, [h("b", null, "This was one of 4 free sets. "),
+    "The full question bank has about 1,600 questions across every ABIM subject, with stats, custom sets and flashcards from your misses.",
+    h("div", { class: "actions", style: "margin-top:10px" }, [h("button", { class: "btn teal sm", onclick: showHome }, "Try another free set")])]);
+}
 function showResults(auto) {
   stopClock();
   var b = P.b, n = P.qs.length, c = b.n_correct || 0, p = pct(c, n);
@@ -1942,6 +2021,7 @@ function showResults(auto) {
         h("div", { class: "actions" }, [h("button", { class: "btn teal", onclick: function () { P.i = 0; renderPlayer(); } }, "Review questions"),
           h("button", { class: "btn ghost", onclick: showHome }, "Back to home")])])
     ]),
+    SAMPLE ? freeResultsCta() : null,
     confCard(confRows, "Confidence vs. results", function (i) { P.i = i; renderPlayer(); }),
     h("div", { class: "grid2" }, [
       h("section", { class: "card" }, [h("div", { class: "sec-h" }, h("h2", null, "Every question")), list]),
@@ -2022,40 +2102,111 @@ document.addEventListener("keydown", function (e) {
 // ───────────────────────── start ─────────────────────────
 function showSampleHome() {
   stopClock(); P = null;
-  var st = sState(), answered = Object.keys(st.resp).filter(function (k) { return st.resp[k].submitted; }).length;
-  var n = SD.questions.length, started = answered > 0 || st.idx > 0, finished = st.status === "completed";
-  var subj = {}; SD.questions.forEach(function (q) { subj[q.subject] = 1; });
+  var signed = !!S.uid, used = signed ? 0 : anonUsed(), left = Math.max(0, ANON_LIMIT - used);
+  var full = !!(S.me && S.me.access && allowed(S.email));
+  function startSet(fs, again) {
+    return async function (e) {
+      var btn = e && e.currentTarget, t = btn && btn.textContent;
+      var st = fLoad(fs.set_key);
+      if (!st && !signed && left <= 0) return gateModal("limit");
+      if (btn) { btn.disabled = true; btn.textContent = "Loading…"; }
+      try { await fLoadSet(fs.set_key); }
+      catch (x) { toast(friendly(x)); if (btn) { btn.disabled = false; btn.textContent = t; } return; }
+      if (!st || again) {
+        st = { mode: choose.freeMode || "learning", timed: !!choose.freeTimed, idx: 0, elapsed: 0, status: "active", resp: {} };
+        try { localStorage.removeItem(confKey()); } catch (x) {}
+        fSave(fs.set_key, st);
+      }
+      openBlock("free:" + fs.set_key);
+    };
+  }
+  var modeSeg = h("div", { class: "seg", role: "group", "aria-label": "Mode" }, [["learning", "Learning", "See the explanation after each question"], ["exam", "Exam", "Explanations at the end, like test day"]].map(function (m) {
+    return h("button", { type: "button", "aria-pressed": String((choose.freeMode || "learning") === m[0]), onclick: function () { choose.freeMode = m[0]; showSampleHome(); } },
+      [m[1], h("small", null, m[2])]);
+  }));
+  var timer = h("input", { type: "checkbox" }); timer.checked = !!choose.freeTimed;
+  timer.onchange = function () { choose.freeTimed = timer.checked; };
+  var cards = (FREE.sets || []).map(function (fs) {
+    var st = fLoad(fs.set_key), n = signed ? fs.n : Math.min(fs.open, fs.n);
+    var answered = st ? Object.keys(st.resp).filter(function (k) { return st.resp[k].selected; }).length : 0;
+    var finished = st && st.status === "completed";
+    var status = finished ? h("span", { class: "pill done" }, "Done")
+      : st ? h("span", { class: "pill" }, answered + " of " + n + " answered") : null;
+    var modeTxt = st ? (st.mode === "exam" ? "Exam" : "Learning") + (st.timed ? " · timed" : "") : null;
+    return h("section", { class: "card fset" }, [
+      h("div", { class: "fset-h" }, [h("h3", null, fs.title), status]),
+      h("p", { class: "muted" }, fs.blurb),
+      h("p", { class: "small muted fset-n" }, signed ? fs.n + " questions" + (modeTxt ? " · " + modeTxt : "")
+        : fs.n + " questions · " + Math.min(fs.open, fs.n) + " open without an account" + (modeTxt ? " · " + modeTxt : "")),
+      h("div", { class: "actions" }, [
+        h("button", { class: "btn " + (finished ? "ghost" : "teal") + " sm", onclick: startSet(fs, false) }, finished ? "Review" : st ? "Resume" : "Start"),
+        st ? h("button", { class: "btn ghost sm", onclick: async function (e) {
+          var v = await modal("Start " + fs.title + " over?", "Your answers in this set will be cleared. It starts in " + ((choose.freeMode || "learning") === "exam" ? "exam" : "learning") + " mode" + (choose.freeTimed ? ", timed" : "") + ".",
+            [{ label: "Cancel", cls: "ghost", value: null }, { label: "Start over", cls: "teal", value: 1 }]);
+          if (v) { fClear(fs.set_key); startSet(fs, true)(e); }
+        } }, "Start over") : null
+      ])
+    ]);
+  });
+  var notice = signed
+    ? h("div", { class: "fnote ok" }, [h("b", null, "All 80 free questions are unlocked. "), "You're on the launch waitlist" + (full ? "." : ": we'll email you 48 hours before launch and again when the full question bank opens.")])
+    : h("div", { class: "fnote" }, [
+        h("b", null, left > 0 ? "Try " + left + " question" + (left === 1 ? "" : "s") + " without an account. " : "You've used your 10 questions without an account. "),
+        "A free account unlocks all 80 questions and the Cardiology notes sample. It takes a minute and we verify your email.",
+        h("div", { class: "actions", style: "margin-top:10px" }, [
+          h("button", { class: "btn teal sm", onclick: function () { showSignup(); } }, "Create free account"),
+          h("button", { class: "btn ghost sm", onclick: function () { showLogin(); } }, "Sign in")])]);
   screen([header(), h("main", { class: "wrap page" }, h("div", { class: "stack" }, [
     h("section", { class: "card" }, [
       h("p", { class: "eyebrow", style: "margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--teal)" }, "FREE SAMPLE"),
-      h("h1", null, n + " questions, the real interface."),
-      h("p", { class: "muted", style: "margin:8px 0 0;max-width:720px" }, "This is the Boardside question bank, in learning mode: answer each question, then see why every choice is right or wrong, with a teaching pearl. " +
-        "It's the same " + n + " questions every time, from " + Object.keys(subj).length + " subjects. No sign-up needed; your progress stays in this browser."),
-      h("p", { class: "muted", style: "margin:10px 0 0;max-width:720px" }, "Highlight text, cross out choices, flag questions, use the calculator and change the settings, just like the full question bank. The full bank has about 1,600 questions."),
-      h("div", { class: "actions", style: "margin-top:18px" }, [
-        h("button", { class: "btn teal", onclick: function () { openBlock("sample"); } }, finished ? "Review your answers" : started ? "Resume (" + answered + " of " + n + " answered)" : "Start the free sample"),
-        started ? h("button", { class: "btn ghost", onclick: function () { try { localStorage.removeItem(SKEY); localStorage.removeItem(confKey()); } catch (e) {} showSampleHome(); } }, "Start over") : null,
-        h("a", { class: "btn ghost", href: "https://forms.gle/9qnowgoDevR742wB7", target: "_blank", rel: "noopener" }, "Join the waitlist")
-      ])
+      h("h1", null, "80 free questions. The real question bank."),
+      h("p", { class: "muted", style: "margin:8px 0 0;max-width:720px" }, "Four sets of 20 full-length, ABIM-style questions, every answer choice explained. Highlight, cross out, flag and use the calculator, just like the full bank of about 1,600 questions."),
+      notice
+    ]),
+    FREE.sets ? h("section", { class: "card" }, [
+      h("div", { class: "fmode" }, [h("div", null, [h("h2", { style: "margin:0 0 4px" }, "How do you want to practice?"),
+        h("p", { class: "small muted", style: "margin:0" }, "Applies when you start or restart a set.")]),
+        modeSeg,
+        h("label", { class: "optin", style: "align-items:center" }, [timer, h("span", null, "Timed: 90 seconds per question")])]),
+      h("div", { class: "fsets" }, cards)
+    ]) : h("section", { class: "card" }, "The free sets aren't available right now. Please try again later."),
+    h("section", { class: "card fnotes" }, [
+      h("div", null, [
+        h("p", { class: "eyebrow", style: "margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--teal)" }, "BOARDSIDE NOTES"),
+        h("h2", { style: "margin:0 0 6px" }, "Cardiology sample · 15 pages"),
+        h("p", { class: "muted", style: "margin:0" }, "A free cut of the Cardiology chapter from Boardside Notes, the printed companion to the question bank." + (signed ? "" : " Free with an account."))]),
+      h("button", { class: "btn " + (signed ? "teal" : "ghost"), onclick: function (e) { downloadNotes(e.currentTarget); } }, signed ? "Download the PDF" : "Create an account to download")
     ])
   ]))]);
 }
-async function boot() {
-  if (SAMPLE) {
-    screen([header(), h("div", { class: "spin" })]);
-    try { SD = await (await fetch("qbank-sample.json", { cache: "no-cache" })).json(); }
-    catch (e) { screen([header(), h("main", { class: "wrap page" }, h("div", { class: "card" }, "Couldn't load the sample. Please reload the page."))]); return; }
-    return showSampleHome();
+async function freeBoot() {
+  SAMPLE = true;
+  if (!/[?&]sample/.test(location.search)) { try { history.replaceState(null, "", "qbank.html?sample"); } catch (e) {} }
+  screen([header(), h("div", { class: "spin" })]);
+  if (!FREE.sets) {
+    var r = await sb.rpc("qb_free_sets");
+    FREE.sets = r.error ? null : r.data;
+  } else {
+    var r2 = await sb.rpc("qb_free_sets");           // refresh "open" counts after signing in or out
+    if (!r2.error) FREE.sets = r2.data;
   }
+  migrateAnon();
+  showSampleHome();
+  if (/[?&]signup/.test(location.search)) {            // links like "Join the waitlist" open the sign-up form
+    try { history.replaceState(null, "", "qbank.html?sample"); } catch (e) {}
+    if (!S.uid) showSignup();
+  }
+}
+async function boot() {
   var s = await sb.auth.getSession();
   var user = s.data && s.data.session && s.data.session.user;
+  S.email = user ? (user.email || "").toLowerCase() : ""; S.uid = user ? user.id : null;
+  FREE.data = {};
+  if (user && !(user.user_metadata && user.user_metadata.account_ready)) return showFinishAccount(user);
+  if (user) { var m = await sb.rpc("qb_me"); S.me = m.error ? null : m.data; }
+  if (SAMPLE) return freeBoot();
   if (!user) return showLogin();
-  S.email = (user.email || "").toLowerCase();
-  S.uid = user.id;
-  if (!allowed(S.email)) return showNotOpen();
-  if (!(user.user_metadata && user.user_metadata.account_ready)) return showFinishAccount(user);
-  try { S.me = await rpc("qb_me"); } catch (e) { if (!/not_signed_in|JWT/i.test(e.message || "")) homeError(e); return; }
-  if (!S.me.access) return showLocked();
+  if (!allowed(S.email) || !S.me || !S.me.access) return freeBoot();   // free accounts (and everyone before launch) get the free sample
   showHome();
 }
 boot();
