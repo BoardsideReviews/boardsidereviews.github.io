@@ -252,6 +252,13 @@ table.conft td.num{text-align:right;font-variant-numeric:tabular-nums}
 .reasons b{color:var(--muted)}
 .reasons div.ok b{color:#1f7a57}
 .reasons .why{color:var(--ink2)}
+.reasons div.has{cursor:pointer}
+.reasons div.has:hover{background:#f6f9fc}
+.reasons div.ok.has:hover{background:#e3f6ec}
+.reasons .tog{grid-column:1/-1;font-size:12.5px;font-weight:600;color:#0d7070;margin:-4px 0 0 40px}
+.reasons .more{grid-column:1/-1;display:none;font-size:14px;line-height:1.6;color:var(--ink2);padding:2px 4px 6px 40px}
+.reasons div.open .more{display:block}
+.reasons-hint{font-size:13px;color:var(--muted);margin:-4px 0 8px}
 .pearl{background:var(--teal-soft);border-left:4px solid var(--teal);border-radius:10px;padding:14px 16px;font-size:15px}
 .pearl strong{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#085454;margin-bottom:4px}
 .summ{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--sky2)}
@@ -349,6 +356,7 @@ body.dark .qrail button.cur{outline-color:#9fc3ea}
   .stat b{font-size:22px}
   .reasons div{grid-template-columns:24px 1fr}
   .reasons .why{grid-column:2}
+  .reasons .tog,.reasons .more{margin-left:0;padding-left:34px}
   .pbar .lbl{display:none}
   .choice .cb{width:44px}
   .choice .cx{width:40px}
@@ -415,6 +423,9 @@ body.dark table.conft td{border-color:#2a3d58}
 body.dark .conf .q{color:#dbe5f0}
 body.dark .choice .cb,body.dark .choice .cx,body.dark .reasons,body.dark .reasons div,body.dark .subj td,body.dark .setrow,body.dark .res-list button,body.dark .set-row,body.dark .summ td,body.dark .ad td{border-color:#2a3d58}
 body.dark .reasons div.ok{background:#123426}
+body.dark .reasons div.has:hover{background:#16243a}
+body.dark .reasons .more{color:#c9d6e6}
+body.dark .reasons .tog{color:#5ec4bc}
 body.dark .pearl{background:#0f3330;color:#d6f2ee}
 body.dark .pearl strong{color:#8fe0d6}
 body.dark .subj .bar{background:#24364f}
@@ -1611,8 +1622,20 @@ function explanationEl(q) {
   var reasons = h("div", { class: "reasons" });
   ["A", "B", "C", "D", "E"].forEach(function (k) {
     if (!q.body.choices[k]) return;
-    reasons.appendChild(h("div", { class: k === L ? "ok" : "" }, [h("b", null, k), h("span", null, q.body.choices[k]),
-      h("span", { class: "why" }, (ex.reasons || {})[k] || "")]));
+    var det = (ex.details || {})[k];
+    var row = h("div", { class: (k === L ? "ok" : "") + (det ? " has" : ""), role: det ? "button" : null, tabindex: det ? "0" : null, "aria-expanded": det ? "false" : null },
+      [h("b", null, k), h("span", null, q.body.choices[k]), h("span", { class: "why" }, (ex.reasons || {})[k] || "")]
+        .concat(det ? [h("span", { class: "tog" }, "Explain in depth \u25BE"), h("div", { class: "more" }, det)] : []));
+    if (det) {
+      var flip = function () {
+        var open = row.classList.toggle("open");
+        row.setAttribute("aria-expanded", open ? "true" : "false");
+        row.querySelector(".tog").textContent = open ? "Hide \u25B4" : "Explain in depth \u25BE";
+      };
+      row.addEventListener("click", flip);
+      row.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
+    }
+    reasons.appendChild(row);
   });
   var narr = h("div", { class: "narr" }, paras(ex.explanation).map(function (p) { return h("p", null, p); }));
   return h("section", { class: "exp", "aria-label": "Explanation" }, [
@@ -1630,7 +1653,9 @@ function explanationEl(q) {
         (sureWrong ? " You were sure but got this wrong, so it's worth a second look." : luckyGuess ? " You guessed right, so review it until you know why." : ""));
     })(),
     narr,
-    h("h3", null, "Why each choice is right or wrong"), reasons,
+    h("h3", null, "Why each choice is right or wrong"),
+    (ex.details && Object.keys(ex.details).length) ? h("p", { class: "reasons-hint" }, "Tap any choice to see the in-depth explanation.") : null,
+    reasons,
     ex.pearl ? h("div", { class: "pearl" }, [h("strong", null, "Teaching pearl"), ex.pearl]) : null
   ].concat((ex.summaries || []).map(summaryEl)).concat([
     ex.references ? h("div", { class: "refs" }, [h("b", null, "References: "), ex.references]) : null,
