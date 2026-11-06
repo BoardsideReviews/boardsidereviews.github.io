@@ -16,6 +16,7 @@
 <script src="lb-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="lb.js"></script>
+<script src="more-games.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
@@ -760,7 +761,7 @@ function nextPatient(){ G.idx++; if(G.idx>=CASES.length) return finish(); showIn
 function finish(){
   const s=G.score; const r = s>=8000?'Master Titrator':s>=6000?'Sleep Whisperer':s>=4000?'Night Owl':s>=2000?'Sleep Tech':'Sleep Tech Trainee';
   $('#fRank').textContent=r; $('#fScore').textContent=s; $('#fLine').textContent='Six patients, six nights. Ranked by pure score.';
-  paintPost(); loadLB(); show('#sFinal'); sfx.chime();
+  paintPost(); loadLB(); show('#sFinal'); sfx.chime(); if(window.BoardsideMore)BoardsideMore.mount($('#sFinal .card'),'titrate-tonight');
 }
 $('#startBtn').onclick=()=>{ audioInit(); if(AC&&AC.state==='suspended') AC.resume(); G.score=0; G.idx=0; $('#hudScore').textContent=0; showIntro(); };
 $('#goBtn').onclick=startNight;

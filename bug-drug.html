@@ -17,6 +17,7 @@
 <script src="lb-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="lb.js"></script>
+<script src="more-games.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Space+Mono:wght@400;700&display=swap">
 <style>
@@ -846,7 +847,7 @@ function endGame(){
     ${lb?(S.score>0?`<div class="submit" id="postBox"><button class="go violet" type="button" id="postBtn">Post score</button><span class="postnote">Sign in with your email once. Only your display name is shown.</span></div>`:'<p class="postnote">Score above zero to post.</p>'):''}
     ${lb?'<div class="lb" id="lb"><h3>Leaderboard</h3><div class="empty">Loading…</div></div>':''}
     <div class="rbtns"><button class="go" id="againBtn" type="button">New culture</button><a class="home" href="/#games">← All games</a></div>`;
-  $('#endScreen').hidden=false;
+  $('#endScreen').hidden=false; if(window.BoardsideMore)BoardsideMore.mount($('#endPanel'),'bug-drug');
   const bs=$('#bigscore'),t0=performance.now();
   (function step(now){const k=Math.min(1,(now-t0)/1100);bs.textContent=Math.round(S.score*(1-Math.pow(1-k,3))).toLocaleString();if(k<1)requestAnimationFrame(step);})(t0);
   if(lb){

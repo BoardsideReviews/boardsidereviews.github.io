@@ -17,6 +17,7 @@
 <script src="lb-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <script src="lb.js"></script>
+<script src="more-games.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Figtree:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
@@ -643,7 +644,7 @@ function showEnd(){
     ${lb?(S.score>0?`<div class="submit" id="postBox"><button class="go" type="button" id="postBtn">POST SCORE</button><span class="postnote">Sign in with your email once. Only your display name is shown.</span></div>`:`<p class="postnote">Finish above zero to post a score.</p>`):''}
     ${lb?'<div class="lb" id="lb"><h3>LEADERBOARD</h3><div class="empty">Loading…</div></div>':''}
     <button class="go next" id="againBtn">PLAY AGAIN</button>`;
-  $('#endScreen').hidden=false; SFX.fanfare();
+  $('#endScreen').hidden=false; SFX.fanfare(); if(window.BoardsideMore)BoardsideMore.mount($('#endPanel'),'hemo-roulette');
   const bs=$('#bigscore'); tween(1100,t=>{bs.textContent=Math.round(S.score*t).toLocaleString();},easeOut);
   if(S.correct>=4){const r=bs.getBoundingClientRect();setTimeout(()=>burst(r.left+r.width/2,r.top+r.height/2,[css('--amber'),css('--teal'),css('--c-obst'),css('--c-card'),css('--good')],120),400);}
   if(lb){
