@@ -383,6 +383,32 @@ body.dark .qrail button.cur{outline-color:#9fc3ea}
 .split .side{position:sticky;top:72px;max-height:calc(100vh - 92px);overflow:auto;border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--sky2)}
 .split .side .exp{margin-top:0;border-top:0;padding-top:0}
 .side-empty{color:var(--muted);font-size:15px;text-align:center;padding:40px 10px;margin:0}
+/* flashcards */
+.fc-bar{height:8px;background:#eef2f6;border-radius:6px;overflow:hidden;margin-top:10px}
+.fc-bar i{display:block;height:100%;background:var(--teal);border-radius:6px}
+.fc-due{display:flex;align-items:baseline;gap:8px;margin:6px 0 14px}
+.fc-due b{font-size:30px;color:var(--navy)}
+.fc-due span{color:var(--muted);font-size:14px}
+.fc-wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.fc-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.fc-face p{margin:0 0 10px;line-height:1.6;font-size:calc(16px * var(--tz,1))}
+.fc-face .fc-data{font-size:calc(14px * var(--tz,1));color:var(--ink2);margin:0 0 10px;padding-left:18px}
+.fc-face .fc-ask{font-weight:700}
+.fc-ans{background:#eefaf4;border:1px solid #bfe6d2;border-radius:12px;padding:14px 16px;font-size:16px;margin:4px 0 12px}
+.fc-ans b{color:#1f7a57}
+.fc-detail{font-size:15px;line-height:1.6;color:var(--ink2);margin:10px 0}
+.fc-rate{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fc-rate .btn{flex-direction:column;gap:2px;padding:12px 10px}
+.fc-rate .btn small{font-weight:500;font-size:12px;opacity:.85}
+.fc-rate .rep{background:#b3412f}
+.fc-rate .good{background:var(--navy)}
+.fc-rate .great{background:var(--teal)}
+.fc-keys{font-size:12.5px;color:var(--muted);text-align:center;margin:0}
+body.dark .fc-bar{background:#22344d}
+body.dark .fc-due b{color:#e4ecf5}
+body.dark .fc-ans{background:#123426;border-color:#1f5a40;color:#e4ecf5}
+body.dark .fc-ans b{color:#7fd8ab}
+body.dark .fc-detail,body.dark .fc-face .fc-data{color:#c9d6e6}
 
 /* email watermark (anti-piracy) */
 .wm{position:absolute;inset:0;pointer-events:none;user-select:none;z-index:5;background-repeat:repeat}
@@ -1126,6 +1152,7 @@ async function showHome() {
   try { S.ov = await rpc("qb_overview"); } catch (e) { if (!/no_access|not_signed_in/.test(e.message || "")) homeError(e); return; }
   S.me = S.ov.me;
   var confRows = await confPullAll();
+  var fc = null; try { fc = await rpcQuiet("qb_flashcards", { p_limit: 1 }); } catch (e) { fc = null; }
   var ov = S.ov, subs = ov.subjects;
   var used = 0, correct = 0, done = 0;
   subs.forEach(function (s) { used += s.used; correct += s.correct; });
@@ -1143,10 +1170,108 @@ async function showHome() {
       h("div", { class: "note" }, ov.total + " questions across " + subs.length + " subjects")
     ]),
     stats,
-    h("div", { class: "grid2" }, [builder(), h("div", { class: "stack" }, [subjectCard(subs), confCard(confRows, "Your confidence"), setsCard(ov.blocks)])]),
+    h("div", { class: "grid2" }, [builder(), h("div", { class: "stack" }, [fcCard(fc), subjectCard(subs), confCard(confRows, "Your confidence"), setsCard(ov.blocks)])]),
     resetCard()
   ]))]);
 }
+// ───────────────────────── flashcards (spaced repetition over missed + flagged questions) ─────────────────────────
+var FC = null;
+function fcWhen(t) {
+  var ms = new Date(t) - Date.now(); if (!(ms > 0)) return "now";
+  var m = Math.round(ms / 60000); if (m < 60) return "in " + m + " min";
+  var hr = Math.round(m / 60); if (hr < 24) return "in " + hr + " h";
+  var d = Math.round(hr / 24); return "in " + d + (d === 1 ? " day" : " days");
+}
+function fcIvText(d) {
+  if (d < 1 / 24) return Math.max(1, Math.round(d * 1440)) + " min";
+  if (d < 1) return Math.round(d * 24) + " h";
+  var n = Math.round(d); return n + (n === 1 ? " day" : " days");
+}
+function fcNext(c, r) {
+  var i = c.interval_days || 0;
+  if (r === "repeat") return "10 min";
+  if (r === "good") return fcIvText(Math.max(i, 1));
+  return fcIvText(i === 0 ? 4 : Math.min(Math.max(i, 1) * 2.5, 180));
+}
+function fcCard(fc) {
+  if (!fc) return null;
+  var need = fc.min_pool || 50, box = h("section", { class: "card" });
+  box.appendChild(h("div", { class: "sec-h" }, h("h2", null, "Flashcards")));
+  if (fc.pool < need) {
+    box.append(h("p", { class: "muted", style: "margin:0" }, "Spaced-repetition flashcards built from the questions you miss or flag. They unlock at " + need +
+      " missed + flagged questions. You have " + fc.pool + "."),
+      h("div", { class: "fc-bar", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": String(need), "aria-valuenow": String(fc.pool) },
+        h("i", { style: "width:" + Math.min(100, Math.round(100 * fc.pool / need)) + "%" })));
+    return box;
+  }
+  box.append(h("p", { class: "muted", style: "margin:0" }, fc.pool + " cards from your missed and flagged questions. Repeat brings a card back sooner, Good keeps its pace, Great pushes it further out."),
+    h("div", { class: "fc-due" }, [h("b", null, String(fc.due_count)), h("span", null, fc.due_count === 1 ? "card due now" : "cards due now")]),
+    fc.due_count ? h("button", { class: "btn teal", onclick: startFlashcards }, "Review flashcards")
+      : h("p", { class: "muted", style: "margin:0" }, "All caught up." + (fc.next_due ? " Next card is due " + fcWhen(fc.next_due) + "." : "")));
+  return box;
+}
+async function startFlashcards() {
+  stopClock(); P = null;
+  screen([header(), h("div", { class: "spin" })]);
+  var r; try { r = await rpc("qb_flashcards", { p_limit: 40 }); } catch (e) { toast(friendly(e)); return showHome(); }
+  FC = { queue: (r.cards || []).slice(), done: 0, back: false };
+  if (!FC.queue.length) { toast("No flashcards are due right now."); return showHome(); }
+  fcRender();
+}
+function fcRender() {
+  var c = FC.queue[0];
+  if (!c) {
+    var fin = FC; FC = null;
+    return screen([header(), h("main", { class: "wrap page" }, h("div", { class: "fc-wrap" }, h("div", { class: "card" }, [
+      h("h2", null, "Session done"),
+      h("p", { class: "muted" }, "You reviewed " + fin.done + " card" + (fin.done === 1 ? "" : "s") + ". Cards you marked Repeat come back in about 10 minutes."),
+      h("div", { class: "row" }, [h("button", { class: "btn teal", onclick: startFlashcards }, "Check for more"), h("button", { class: "btn ghost", onclick: showHome }, "Back to the question bank")])
+    ])))]);
+  }
+  var face = [h("div", { class: "subjtag" }, "Question ID " + c.num + " · " + c.subject)]
+    .concat(paras(c.stem || "").map(function (t) { return h("p", null, t); }))
+    .concat((c.data && c.data.length) ? [h("ul", { class: "fc-data" }, c.data.map(function (d) { return h("li", null, d); }))] : [])
+    .concat([h("p", { class: "fc-ask" }, c.ask || "")]);
+  var back = FC.back ? [
+    h("div", { class: "fc-ans" }, [h("b", null, "Answer: " + c.answer + ". "), c.answer_text || ""]),
+    c.why ? h("p", { style: "margin:0 0 8px" }, c.why) : null,
+    c.pearl ? h("div", { class: "pearl" }, [h("strong", null, "Teaching pearl"), c.pearl]) : null,
+    c.detail ? h("p", { class: "fc-detail" }, c.detail) : null,
+    h("div", { class: "fc-rate", role: "group", "aria-label": "How well did you know it?" }, [
+      h("button", { class: "btn rep", onclick: function () { fcRate("repeat"); } }, [h("span", null, "Repeat"), h("small", null, fcNext(c, "repeat"))]),
+      h("button", { class: "btn good", onclick: function () { fcRate("good"); } }, [h("span", null, "Good"), h("small", null, fcNext(c, "good"))]),
+      h("button", { class: "btn great", onclick: function () { fcRate("great"); } }, [h("span", null, "Great"), h("small", null, fcNext(c, "great"))])
+    ]),
+    h("p", { class: "fc-keys" }, "Keys: 1 Repeat · 2 Good · 3 Great")
+  ] : [
+    h("button", { class: "btn teal", style: "width:100%", onclick: function () { FC.back = true; fcRender(); } }, "Show answer"),
+    h("p", { class: "fc-keys" }, "Key: Space shows the answer")
+  ];
+  screen([header(), h("main", { class: "wrap page" }, h("div", { class: "fc-wrap" }, [
+    h("div", { class: "fc-top" }, [
+      h("div", null, [h("div", { class: "subjtag", style: "margin:0" }, "Flashcards"), h("small", { class: "muted" }, FC.queue.length + " left in this session")]),
+      h("button", { class: "btn ghost", onclick: function () { FC = null; showHome(); } }, "End session")
+    ]),
+    h("section", { class: "card fc-face" }, face),
+    h("div", { class: "stack" }, back)
+  ]))]);
+}
+async function fcRate(r) {
+  if (!FC || FC.busy) return;
+  var c = FC.queue[0]; FC.busy = true;
+  try {
+    var res = await rpc("qb_flashcard_rate", { p_qid: c.id, p_rating: r });
+    FC.queue.shift(); FC.done++;
+    if (r === "repeat") { c.interval_days = res.interval_days; FC.queue.push(c); }
+  } catch (e) { toast(friendly(e)); }
+  FC.busy = false; FC.back = false; fcRender();
+}
+document.addEventListener("keydown", function (e) {
+  if (!FC || !$(".fc-wrap") || e.metaKey || e.ctrlKey || e.altKey || $(".modal")) return;
+  if (/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  if (!FC.back && (e.key === " " || e.key === "Enter")) { e.preventDefault(); FC.back = true; fcRender(); return; }
+  if (FC.back && /^[123]$/.test(e.key)) { e.preventDefault(); fcRate(["repeat", "good", "great"][+e.key - 1]); }
+});
 function homeError(e) {
   screen([header(), h("main", { class: "wrap page" }, h("div", { class: "card" }, [
     h("h2", null, "Couldn't load your question bank"), h("p", { class: "muted" }, friendly(e)),
@@ -1160,8 +1285,25 @@ function segBtns(values, key, labelFn, wide) {
   });
   return wrap;
 }
-function poolN(s, p) {
+function poolN1(s, p) {
   return p === "unused" ? s.total - s.used : p === "incorrect" ? s.incorrect : p === "flagged" ? (s.flagged || 0) : s.total;
+}
+// pools can be combined ("incorrect+flagged"); overlaps are counted once by the server, so this is an upper bound
+function poolN(s, p) {
+  var n = 0; String(p).split("+").forEach(function (x) { n += poolN1(s, x); });
+  return Math.min(n, s.total);
+}
+function poolParts() { return String(choose.pool).split("+"); }
+function togglePool(v) {
+  var parts = poolParts();
+  if (v === "all") parts = ["all"];
+  else {
+    parts = parts.filter(function (x) { return x !== "all"; });
+    if (parts.indexOf(v) >= 0) { if (parts.length > 1) parts = parts.filter(function (x) { return x !== v; }); }
+    else parts.push(v);
+  }
+  choose.pool = ["unused", "incorrect", "flagged", "all"].filter(function (x) { return parts.indexOf(x) >= 0; }).join("+");
+  refreshBuilder();
 }
 function available() {
   var subs = S.ov.subjects.filter(function (s) { return !choose.subjects.length || choose.subjects.indexOf(s.subject) >= 0; });
@@ -1214,9 +1356,11 @@ function fillBuilder(box) {
     h("label", { class: "check" }, [timer, h("span", null, ["Time this set",
       h("small", null, "90 seconds per question" + (choose.timed ? " · " + fmtTime(n * 90) + " total" : ""))])]),
     h("div", { class: "opt-label" }, "Questions from"),
-    segBtns(["unused", "incorrect", "flagged", "all"], "pool", function (v) {
-      return { unused: "Unused", incorrect: "Incorrect", flagged: "Flagged", all: "All" }[v] + " (" + poolCount(v) + ")";
-    }),
+    h("div", { class: "seg", role: "group", "aria-label": "Question pools (pick one or more)" }, ["unused", "incorrect", "flagged", "all"].map(function (v) {
+      return h("button", { type: "button", "aria-pressed": String(poolParts().indexOf(v) >= 0), onclick: function () { togglePool(v); } },
+        { unused: "Unused", incorrect: "Incorrect", flagged: "Flagged", all: "All" }[v] + " (" + poolCount(v) + ")");
+    })),
+    h("small", { class: "muted", style: "display:block;margin-top:6px" }, "Pick one or more, for example Incorrect + Flagged, or Incorrect + Unused."),
     h("div", { class: "opt-label" }, "Subjects"), chips,
     h("div", { class: "startrow" }, [start,
       !avail ? h("span", { class: "note warn" }, "No questions match. Change the pool or subjects.")
