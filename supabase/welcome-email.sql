@@ -89,7 +89,7 @@ declare
 </td></tr>
 <tr><td style="padding:18px 32px 0 32px;font-family:Inter,Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#33465f;">
 <p style="margin:0 0 14px 0;">{{GREETING}}</p>
-<p style="margin:0 0 14px 0;">Thank you for creating a Boardside Reviews account. Boardside is a small, physician-built project, and it truly means a lot that you'd give it a try. Every question is written and reviewed by hand, and I don't take your time for granted.</p>
+<p style="margin:0 0 14px 0;">Thank you for creating a Boardside Reviews account. Boardside is a small, physician-built project, and it truly means a lot that you'd give it a try. Every question is reviewed and verified personally, and I don't take your time for granted.</p>
 </td></tr>
 <tr><td style="padding:10px 32px 0 32px;font-family:'Plus Jakarta Sans',Inter,Arial,Helvetica,sans-serif;">
 <p style="margin:0 0 12px 0;font-size:17px;font-weight:800;color:#0b2545;">Start here</p>
@@ -151,7 +151,7 @@ create or replace function public.welcome_email_text(p_last text, p_mailing bool
 returns text language sql immutable as $fn$
   select concat_ws(E'\n',
     case when nullif(trim(p_last), '') is null then 'Hello,' else 'Dear Dr. ' || trim(p_last) || ',' end, '',
-    'Thank you for creating a Boardside Reviews account. Boardside is a small, physician-built project, and it truly means a lot that you''d give it a try. Every question is written and reviewed by hand, and I don''t take your time for granted.', '',
+    'Thank you for creating a Boardside Reviews account. Boardside is a small, physician-built project, and it truly means a lot that you''d give it a try. Every question is reviewed and verified personally, and I don''t take your time for granted.', '',
     'Start here:',
     '1. Try the free sets. 80 questions across Pulmonary & Critical Care, Cardiology, GI and Nephrology, in learning or exam mode.',
     '2. Read every explanation. Each answer choice is explained, so the wrong ones teach as much as the right one.',
