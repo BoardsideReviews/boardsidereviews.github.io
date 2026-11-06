@@ -796,7 +796,11 @@ function friendly(err) {
 var SAMPLE = /[?&]sample(=|&|$)/.test(location.search);
 var FREE = { sets: null, data: {} };              // set list + loaded sets (questions with answers)
 var ANON_LIMIT = 10;
+// The Cardiology notes PDF is on hold. To turn it on: upload the file to Supabase Storage → free-samples
+// as boardside-notes-cardiology-sample.pdf, then set NOTES_READY to true.
+var NOTES_READY = false;
 var NOTES_BUCKET = "free-samples", NOTES_FILE = "boardside-notes-cardiology-sample.pdf";
+function notesTxt(withPdf, without) { return NOTES_READY ? withPdf : without; }
 function fWho() { return S.uid || "anon"; }
 function fKey(set, who) { return "qb_free_v2_" + (who || fWho()) + "_" + set; }
 function fLoad(set, who) { try { return JSON.parse(localStorage.getItem(fKey(set, who)) || "null"); } catch (e) { return null; } }
@@ -877,7 +881,7 @@ function anonBlocked(q) {
 async function gateModal(reason) {
   var v = await modal(reason === "limit" ? "You've used your 10 free questions" : "Create a free account",
     (reason === "limit" ? "Create a free account to keep going. " : "") +
-    "A free account unlocks all 80 sample questions (4 sets of 20) and the 15-page Boardside Notes Cardiology sample. We'll send a code to verify your email.",
+    notesTxt("A free account unlocks all 80 sample questions (4 sets of 20) and the 15-page Boardside Notes Cardiology sample. We'll send a code to verify your email.", "A free account unlocks all 80 sample questions (4 sets of 20). We'll send a code to verify your email."),
     [{ label: "Not now", cls: "ghost", value: null }, { label: "Sign in", cls: "ghost", value: "in" }, { label: "Create free account", cls: "teal", value: "up" }]);
   if (v) { stopClock(); if (P && !done()) { markDirty(cur(), true); await flush(); } }
   if (v === "up") showSignup(); else if (v === "in") showLogin();
@@ -1045,7 +1049,7 @@ function showSignup(prefill) {
   var btn = h("button", { class: "btn teal", type: "submit" }, "Create free account");
   var form = h("form", { class: "card", novalidate: true }, [
     h("h1", null, "Create your free account"),
-    h("p", null, "Unlock all 80 free questions and the 15-page Boardside Notes Cardiology sample. We'll email you a 6-digit code to verify your address. Already bought Boardside Reviews? Use the email you bought it with."),
+    h("p", null, notesTxt("Unlock all 80 free questions and the 15-page Boardside Notes Cardiology sample.", "Unlock all 80 free questions.") + " We'll email you a 6-digit code to verify your address. Already bought Boardside Reviews? Use the email you bought it with."),
     h("div", { class: "row2" }, [h("label", { class: "field" }, ["First name", first]), h("label", { class: "field" }, ["Last name", last])]),
     h("label", { class: "field" }, ["Email", email])
   ].concat(pws.nodes).concat([
@@ -1986,7 +1990,7 @@ function openNav() {
 // results
 function freeResultsCta() {
   if (!S.uid) return h("section", { class: "card fnote", style: "margin-top:0" }, [
-    h("b", null, "Want the rest? "), "A free account unlocks all 80 sample questions and the 15-page Cardiology notes sample, and puts you on the launch waitlist.",
+    h("b", null, "Want the rest? "), notesTxt("A free account unlocks all 80 sample questions and the 15-page Cardiology notes sample, and puts you on the launch waitlist.", "A free account unlocks all 80 sample questions and puts you on the launch waitlist."),
     h("div", { class: "actions", style: "margin-top:10px" }, [
       h("button", { class: "btn teal sm", onclick: function () { showSignup(); } }, "Create free account"),
       h("button", { class: "btn ghost sm", onclick: function () { showLogin(); } }, "Sign in")])]);
@@ -2163,7 +2167,7 @@ function showSampleHome() {
     ? h("div", { class: "fnote ok" }, [h("b", null, "All 80 free questions are unlocked. "), "You're on the launch waitlist" + (full ? "." : ": we'll email you 48 hours before launch and again when the full question bank opens.")])
     : h("div", { class: "fnote" }, [
         h("b", null, left > 0 ? "Try " + left + " question" + (left === 1 ? "" : "s") + " without an account. " : "You've used your 10 questions without an account. "),
-        "A free account unlocks all 80 questions and the Cardiology notes sample. It takes a minute and we verify your email.",
+        notesTxt("A free account unlocks all 80 questions and the Cardiology notes sample. It takes a minute and we verify your email.", "A free account unlocks all 80 questions. It takes a minute and we verify your email."),
         h("div", { class: "actions", style: "margin-top:10px" }, [
           h("button", { class: "btn teal sm", onclick: function () { showSignup(); } }, "Create free account"),
           h("button", { class: "btn ghost sm", onclick: function () { showLogin(); } }, "Sign in")])]);
@@ -2181,7 +2185,7 @@ function showSampleHome() {
         h("label", { class: "optin", style: "align-items:center" }, [timer, h("span", null, "Timed: 90 seconds per question")])]),
       h("div", { class: "fsets" }, cards)
     ]) : h("section", { class: "card" }, "The free sets aren't available right now. Please try again later."),
-    h("section", { class: "card fnotes" }, [
+    !NOTES_READY ? null : h("section", { class: "card fnotes" }, [
       h("div", null, [
         h("p", { class: "eyebrow", style: "margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--teal)" }, "BOARDSIDE NOTES"),
         h("h2", { style: "margin:0 0 6px" }, "Cardiology sample · 15 pages"),
