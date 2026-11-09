@@ -855,7 +855,7 @@ function friendly(err) {
 // unlocks all 80 and the Cardiology notes PDF. Progress is kept in this browser, per account.
 var SAMPLE = /[?&]sample(=|&|$)/.test(location.search);
 var LOGIN_RETURN = /[?&]login(=|&|$)/.test(location.search);      // came from the homepage Login button: go back home after signing in
-var ACCOUNT_OPEN = (location.search.match(/[?&]account=(profile|password|payments)/) || [])[1] || null;   // homepage account menu
+var ACCOUNT_OPEN = (location.search.match(/[?&]account=(profile|password|payments|billing)/) || [])[1] || null;   // homepage account menu
 var FREE = { sets: null, data: {} };              // set list + loaded sets (questions with answers)
 var ANON_LIMIT = 10;
 // The Cardiology notes PDF is on hold. To turn it on: upload the file to Supabase Storage → free-samples
@@ -1040,7 +1040,7 @@ function accountMenu() {
     h("div", { class: "acct-who" }, S.email),
     item("Profile info", "Name, mailing list, delete account", showProfile),
     item("Change password", null, showChangePassword),
-    item("Payment methods", null, showPayments),
+    item("Manage billing", "Purchases, receipts and cards", showPayments),
     item("Sign out", null, signOut, "acct-out"));
   btn.onclick = function () {
     var open = menu.hidden; menu.hidden = !open; btn.setAttribute("aria-expanded", String(open));
@@ -1142,10 +1142,18 @@ function showChangePassword() {
   };
   var sh = sheet("Change password", [form]);
 }
+// Billing runs through Stripe (cards, receipts, invoices live there). Set this to the Stripe customer
+// portal link at launch; until then the button stays off.
+var STRIPE_PORTAL_URL = "";
 function showPayments() {
-  sheet("Payment methods", [h("div", { class: "acct-sec" }, [
-    h("div", { class: "acct-empty" }, [h("b", null, "No payment methods yet"),
-      h("p", { class: "muted", style: "margin:4px 0 0" }, "Purchases open at launch. Once you buy, your saved card and receipts will show here. Your card details are handled by our payment provider; Boardside Reviews never stores them.")]),
+  var live = !!STRIPE_PORTAL_URL;
+  sheet("Manage billing", [h("div", { class: "acct-sec" }, [
+    h("div", { class: "acct-empty" }, [h("b", null, live ? "Your purchases" : "No purchases yet"),
+      h("p", { class: "muted", style: "margin:4px 0 0" }, live
+        ? "Update your card, download receipts and invoices, or review your plan in our secure billing portal."
+        : "Purchases open at launch. After you buy, you'll manage your plan, receipts and card here. Payments are handled securely by Stripe; Boardside Reviews never sees or stores your card details.")]),
+    live ? h("a", { class: "btn teal", href: STRIPE_PORTAL_URL, target: "_blank", rel: "noopener" }, "Manage billing ↗")
+         : h("button", { class: "btn teal", type: "button", disabled: "" }, "Manage billing (available at launch)"),
     h("p", { class: "small muted", style: "margin:0" }, ["Billing question? Email ", h("a", { href: "mailto:" + SUPPORT, style: "color:var(--teal);font-weight:600" }, SUPPORT), "."])])]);
 }
 // Always-visible bottom bar (lives outside #app so every screen keeps it)
@@ -2560,7 +2568,7 @@ function openAccountFromLink() {
   var a = ACCOUNT_OPEN; ACCOUNT_OPEN = null;
   if (!a || !S.uid) return;
   try { history.replaceState(null, "", location.pathname + location.search.replace(/([?&])account=[^&]*&?/, "$1").replace(/[?&]$/, "")); } catch (e) {}
-  if (a === "profile") showProfile(); else if (a === "password") showChangePassword(); else if (a === "payments") showPayments();
+  if (a === "profile") showProfile(); else if (a === "password") showChangePassword(); else if (a === "payments" || a === "billing") showPayments();
 }
 boot();
 })();
