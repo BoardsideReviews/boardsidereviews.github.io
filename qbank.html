@@ -854,6 +854,8 @@ function friendly(err) {
 // first 10 questions of each set and may answer 10 questions in total; a free, verified account
 // unlocks all 80 and the Cardiology notes PDF. Progress is kept in this browser, per account.
 var SAMPLE = /[?&]sample(=|&|$)/.test(location.search);
+var LOGIN_RETURN = /[?&]login(=|&|$)/.test(location.search);      // came from the homepage Login button: go back home after signing in
+var ACCOUNT_OPEN = (location.search.match(/[?&]account=(profile|password|payments)/) || [])[1] || null;   // homepage account menu
 var FREE = { sets: null, data: {} };              // set list + loaded sets (questions with answers)
 var ANON_LIMIT = 10;
 // The Cardiology notes PDF is on hold. To turn it on: upload the file to Supabase Storage → free-samples
@@ -2545,11 +2547,20 @@ async function boot() {
   FREE.data = {};
   if (user && !(user.user_metadata && user.user_metadata.account_ready)) return showFinishAccount(user);
   if (user && !user.user_metadata.heard_asked && PREVIEW_EMAILS.indexOf(S.email) < 0) return showHeardAbout(user);
+  if (user && LOGIN_RETURN) { location.replace("/"); return; }
+  if (!user && LOGIN_RETURN) return showLogin();
   if (user) { var m = await sb.rpc("qb_me"); S.me = m.error ? null : m.data; }
-  if (SAMPLE) return freeBoot();
+  if (SAMPLE) return freeBoot().then(openAccountFromLink);
   if (!user) return showLogin();
-  if (!allowed(S.email) || !S.me || !S.me.access) return freeBoot();   // free accounts (and everyone before launch) get the free sample
-  showHome();
+  if (!allowed(S.email) || !S.me || !S.me.access) return freeBoot().then(openAccountFromLink);   // free accounts (and everyone before launch) get the free sample
+  showHome().then(openAccountFromLink);
+}
+// homepage account menu links (qbank.html?account=profile|password|payments) open that panel once
+function openAccountFromLink() {
+  var a = ACCOUNT_OPEN; ACCOUNT_OPEN = null;
+  if (!a || !S.uid) return;
+  try { history.replaceState(null, "", location.pathname + location.search.replace(/([?&])account=[^&]*&?/, "$1").replace(/[?&]$/, "")); } catch (e) {}
+  if (a === "profile") showProfile(); else if (a === "password") showChangePassword(); else if (a === "payments") showPayments();
 }
 boot();
 })();
