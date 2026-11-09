@@ -46,6 +46,33 @@ h1,h2,h3,h4{font-family:'Plus Jakarta Sans',Inter,sans-serif;letter-spacing:-.01
 .btn:disabled{opacity:.45;cursor:default}
 .link{background:none;border:0;padding:0;color:var(--teal);font-weight:600;font-size:14px}
 .who .link{white-space:nowrap}
+.acct{position:relative}
+.acct-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 12px 7px 14px;font:600 14px Inter,system-ui,sans-serif;color:var(--navy);cursor:pointer;white-space:nowrap;max-width:240px}
+.acct-btn span:first-child{overflow:hidden;text-overflow:ellipsis}
+.acct-btn:hover,.acct-btn[aria-expanded=true]{border-color:#b9d9d6;background:var(--teal-soft)}
+.acct-caret{font-size:11px;color:var(--teal)}
+.acct-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:60;min-width:250px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 34px rgba(11,37,69,.16);padding:6px;display:flex;flex-direction:column}
+.acct-menu[hidden]{display:none}
+.acct-who{font-size:12.5px;color:var(--muted);padding:8px 12px 6px;border-bottom:1px solid var(--line);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-item{display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:none;border:0;border-radius:10px;padding:9px 12px;text-align:left;font:inherit;color:var(--navy);cursor:pointer}
+.acct-item b{font-size:14.5px;font-weight:600}
+.acct-item small{font-size:12px;color:var(--muted)}
+.acct-item:hover,.acct-item:focus-visible{background:var(--sky2);outline:none}
+.acct-out{border-top:1px solid var(--line);border-radius:0 0 10px 10px;margin-top:4px}
+.acct-out b{color:var(--coral)}
+.acct-sheet{width:min(480px,100%);display:flex;flex-direction:column;gap:16px}
+.acct-head{display:flex;justify-content:space-between;align-items:center}
+.acct-head h2{margin:0}
+.acct-head .link{font-size:18px;color:var(--muted)}
+.acct-sec{display:flex;flex-direction:column;gap:12px}
+.acct-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acct-sec.set-row{flex-direction:row;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0}
+.acct-del-link{color:var(--coral);align-self:flex-start}
+.acct-danger{border:1px solid #efc2b7;background:var(--coral-soft);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.acct-danger[hidden]{display:none}
+.acct-danger p{margin:0;font-size:14px;color:var(--ink2)}
+.acct-empty{border:1px dashed var(--line);border-radius:12px;padding:16px;background:var(--sky2)}
+@media (max-width:560px){.acct-btn{max-width:170px;padding:6px 10px 6px 12px;font-size:13px}.acct-two{grid-template-columns:1fr}.acct-menu{position:fixed;left:12px;right:12px;top:64px;min-width:0}}
 body{padding-bottom:calc(38px + env(safe-area-inset-bottom))}
 @media (max-width:760px){body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}}
 .sitefoot{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid #e3ebf3;text-align:center;font-size:13px;color:var(--muted);padding:8px 12px calc(8px + env(safe-area-inset-bottom));line-height:1.4}
@@ -578,8 +605,6 @@ function applySettings() {
 applySettings();
 function openSettings() {
   var back = h("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": "Settings" });
-  var ml = null, mlBusy = false;                       // mailing list choice (signed-in accounts only), live from the database
-  if (S.uid) rpcQuiet("qb_mailing_get").then(function (v) { if (v !== null) { ml = !!v; draw(); } });
   function close() { back.remove(); if (P && $(".playwrap")) renderPlayer(true); }
   function draw() {
     var sw = h("div", { class: "swatches" }, Object.keys(HL).map(function (k) {
@@ -601,14 +626,6 @@ function openSettings() {
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Expand in-depth explanations"), h("small", null, "On: every answer choice shows its in-depth explanation open. Off: they stay collapsed until you tap a choice.")]),
         h("button", { class: "switch", role: "switch", "aria-checked": String(!!SET.expand), "aria-label": "Expand in-depth explanations",
           onclick: function () { SET.expand = !SET.expand; applySettings(); draw(); } })]),
-      S.uid && ml !== null ? h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Mailing list"), h("small", null, "Occasional teaching emails and updates from Boardside Reviews. Turn off anytime.")]),
-        h("button", { class: "switch", role: "switch", "aria-checked": String(ml), "aria-label": "Mailing list", disabled: mlBusy ? "" : null,
-          onclick: async function () {
-            mlBusy = true; var want = !ml; draw();
-            var r = await rpcQuiet("qb_mailing_set", { p_on: want });
-            mlBusy = false; if (r !== null) { ml = !!r; toast(ml ? "You're on the mailing list." : "You're off the mailing list."); } else toast("Couldn't update that. Please try again.");
-            draw();
-          } })]) : null,
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Highlighter color"), h("small", null, "Pick the color that's easiest for you to see")]), sw]),
       h("div", { class: "set-row", style: "flex-wrap:wrap;border-bottom:0" }, [h("div", null, [h("b", null, "Explanations"),
         h("small", null, "Side by side keeps the question on the left (wide screens)")]), lay]),
@@ -841,7 +858,7 @@ var FREE = { sets: null, data: {} };              // set list + loaded sets (que
 var ANON_LIMIT = 10;
 // The Cardiology notes PDF is on hold. To turn it on: upload the file to Supabase Storage → free-samples
 // as boardside-notes-cardiology-sample.pdf, then set NOTES_READY to true.
-var NOTES_READY = false;
+var NOTES_READY = true;
 var NOTES_BUCKET = "free-samples", NOTES_FILE = "boardside-notes-cardiology-sample.pdf";
 function notesTxt(withPdf, without) { return NOTES_READY ? withPdf : without; }
 function fWho() { return S.uid || "anon"; }
@@ -996,9 +1013,138 @@ function header() {
       SAMPLE && !S.email ? h("button", { class: "link", onclick: function () { showLogin(); } }, "Sign in") : null,
       SAMPLE && !S.email ? h("button", { class: "btn teal sm", onclick: function () { showSignup(); } }, "Create free account") : null,
       SAMPLE && S.me && S.me.access && allowed(S.email) ? h("a", { class: "link", href: "qbank.html" }, "Full question bank") : null,
-      S.email ? h("span", { class: "email" }, S.email) : null,
-      S.email ? h("button", { class: "link", onclick: signOut }, "Sign out") : null])
+      S.email ? accountMenu() : null])
   ])]);
+}
+// ───────────────────────── account menu: "Welcome, Dr. [Last Name]" ─────────────────────────
+function welcomeName() {
+  var last = S.md && String(S.md.last_name || "").trim();
+  return last ? "Welcome, Dr. " + last : "Welcome";
+}
+function refreshHeader() { var old = document.querySelector("header.top"); if (old) old.replaceWith(header()); }
+function accountMenu() {
+  var wrap = h("div", { class: "acct" });
+  var btn = h("button", { class: "acct-btn", type: "button", "aria-haspopup": "menu", "aria-expanded": "false" },
+    [h("span", null, welcomeName()), h("span", { class: "acct-caret", "aria-hidden": "true", html: "&#9662;" })]);
+  var menu = h("div", { class: "acct-menu", role: "menu", hidden: "" });
+  function close() { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); document.removeEventListener("mousedown", outside); document.removeEventListener("keydown", esc); }
+  function outside(e) { if (!wrap.contains(e.target)) close(); }
+  function esc(e) { if (e.key === "Escape") { close(); btn.focus(); } }
+  function item(label, sub, fn, cls) {
+    return h("button", { type: "button", role: "menuitem", class: "acct-item" + (cls ? " " + cls : ""), onclick: function () { close(); fn(); } },
+      [h("b", null, label), sub ? h("small", null, sub) : null]);
+  }
+  menu.append(
+    h("div", { class: "acct-who" }, S.email),
+    item("Profile info", "Name, mailing list, delete account", showProfile),
+    item("Change password", null, showChangePassword),
+    item("Payment methods", null, showPayments),
+    item("Sign out", null, signOut, "acct-out"));
+  btn.onclick = function () {
+    var open = menu.hidden; menu.hidden = !open; btn.setAttribute("aria-expanded", String(open));
+    if (open) { document.addEventListener("mousedown", outside); document.addEventListener("keydown", esc); var f = menu.querySelector("[role=menuitem]"); if (f) f.focus(); }
+    else close();
+  };
+  wrap.append(btn, menu);
+  return wrap;
+}
+function sheet(title, kids) {
+  var back = h("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": title });
+  function close() { back.remove(); document.removeEventListener("keydown", esc); }
+  function esc(e) { if (e.key === "Escape") close(); }
+  var card = h("div", { class: "card acct-sheet" }, [h("div", { class: "acct-head" }, [h("h2", null, title),
+    h("button", { class: "link", type: "button", "aria-label": "Close", onclick: close, html: "&#10005;" })])].concat(kids));
+  back.appendChild(card);
+  back.addEventListener("mousedown", function (e) { if (e.target === back) close(); });
+  document.addEventListener("keydown", esc);
+  document.body.appendChild(back);
+  var f = card.querySelector("input"); if (f) f.focus();
+  return { close: close, card: card };
+}
+function showProfile() {
+  var md = S.md || {};
+  var first = h("input", { type: "text", autocomplete: "given-name", maxlength: "60", value: md.first_name || "" });
+  var last = h("input", { type: "text", autocomplete: "family-name", maxlength: "60", value: md.last_name || "" });
+  var err = h("div", { class: "err", "aria-live": "polite" });
+  var save = h("button", { class: "btn teal", type: "submit" }, "Save name");
+  var nameForm = h("form", { class: "acct-sec", novalidate: true }, [
+    h("label", { class: "field" }, ["Email", h("input", { type: "email", value: S.email, disabled: "" })]),
+    h("div", { class: "acct-two" }, [h("label", { class: "field" }, ["First name", first]), h("label", { class: "field" }, ["Last name", last])]),
+    err, save]);
+  nameForm.onsubmit = async function (e) {
+    e.preventDefault(); err.textContent = "";
+    var f = first.value.trim(), l = last.value.trim();
+    if (!f || !l) { err.textContent = "Please enter your first and last name."; return; }
+    save.disabled = true; save.textContent = "Saving…";
+    var r = await sb.auth.updateUser({ data: { first_name: f, last_name: l } });
+    save.disabled = false; save.textContent = "Save name";
+    if (r.error) { err.textContent = authFriendly(r.error); return; }
+    S.md = r.data.user.user_metadata || S.md; refreshHeader(); toast("Name saved.");
+  };
+  // mailing list (live)
+  var ml = null, mlSw = h("button", { class: "switch", role: "switch", "aria-checked": "false", "aria-label": "Mailing list", disabled: "" });
+  var mlNote = h("small", null, "Occasional teaching emails and updates from Boardside Reviews. Turn off anytime.");
+  rpcQuiet("qb_mailing_get").then(function (v) { if (v !== null) { ml = !!v; mlSw.setAttribute("aria-checked", String(ml)); mlSw.disabled = false; } });
+  mlSw.onclick = async function () {
+    mlSw.disabled = true; var r = await rpcQuiet("qb_mailing_set", { p_on: !ml }); mlSw.disabled = false;
+    if (r === null) { toast("Couldn't update that. Please try again."); return; }
+    ml = !!r; mlSw.setAttribute("aria-checked", String(ml)); toast(ml ? "You're on the mailing list." : "You're off the mailing list.");
+  };
+  var mlRow = h("div", { class: "set-row acct-sec" }, [h("div", null, [h("b", null, "Mailing list"), mlNote]), mlSw]);
+  // delete account
+  var confirmIn = h("input", { type: "text", autocomplete: "off", autocapitalize: "characters", spellcheck: "false", "aria-label": "Type DELETE to confirm", placeholder: "DELETE" });
+  var delBtn = h("button", { class: "btn danger", type: "button", disabled: "" }, "Delete my account");
+  var delErr = h("div", { class: "err", "aria-live": "polite" });
+  confirmIn.addEventListener("input", function () { delBtn.disabled = confirmIn.value.trim() !== "DELETE"; });
+  var delBox = h("div", { class: "acct-danger", hidden: "" }, [
+    h("p", null, [h("b", null, "This can't be undone. "), "Your account, progress, flashcards, stats and leaderboard scores are deleted permanently. Any purchase on this account becomes void, and access won't come back even if you sign up again with the same email."]),
+    h("label", { class: "field" }, ["Type DELETE to confirm", confirmIn]), delErr, delBtn]);
+  var delOpen = h("button", { class: "link acct-del-link", type: "button", onclick: function () { delBox.hidden = false; delOpen.hidden = true; confirmIn.focus(); } }, "Delete account…");
+  delBtn.onclick = async function () {
+    if (confirmIn.value.trim() !== "DELETE") return;
+    delBtn.disabled = true; delBtn.textContent = "Deleting…"; delErr.textContent = "";
+    var r = await sb.rpc("qb_delete_account", { p_confirm: "DELETE" });
+    if (r.error) {
+      delErr.textContent = /admin_protected/.test(r.error.message || "") ? "The admin account can't be deleted here." : "Couldn't delete your account. Please try again or email " + SUPPORT + ".";
+      delBtn.disabled = false; delBtn.textContent = "Delete my account"; return;
+    }
+    try { Object.keys(localStorage).forEach(function (k) { if (S.uid && k.indexOf(S.uid) >= 0) localStorage.removeItem(k); }); } catch (x) {}
+    sh.close(); await sb.auth.signOut({ scope: "local" }); S = { me: null, ov: null, email: "", uid: null }; FREE.data = {};
+    toast("Your account has been deleted."); SAMPLE = true; boot();
+  };
+  var sh = sheet("Profile info", [nameForm, mlRow, h("div", { class: "acct-sec" }, [delOpen, delBox])]);
+}
+function showChangePassword() {
+  var err = h("div", { class: "err", "aria-live": "polite" });
+  var pws = pwFields();
+  var code = h("input", { type: "text", inputmode: "numeric", autocomplete: "one-time-code", maxlength: "10", placeholder: "6-digit code" });
+  var codeWrap = h("label", { class: "field", hidden: "" }, ["Code we just emailed you", code]);
+  var btn = h("button", { class: "btn teal", type: "submit" }, "Save new password");
+  var form = h("form", { novalidate: true, class: "acct-sec" }, [h("p", { class: "muted", style: "margin:0" }, "Choose a new password for " + S.email + ".")].concat(pws.nodes).concat([codeWrap, err, btn]));
+  form.onsubmit = async function (e) {
+    e.preventDefault(); err.textContent = "";
+    if (!pws.valid()) { err.textContent = "Your password doesn't meet all the rules yet."; return; }
+    btn.disabled = true; btn.textContent = "Saving…";
+    var args = { password: pws.value() };
+    if (!codeWrap.hidden) { if (!code.value.trim()) { err.textContent = "Enter the code from your email."; btn.disabled = false; btn.textContent = "Save new password"; return; } args.nonce = code.value.trim(); }
+    var r = await sb.auth.updateUser(args);
+    if (r.error && codeWrap.hidden && /reauthenticat|nonce/i.test((r.error.code || "") + " " + (r.error.message || ""))) {
+      await sb.auth.reauthenticate();                 // Supabase asks for an emailed code before a password change
+      codeWrap.hidden = false; code.focus();
+      err.textContent = "For your security, we emailed you a code. Enter it, then save again.";
+      btn.disabled = false; btn.textContent = "Save new password"; return;
+    }
+    btn.disabled = false; btn.textContent = "Save new password";
+    if (r.error) { err.textContent = authFriendly(r.error); return; }
+    sh.close(); toast("Password updated.");
+  };
+  var sh = sheet("Change password", [form]);
+}
+function showPayments() {
+  sheet("Payment methods", [h("div", { class: "acct-sec" }, [
+    h("div", { class: "acct-empty" }, [h("b", null, "No payment methods yet"),
+      h("p", { class: "muted", style: "margin:4px 0 0" }, "Purchases open at launch. Once you buy, your saved card and receipts will show here. Your card details are handled by our payment provider; Boardside Reviews never stores them.")]),
+    h("p", { class: "small muted", style: "margin:0" }, ["Billing question? Email ", h("a", { href: "mailto:" + SUPPORT, style: "color:var(--teal);font-weight:600" }, SUPPORT), "."])])]);
 }
 // Always-visible bottom bar (lives outside #app so every screen keeps it)
 var footLink = h("a", { href: supportHref(), html: 'Contact <b>' + SUPPORT + '</b> for concerns' });
@@ -2395,7 +2541,7 @@ async function freeBoot() {
 async function boot() {
   var s = await sb.auth.getSession();
   var user = s.data && s.data.session && s.data.session.user;
-  S.email = user ? (user.email || "").toLowerCase() : ""; S.uid = user ? user.id : null;
+  S.email = user ? (user.email || "").toLowerCase() : ""; S.uid = user ? user.id : null; S.md = user ? (user.user_metadata || {}) : null;
   FREE.data = {};
   if (user && !(user.user_metadata && user.user_metadata.account_ready)) return showFinishAccount(user);
   if (user && !user.user_metadata.heard_asked && PREVIEW_EMAILS.indexOf(S.email) < 0) return showHeardAbout(user);
