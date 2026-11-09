@@ -91,6 +91,34 @@ main.page{padding:28px 0 60px}
 .optin input{margin-top:3px;width:17px;height:17px;flex:none;accent-color:var(--teal)}
 .wlnote{font-size:13.5px;line-height:1.5;color:var(--ink2);background:var(--teal-soft);border:1px solid #bfe3df;border-radius:10px;padding:10px 12px}
 .wlnote b{color:var(--navy)}
+.act{display:flex;flex-direction:column;gap:14px}
+.act-top{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;justify-content:space-between}
+.act-streak{display:flex;gap:10px;align-items:center}
+.act-streak b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800;line-height:1.15}
+.act-streak .muted{font-size:13.5px}
+.act-nums{display:flex;gap:22px;flex-wrap:wrap}
+.act-nums b{display:block;font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;line-height:1.1}
+.act-nums span{font-size:12.5px;color:var(--muted)}
+.act-scroll{overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.act-months{display:flex;gap:3px;margin-left:34px;font-size:11px;color:var(--muted);height:15px}
+.act-months span{width:13px;flex:none;white-space:nowrap;overflow:visible}
+.act-body{display:flex;gap:6px}
+.act-dows{display:flex;flex-direction:column;gap:3px;width:28px;flex:none;font-size:10.5px;color:var(--muted)}
+.act-dows span{height:13px;line-height:13px}
+.act-grid{display:flex;gap:3px}
+.act-col{display:flex;flex-direction:column;gap:3px}
+.act-cell{display:block;width:13px;height:13px;border-radius:3px;border:0;padding:0;background:#e9eff5;cursor:pointer}
+.act-cell.l1{background:#bfe3df}.act-cell.l2{background:#6cc3b8}.act-cell.l3{background:#1f9a8f}.act-cell.l4{background:#0d7070}
+.act-future{background:transparent;cursor:default}
+.act-today{box-shadow:0 0 0 1.5px var(--navy) inset}
+.act-sel{outline:2px solid var(--amber);outline-offset:1px}
+.act-cell:focus-visible{outline:2px solid var(--navy);outline-offset:1px}
+.act-foot{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.act-info{margin:0;font-size:14px;color:var(--ink2)}
+.act-legend{display:flex;gap:3px;align-items:center;font-size:11.5px;color:var(--muted)}
+.act-legend .act-cell{cursor:default}
+.act-legend span:first-child{margin-right:4px}.act-legend span:last-child{margin-left:4px}
+@media (max-width:560px){.act-nums{gap:16px}.act-nums b{font-size:18px}}
 .hopts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .hopt{font:inherit;font-size:14.5px;text-align:left;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink2);cursor:pointer}
 .hopt:hover{border-color:#b9d9d6}
@@ -550,6 +578,8 @@ function applySettings() {
 applySettings();
 function openSettings() {
   var back = h("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": "Settings" });
+  var ml = null, mlBusy = false;                       // mailing list choice (signed-in accounts only), live from the database
+  if (S.uid) rpcQuiet("qb_mailing_get").then(function (v) { if (v !== null) { ml = !!v; draw(); } });
   function close() { back.remove(); if (P && $(".playwrap")) renderPlayer(true); }
   function draw() {
     var sw = h("div", { class: "swatches" }, Object.keys(HL).map(function (k) {
@@ -571,6 +601,14 @@ function openSettings() {
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Expand in-depth explanations"), h("small", null, "On: every answer choice shows its in-depth explanation open. Off: they stay collapsed until you tap a choice.")]),
         h("button", { class: "switch", role: "switch", "aria-checked": String(!!SET.expand), "aria-label": "Expand in-depth explanations",
           onclick: function () { SET.expand = !SET.expand; applySettings(); draw(); } })]),
+      S.uid && ml !== null ? h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Mailing list"), h("small", null, "Occasional teaching emails and updates from Boardside Reviews. Turn off anytime.")]),
+        h("button", { class: "switch", role: "switch", "aria-checked": String(ml), "aria-label": "Mailing list", disabled: mlBusy ? "" : null,
+          onclick: async function () {
+            mlBusy = true; var want = !ml; draw();
+            var r = await rpcQuiet("qb_mailing_set", { p_on: want });
+            mlBusy = false; if (r !== null) { ml = !!r; toast(ml ? "You're on the mailing list." : "You're off the mailing list."); } else toast("Couldn't update that. Please try again.");
+            draw();
+          } })]) : null,
       h("div", { class: "set-row" }, [h("div", null, [h("b", null, "Highlighter color"), h("small", null, "Pick the color that's easiest for you to see")]), sw]),
       h("div", { class: "set-row", style: "flex-wrap:wrap;border-bottom:0" }, [h("div", null, [h("b", null, "Explanations"),
         h("small", null, "Side by side keeps the question on the left (wide screens)")]), lay]),
@@ -867,11 +905,18 @@ function sampleRpc(name, a) {
   if (name === "qb_submit") {
     q = FREE.data[set].questions.filter(function (x) { return x.id === a.p_qid; })[0];
     var rs = st.resp[a.p_qid] = st.resp[a.p_qid] || {};
-    if (!rs.submitted) { rs.selected = a.p_selected; rs.submitted = true; }
+    if (!rs.submitted) { rs.selected = a.p_selected; rs.submitted = true; fActAdd(1, rs.selected === q.answer ? 1 : 0); }
     fSave(set, st);
     return { answer: q.answer, explain: q.explain, correct: rs.selected === q.answer, selected: rs.selected, num: q.num };
   }
-  if (name === "qb_finish") { st.status = "completed"; st.elapsed = a.p_elapsed_sec; fSave(set, st); return fBlock(set, st); }
+  if (name === "qb_finish") {
+    if (st.mode === "exam" && st.status !== "completed") {      // exam answers count when the set ends
+      var n = 0, nc = 0;
+      FREE.data[set].questions.forEach(function (x) { var r = st.resp[x.id]; if (r && r.selected) { n++; if (r.selected === x.answer) nc++; } });
+      fActAdd(n, nc);
+    }
+    st.status = "completed"; st.elapsed = a.p_elapsed_sec; fSave(set, st); return fBlock(set, st);
+  }
   if (name === "qb_image") return null;
   throw new Error("not_available_in_sample");
 }
@@ -894,6 +939,12 @@ async function gateModal(reason) {
 // Signed in for the first time on this browser: carry unfinished no-account sets over to the account.
 function migrateAnon() {
   if (!S.uid || !FREE.sets) return;
+  var aa = fActLoad("anon");
+  if (Object.keys(aa).length) {
+    var ua = fActLoad();
+    Object.keys(aa).forEach(function (k) { ua[k] = ua[k] || { q: 0, qc: 0 }; ua[k].q += aa[k].q || 0; ua[k].qc += aa[k].qc || 0; });
+    try { localStorage.setItem(fActKey(), JSON.stringify(ua)); localStorage.removeItem(fActKey("anon")); } catch (e) {}
+  }
   FREE.sets.forEach(function (fs) {
     var a = fLoad(fs.set_key, "anon"); if (!a) return;
     if (a.status !== "completed" && !fLoad(fs.set_key)) fSave(fs.set_key, a);
@@ -1280,6 +1331,7 @@ async function showHome() {
   S.me = S.ov.me;
   var confRows = await confPullAll();
   var fc = null; try { fc = await rpcQuiet("qb_flashcards", { p_limit: 1 }); } catch (e) { fc = null; }
+  var act = await rpcQuiet("qb_activity", { p_tz: userTz() });
   var ov = S.ov, subs = ov.subjects;
   var used = 0, correct = 0, done = 0;
   subs.forEach(function (s) { used += s.used; correct += s.correct; });
@@ -1297,6 +1349,7 @@ async function showHome() {
       h("div", { class: "note" }, ov.total + " questions across " + subs.length + " subjects")
     ]),
     stats,
+    act ? activityCard(act.days) : null,
     h("div", { class: "grid2" }, [builder(), h("div", { class: "stack" }, [fcCard(fc), subjectCard(subs), confCard(confRows, "Your confidence"), setsCard(ov.blocks)])]),
     resetCard()
   ]))]);
@@ -1790,6 +1843,91 @@ function choiceStats(q) {
   }
   return st && st.ready ? st : null;
 }
+// ───────────────────────── activity calendar (Anki-style heat map: questions + flashcards per day) ─────────────────────────
+function dayKey(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function userTz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (e) { return "UTC"; } }
+// free sample keeps its own log in this browser: { "2026-11-09": { q, qc } }
+function fActKey(who) { return "qb_free_act_" + (who || fWho()); }
+function fActLoad(who) { try { return JSON.parse(localStorage.getItem(fActKey(who)) || "{}"); } catch (e) { return {}; } }
+function fActAdd(n, nc) {
+  if (!n) return;
+  var a = fActLoad(), k = dayKey(new Date()); a[k] = a[k] || { q: 0, qc: 0 };
+  a[k].q += n; a[k].qc += nc;
+  try { localStorage.setItem(fActKey(), JSON.stringify(a)); } catch (e) {}
+}
+function fActDays() {
+  var a = fActLoad(); return Object.keys(a).map(function (k) { return { d: k, q: a[k].q || 0, qc: a[k].qc || 0, f: 0 }; });
+}
+function activityCard(days, opts) {
+  opts = opts || {};
+  var map = {}; (days || []).forEach(function (x) { map[x.d] = x; });
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  function tot(k) { var x = map[k]; return x ? (x.q || 0) + (x.f || 0) : 0; }
+  // streaks: today counts if active; if today is empty the streak can still be alive from yesterday
+  var cur = 0, d = new Date(today);
+  if (!tot(dayKey(d))) d.setDate(d.getDate() - 1);
+  while (tot(dayKey(d))) { cur++; d.setDate(d.getDate() - 1); }
+  var best = 0, run = 0, keys = Object.keys(map).filter(function (k) { return tot(k); }).sort(), prev = null;
+  keys.forEach(function (k) {
+    var dt = new Date(k + "T00:00:00");
+    run = prev && Math.round((dt - prev) / 86400000) === 1 ? run + 1 : 1; best = Math.max(best, run); prev = dt;
+  });
+  var monthActive = keys.filter(function (k) { return k.slice(0, 7) === dayKey(today).slice(0, 7); }).length;
+  var t = map[dayKey(today)] || { q: 0, f: 0 };
+  // grid: weeks as columns (Mon–Sun rows), ending this week
+  var weeks = opts.weeks || 53, end = new Date(today), dow = (end.getDay() + 6) % 7;   // Mon = 0
+  var start = new Date(end); start.setDate(end.getDate() - dow - (weeks - 1) * 7);
+  function level(n) { return !n ? 0 : n < 10 ? 1 : n < 25 ? 2 : n < 50 ? 3 : 4; }
+  function fmt(k) { return new Date(k + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" }); }
+  function detail(k) {
+    var x = map[k];
+    if (!x || !tot(k)) return fmt(k) + ": no study logged";
+    var parts = [];
+    if (x.q) parts.push(x.q + " question" + (x.q === 1 ? "" : "s") + " (" + Math.round(100 * (x.qc || 0) / x.q) + "% correct)");
+    if (x.f) parts.push(x.f + " flashcard" + (x.f === 1 ? "" : "s"));
+    return fmt(k) + ": " + parts.join(" · ");
+  }
+  var info = h("p", { class: "act-info", "aria-live": "polite" }, detail(dayKey(today)));
+  var grid = h("div", { class: "act-grid", role: "group", "aria-label": "Study activity by day" });
+  var months = h("div", { class: "act-months", "aria-hidden": "true" });
+  var lastMonth = -1;
+  for (var w = 0; w < weeks; w++) {
+    var col = h("div", { class: "act-col" });
+    var wk = new Date(start); wk.setDate(start.getDate() + w * 7);
+    months.appendChild(h("span", null, wk.getMonth() !== lastMonth && wk.getDate() <= 7 ? wk.toLocaleDateString(undefined, { month: "short" }) : ""));
+    if (wk.getDate() <= 7) lastMonth = wk.getMonth();
+    for (var r = 0; r < 7; r++) {
+      var day = new Date(wk); day.setDate(wk.getDate() + r);
+      var k = dayKey(day), future = day > today;
+      col.appendChild(future ? h("span", { class: "act-cell act-future" }) :
+        h("button", { type: "button", class: "act-cell l" + level(tot(k)) + (k === dayKey(today) ? " act-today" : ""), "data-k": k, "aria-label": detail(k), title: detail(k) }));
+    }
+    grid.appendChild(col);
+  }
+  grid.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-k]"); if (!b) return;
+    grid.querySelectorAll(".act-sel").forEach(function (x) { x.classList.remove("act-sel"); });
+    b.classList.add("act-sel"); info.textContent = detail(b.getAttribute("data-k"));
+  });
+  var scroller = h("div", { class: "act-scroll" }, [months, h("div", { class: "act-body" }, [
+    h("div", { class: "act-dows", "aria-hidden": "true" }, ["Mon", "", "Wed", "", "Fri", "", ""].map(function (x) { return h("span", null, x); })), grid])]);
+  setTimeout(function () { scroller.scrollLeft = scroller.scrollWidth; }, 0);
+  var flame = '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="' + (cur ? "#e8743b" : "#c3ccd6") + '" d="M12 2c1 3.5-1.6 5.3-2.9 7.2C7.8 11 7 12.6 7 14.6A5 5 0 0 0 17 15c0-2.4-1.1-4.2-2.2-5.6.2 1.6-.5 2.9-1.6 3.3.6-3.6-.2-7.4-1.2-10.7z"/></svg>';
+  return h("section", { class: "card act" }, [
+    h("div", { class: "act-top" }, [
+      h("div", { class: "act-streak" }, [h("span", { html: flame }), h("div", null, [h("b", null, cur + (cur === 1 ? " day streak" : " day streak")),
+        h("span", { class: "muted" }, cur ? (tot(dayKey(today)) ? "You studied today. Nice work." : "Study today to keep it going.") : "Answer a question to start a streak.")])]),
+      h("div", { class: "act-nums" }, [
+        h("div", null, [h("b", null, best), h("span", null, "Best streak")]),
+        h("div", null, [h("b", null, monthActive), h("span", null, "Days this month")]),
+        h("div", null, [h("b", null, t.q || 0), h("span", null, "Questions today")]),
+        opts.noCards ? null : h("div", null, [h("b", null, t.f || 0), h("span", null, "Flashcards today")])
+      ])
+    ]),
+    scroller,
+    h("div", { class: "act-foot" }, [info, h("div", { class: "act-legend", "aria-hidden": "true" }, ["Less"].concat([0, 1, 2, 3, 4].map(function (l) { return h("span", { class: "act-cell l" + l }); })).concat(["More"]))])
+  ]);
+}
 async function rpcQuiet(name, args) {
   try { var r = await sb.rpc(name, args || {}); return r.error ? null : r.data; } catch (e) { return null; }
 }
@@ -2219,6 +2357,7 @@ function showSampleHome() {
       h("p", { class: "muted", style: "margin:8px 0 0;max-width:720px" }, "Four sets of 20 full-length, ABIM-style questions, every answer choice explained. Highlight, cross out, flag and use the calculator, just like the full bank of about 1,600 questions."),
       notice
     ]),
+    activityCard(fActDays(), { weeks: 26, noCards: true }),
     FREE.sets ? h("section", { class: "card" }, [
       h("div", { class: "fmode" }, [h("div", null, [h("h2", { style: "margin:0 0 4px" }, "How do you want to practice?"),
         h("p", { class: "small muted", style: "margin:0" }, "Applies when you start or restart a set.")]),

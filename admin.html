@@ -58,6 +58,13 @@ td.acts .btn{padding:7px 10px;font-size:13px;margin:2px 4px 2px 0}
 .confirm{background:var(--coral-soft);border:1px solid #efc2b7;border-radius:12px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:50}
 label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2)}
+.fld{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:var(--ink2)}
+.fld input,.fld textarea{font:inherit;font-weight:400;font-size:15px;padding:10px 12px;border:1px solid #c9d5e2;border-radius:10px;color:var(--navy);width:100%;box-sizing:border-box}
+.fld textarea{resize:vertical;line-height:1.55;min-height:180px}
+.mlframe{width:100%;height:640px;border:1px solid var(--line);border-radius:12px;background:#eef5fc}
+.warn{background:#fff4dc;border:1px solid #f0d9a6;border-radius:10px;padding:10px 12px;font-size:14px;color:var(--ink2)}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.live i{width:8px;height:8px;border-radius:50%;background:#1f9a8f;display:inline-block}
 .bars{display:flex;flex-direction:column;gap:8px}
 .bar{display:grid;grid-template-columns:minmax(120px,210px) 1fr 44px;gap:10px;align-items:center;font-size:14px}
 .bar .track{height:12px;background:var(--sky);border-radius:6px;overflow:hidden}
@@ -93,6 +100,7 @@ async function boot(){
   app.innerHTML=`<div class="row"><h1>Admin</h1><span class="muted">${esc(u.email)} · <button class="linkbtn" data-a="out">Sign out</button></span></div>
   <section class="card"><div class="row"><h2>Website traffic</h2><a class="btn ghost" href="${GA_LINK}" target="_blank" rel="noopener">Open Google Analytics ↗</a></div><p class="muted" style="margin:0">Visitors, top pages and where traffic comes from are in Google Analytics (sign in as boardsidereviews@gmail.com).</p></section>
   <section class="card"><div class="row"><h2>How people heard about us</h2></div><div id="heard"></div></section>
+  <section class="card"><div class="row"><h2>Email your mailing list</h2><span class="muted" id="mlcount"></span></div><p class="muted" style="margin:0">It goes to everyone subscribed at the moment you press Send. Each email opens with “Dear Dr. [last name],” and ends with your signature and an Unsubscribe link, in the same design as the welcome email.</p><label class="fld">Subject<input type="text" id="mlsub" maxlength="150" placeholder="e.g. 3 high-yield ABG pearls"></label><label class="fld">Message<textarea id="mlbody" rows="10" placeholder="Write your message. Leave a blank line between paragraphs. Links become clickable automatically."></textarea></label><div id="mlwarn"></div><div class="row" style="justify-content:flex-start;gap:8px"><button class="btn ghost" data-ml="preview">Preview</button><button class="btn ghost" data-ml="test">Send me a test</button><button class="btn" data-ml="send">Send to mailing list</button></div><div id="mlconfirm"></div><div id="mlpreview"></div><div id="mlhist"></div></section>
   <section class="card"><div class="row"><h2>Accounts &amp; waitlist</h2><span class="row" style="gap:8px;justify-content:flex-end"><button class="btn ghost" data-csv="waitlist">Download waitlist (CSV)</button><button class="btn ghost" data-csv="mailing">Download mailing list (CSV)</button></span></div><p class="muted" style="margin:0">Everyone with a question bank account is on the launch waitlist. The mailing list is only people who ticked the box. Leaderboard-only sign-ins aren't on either list.</p><div id="acctsum" class="muted"></div><div class="tablebox" id="accounts"></div></section>
   <section class="card"><div class="row"><h2>Players</h2><input type="search" id="q" placeholder="Search name or email" aria-label="Search players"></div><div id="confirm"></div><div class="tablebox" id="players"></div></section>
   <section class="card"><h2>Blocked words</h2><p class="muted" style="margin:0">Names containing these are rejected. Adding a word also clears any current names that match. Red words are blocked even inside longer words; the rest only as a whole word, so real names like Hancock or Nazir still work.</p>
@@ -108,11 +116,38 @@ async function load(){
   try{accounts=await BLB.rpc("admin_accounts")}catch(e){accounts=null}
   drawAccounts();
 }
+let liveTimer=null;
+async function refreshAccounts(){
+  try{accounts=await BLB.rpc("admin_accounts")}catch(e){return}
+  drawAccounts();
+}
+function startLive(){
+  if(liveTimer)return;
+  liveTimer=setInterval(()=>{if(!document.hidden)refreshAccounts()},30000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshAccounts()});
+  loadHistory();
+}
+async function loadHistory(){
+  let h=[];try{h=await BLB.rpc("admin_mailing_history")}catch(e){return}
+  $("#mlhist").innerHTML=h.length?`<p class="muted" style="margin:6px 0 0;font-size:13px"><b>Recent sends:</b> ${h.map(x=>`${esc(x.subject)} (${x.test?"test":x.recipients+" people"}, ${dt(x.sent_at)})`).join(" · ")}</p>`:"";
+}
+function mlFields(){return {s:$("#mlsub").value.trim(),b:$("#mlbody").value.trim()}}
+async function mlPreview(){
+  const f=mlFields();if(!f.s||!f.b){toast("Add a subject and a message first.");return null}
+  let r;try{r=await BLB.rpc("admin_mailing_preview",{p_subject:f.s,p_body:f.b})}catch(x){toast(BLB.friendly(x));return null}
+  $("#mlcount").textContent=r.subscribers+" subscribed right now";
+  $("#mlwarn").innerHTML=r.has_address?"":`<p class="warn" style="margin:0">No postal address is set for the email footer yet. US anti-spam law (CAN-SPAM) generally expects one in marketing emails; ask your attorney, then I can add it.</p>`;
+  const fr=document.createElement("iframe");fr.className="mlframe";fr.title="Email preview";fr.setAttribute("sandbox","");fr.srcdoc=r.html;
+  $("#mlpreview").innerHTML="";$("#mlpreview").append(fr);
+  return r;
+}
 function drawAccounts(){
   if(!accounts){$("#acctsum").textContent="Couldn't load the account list.";$("#accounts").innerHTML="";$("#heard").innerHTML="";return}
-  const acc=accounts.filter(a=>a.waitlist),ml=acc.filter(a=>a.mailing_list);
-  $("#acctsum").innerHTML=`<b>${acc.length}</b> on the waitlist · <b>${ml.length}</b> on the mailing list · ${accounts.length-acc.length} leaderboard-only`;
-  $("#accounts").innerHTML=acc.length?`<table><thead><tr><th>Name</th><th>Email</th><th>Heard from</th><th>Mailing list</th><th>Verified</th><th>Joined</th></tr></thead><tbody>${acc.map(a=>`<tr><td>${esc([a.first_name,a.last_name].filter(Boolean).join(" "))}</td><td>${esc(a.email)}</td><td>${esc(heard(a))}</td><td>${a.mailing_list?"Yes":"No"}</td><td>${a.verified?"Yes":"No"}</td><td>${dt(a.created_at)}</td></tr>`).join("")}</tbody></table>`:`<p class="muted" style="padding:16px;margin:0">No accounts yet.</p>`;
+  const acc=accounts.filter(a=>a.waitlist),ml=acc.filter(a=>a.mailing_list&&a.verified);
+  if($("#mlcount"))$("#mlcount").textContent=ml.length+" subscribed right now";
+  startLive();
+  $("#acctsum").innerHTML=`<span class="live"><i></i>Live · updated ${new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit",second:"2-digit"})}</span> · <b>${acc.length}</b> on the waitlist · <b>${ml.length}</b> on the mailing list · ${accounts.length-acc.length} leaderboard-only`;
+  $("#accounts").innerHTML=acc.length?`<table><thead><tr><th>Name</th><th>Email</th><th>Heard from</th><th>Mailing list</th><th>Verified</th><th>Joined</th></tr></thead><tbody>${acc.map(a=>`<tr><td>${esc([a.first_name,a.last_name].filter(Boolean).join(" "))}</td><td>${esc(a.email)}</td><td>${esc(heard(a))}</td><td title="${esc(a.mailing_source?("Last change: "+a.mailing_source+(a.mailing_updated_at?", "+dt(a.mailing_updated_at):"")):"")}">${a.mailing_list?"Yes":"No"}${a.mailing_source==="unsubscribe link"&&!a.mailing_list?' <span class="muted" style="font-size:12px">(unsubscribed)</span>':""}</td><td>${a.verified?"Yes":"No"}</td><td>${dt(a.created_at)}</td></tr>`).join("")}</tbody></table>`:`<p class="muted" style="padding:16px;margin:0">No accounts yet.</p>`;
   drawHeard(acc);
 }
 function heard(a){return a.heard_from?(a.heard_from==="Other"&&a.heard_from_other?"Other: "+a.heard_from_other:a.heard_from):"—"}
@@ -125,7 +160,7 @@ function drawHeard(acc){
 }
 function csv(kind){
   if(!accounts)return toast("Account list isn't set up yet.");
-  const rows=accounts.filter(a=>a.waitlist&&(kind!=="mailing"||a.mailing_list));
+  const rows=accounts.filter(a=>a.waitlist&&(kind!=="mailing"||(a.mailing_list&&a.verified)));
   const cell=v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
   const out=[["first_name","last_name","email","heard_from","mailing_list","verified","joined"]].concat(rows.map(a=>[a.first_name,a.last_name,a.email,a.heard_from?heard(a):"",a.mailing_list?"yes":"no",a.verified?"yes":"no",a.created_at])).map(r=>r.map(cell).join(",")).join("\n");
   const url=URL.createObjectURL(new Blob([out],{type:"text/csv"})),l=document.createElement("a");
@@ -151,6 +186,17 @@ const ACTIONS={
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.csv){csv(b.dataset.csv);return}
+  if(b.dataset.ml==="preview"){b.disabled=true;await mlPreview();b.disabled=false;return}
+  if(b.dataset.ml==="test"){const f=mlFields();if(!f.s||!f.b){toast("Add a subject and a message first.");return}
+    b.disabled=true;try{await BLB.rpc("admin_mailing_send",{p_subject:f.s,p_body:f.b,p_test:true});toast("Test sent to your inbox.");loadHistory()}catch(x){toast(BLB.friendly(x))}b.disabled=false;return}
+  if(b.dataset.ml==="send"){const r=await mlPreview();if(!r)return;
+    if(!r.subscribers){toast("Nobody is subscribed yet.");return}
+    $("#mlconfirm").innerHTML=`<div class="confirm"><span>Send <b>“${esc(mlFields().s)}”</b> to <b>${r.subscribers}</b> ${r.subscribers===1?"person":"people"} now? This can't be undone.</span><span><button class="btn danger" data-mlgo>Send now</button> <button class="btn ghost" data-mlcancel>Cancel</button></span></div>`;
+    $("#mlconfirm").scrollIntoView({block:"nearest"});return}
+  if(b.hasAttribute("data-mlcancel")){$("#mlconfirm").innerHTML="";return}
+  if(b.hasAttribute("data-mlgo")){const f=mlFields();b.disabled=true;
+    try{const r=await BLB.rpc("admin_mailing_send",{p_subject:f.s,p_body:f.b,p_test:false});$("#mlconfirm").innerHTML="";toast("Sent to "+r.sent+(r.sent===1?" person.":" people."));loadHistory()}
+    catch(x){toast(BLB.friendly(x));b.disabled=false}return}
   if(b.dataset.a==="in"){await BLB.dialog({title:"Admin sign-in",intro:"Enter your admin email. We'll send a 6-digit code."});boot();return}
   if(b.dataset.a==="out"){await BLB.signOut();boot();return}
   if(b.dataset.word){try{await BLB.rpc("admin_remove_blocked_word",{p_word:b.dataset.word});toast("Unblocked “"+b.dataset.word+"”");await load()}catch(x){toast(BLB.friendly(x))}return}
