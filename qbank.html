@@ -351,6 +351,13 @@ table.conft td.num{text-align:right;font-variant-numeric:tabular-nums}
 .summ .blk .tk{margin-top:6px;font-weight:600;color:var(--teal)}
 .summ .bottom{margin-top:10px;font-weight:600;font-size:14px}
 .refs{font-size:12px;color:var(--muted)}
+.refs{white-space:pre-line}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.refs a.reflink{color:var(--teal,#0D7070);text-decoration:underline;text-decoration-color:rgba(13,112,112,.35);text-underline-offset:2px}
+.refs a.reflink:hover{text-decoration-color:currentColor}
+.refs a.reflink:focus-visible{outline:2px solid var(--teal,#0D7070);outline-offset:2px;border-radius:2px}
+.refs a.reflink svg{width:10px;height:10px;margin-left:3px;vertical-align:-1px}
+body.dark .refs a.reflink{color:#6fd3c6;text-decoration-color:rgba(111,211,198,.4)}
 
 /* navigator */
 .nav{position:fixed;inset:0;z-index:50;background:rgba(8,16,30,.45);display:flex;justify-content:flex-end}
@@ -2230,8 +2237,8 @@ function explanationEl(q) {
     (ex.details && Object.keys(ex.details).length) ? h("p", { class: "reasons-hint" }, SET.expand ? "In-depth explanations are expanded (change this in Settings). Tap a choice to collapse it." : "Tap any choice to see the in-depth explanation, or turn on \u201cExpand in-depth explanations\u201d in Settings.") : null,
     reasons,
     ex.pearl ? h("div", { class: "pearl" }, [h("strong", null, "Teaching pearl"), ex.pearl]) : null
-  ].concat((ex.summaries || []).map(summaryEl)).concat([
-    ex.references ? h("div", { class: "refs" }, [h("b", null, "References: "), ex.references]) : null,
+  ].concat((ex.summaries || []).map(function (sm) { return summaryEl(sm, ex.ref_links); })).concat([
+    ex.references ? h("div", { class: "refs" }, [h("b", null, "References: ")].concat(linkRefs(ex.references, ex.ref_links))) : null,
     concernEl(q)
   ]));
 }
@@ -2247,7 +2254,31 @@ function concernEl(q) {
     h("small", null, "Opens an email to " + SUPPORT + " with Question ID " + (rv.num || "") + " filled in.")
   ]);
 }
-function summaryEl(s) {
+// References: each cited paper opens its verified source (PubMed or the official guideline page) in a new tab.
+// links = [{t: exact citation text, u: url}]; the citation text shown is never changed, only wrapped in a link.
+function linkRefs(text, links) {
+  text = String(text || "");
+  var hits = [];
+  (Array.isArray(links) ? links : []).forEach(function (l) {
+    if (!l || !l.t || !/^https:\/\//.test(l.u || "")) return;
+    var from = 0, i;
+    while ((i = text.indexOf(l.t, from)) !== -1) { hits.push({ i: i, n: l.t.length, u: l.u }); from = i + l.t.length; }
+  });
+  hits.sort(function (a, b) { return a.i - b.i || b.n - a.n; });
+  var out = [], pos = 0;
+  hits.forEach(function (x) {
+    if (x.i < pos) return; // overlapping match: keep the first
+    if (x.i > pos) out.push(text.slice(pos, x.i));
+    out.push(h("a", { class: "reflink", href: x.u, target: "_blank", rel: "noopener noreferrer",
+      title: "Open this reference in a new tab" }, [text.substr(x.i, x.n),
+      h("span", { "aria-hidden": "true", html: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 1.5h3.5V5M10.5 1.5 5.5 6.5M9 7.5v3H1.5V3h3"/></svg>' }),
+      h("span", { class: "sr" }, " (opens in a new tab)")]));
+    pos = x.i + x.n;
+  });
+  if (pos < text.length) out.push(text.slice(pos));
+  return out;
+}
+function summaryEl(s, links) {
   var kids = [s.title ? h("h4", null, s.title) : null];
   if (s.table) {
     var t = h("table");
@@ -2260,7 +2291,7 @@ function summaryEl(s) {
       b.takeaway ? h("div", { class: "tk" }, b.takeaway) : null]);
   })));
   if (s.bottom) kids.push(h("div", { class: "bottom" }, s.bottom));
-  if (s.refs) kids.push(h("div", { class: "refs", style: "margin-top:8px" }, s.refs));
+  if (s.refs) kids.push(h("div", { class: "refs", style: "margin-top:8px" }, linkRefs(s.refs, links)));
   return h("div", { class: "summ" }, kids);
 }
 
