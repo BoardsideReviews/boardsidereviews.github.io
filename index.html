@@ -227,6 +227,8 @@ nav .links a.acct-item,.acct-item{display:flex;flex-direction:column;align-items
 .dd-btn svg{transition:transform .15s}
 .dd.open .dd-btn svg{transform:rotate(180deg)}
 .dd-btn:focus-visible,.dd-menu a:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:6px}
+.dd-btn{text-decoration:none}
+#games-menu{display:none!important}
 .dd-menu{display:none;position:absolute;top:100%;left:-12px;z-index:30;padding-top:12px;width:300px;max-width:calc(100vw - 32px)}
 .dd.open .dd-menu{display:block}
 @media (hover:hover){.dd:hover .dd-menu{display:block}.dd:hover .dd-btn{color:var(--teal)}}
@@ -266,8 +268,8 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <a href="#free">Free Material</a>
 <a href="qbank.html">Question Bank</a>
 <div class="dd" id="games-dd">
-<button class="dd-btn" type="button" aria-expanded="false" aria-controls="games-menu">Gamified Learning<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
-<div class="dd-menu" id="games-menu"><div class="dd-panel">
+<a class="dd-btn" href="games.html">Gamified Learning</a>
+<div class="dd-menu" id="games-menu" hidden><div class="dd-panel">
 <a class="dd-all dd-top" href="games.html">All games →</a>
 <!-- Games: add a new <a class="dd-item"> line here for each new game -->
 <a class="dd-item" href="crossword.html"><span class="dd-ic dd-cc" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" fill="#fffdf8" stroke="#14233a" stroke-width="2"/><path d="M8.3 1v22M15.6 1v22M1 8.3h22M1 15.6h22" stroke="#b7ab92" stroke-width="1"/><rect x="15.6" y="1" width="7.4" height="7.3" fill="#14233a"/><rect x="1" y="15.6" width="7.3" height="7.4" fill="#14233a"/><rect x="8.3" y="8.3" width="7.3" height="7.3" fill="#f5c451"/></svg></span><span class="dd-txt"><b>Cross-Cover</b><small>Daily 6×6 medical crossword</small></span></a>
@@ -474,17 +476,6 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 </div>
 </div>
 </footer>
-<script>
-(function(){
-  var dd=document.getElementById('games-dd'); if(!dd) return;
-  var btn=dd.querySelector('.dd-btn');
-  function set(o){dd.classList.toggle('open',o);btn.setAttribute('aria-expanded',o?'true':'false');}
-  btn.addEventListener('click',function(e){e.stopPropagation();set(!dd.classList.contains('open'));});
-  document.addEventListener('click',function(e){if(!dd.contains(e.target))set(false);});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&dd.classList.contains('open')){set(false);btn.focus();}});
-  dd.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){set(false);});});
-})();
-</script>
 <script>
 (function(){
   var pk=document.getElementById('game-picker'); if(!pk) return;
