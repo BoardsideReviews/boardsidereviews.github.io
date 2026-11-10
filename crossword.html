@@ -53,6 +53,10 @@ a{color:inherit}
 .iconbtn:hover{background:var(--paper2)}
 @media (max-width:560px){.brand span{display:none}.title .dateline{font-size:10.5px;letter-spacing:.08em}.timer{font-size:16px;min-width:48px}.iconbtn{width:32px;height:32px}}
 
+.nextline{margin-top:5px;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--teal);background:var(--teal-lo);border:1px solid #b9ddd7;border-radius:999px;padding:3px 10px;font-variant-numeric:tabular-nums}
+.nextline:empty{display:none}
+.nextline a{color:inherit;font-weight:800}
+@media (max-width:560px){.nextline{font-size:11px;padding:2px 8px}}
 .dl-short{display:none}
 @media (max-width:560px){.dl-long{display:none}.dl-short{display:inline}}
 .preview{background:var(--amber);color:var(--ink);text-align:center;font-size:13px;font-weight:700;padding:6px 12px}
@@ -175,7 +179,7 @@ body.veiled .lists,body.veiled .cluebar .txt{filter:blur(7px);pointer-events:non
 <body>
 <header class="mast"><div class="in">
   <a class="brand" href="/" aria-label="Boardside Reviews home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg><span>Boardside Reviews</span></a>
-  <div class="title"><h1>Cross<i>-</i>Cover</h1><div class="dateline" id="dateline">The daily medical mini</div></div>
+  <div class="title"><h1>Cross<i>-</i>Cover</h1><div class="dateline" id="dateline">The daily medical mini</div><div class="nextline" id="nextline" aria-live="off"></div></div>
   <div class="clock"><span class="timer" id="timer" aria-label="Elapsed time">0:00</span><button class="iconbtn" id="pauseBtn" type="button" aria-label="Pause" hidden><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.4" height="12" rx="1" fill="currentColor"/><rect x="8.6" y="1" width="3.4" height="12" rx="1" fill="currentColor"/></svg></button></div>
 </div></header>
 <div class="preview" id="previewBar" hidden></div>
@@ -566,6 +570,22 @@ async function postTime(){
     $('#postNote').innerHTML = '<p class="note err">' + esc(BLB.friendly(e)) + '</p>';
   }
 }
+
+// Countdown to the next puzzle (midnight, California time), always shown under the date.
+(function(){
+  var el = $('#nextline'); if (!el) return;
+  function paint(){
+    if (PREVIEW) { el.textContent = ''; return; }
+    if (X.todayLA() !== today) {
+      // New day: reload straight into the new puzzle unless someone is mid-solve.
+      if (!S || !S.started || S.done) { location.reload(); return; }
+      el.innerHTML = 'New puzzle is out · <a href="crossword.html">Play it</a>';
+      return;
+    }
+    el.textContent = 'Next puzzle in ' + fmt(X.msUntilNextLA() / 1000);
+  }
+  paint(); setInterval(paint, 1000);
+})();
 
 // Let the loading text paint, then build.
 setTimeout(function(){

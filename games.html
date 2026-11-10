@@ -65,6 +65,7 @@ h1 span{color:var(--teal)}
 .play{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:14px;border-top:1px solid #eef2f6;font-weight:600;font-size:15px;color:var(--teal)}
 .play svg{transition:transform .15s}
 .card:hover .play svg{transform:translateX(4px)}
+.meta span.cc-next{background:#e2f3f1;color:#0d7070;font-variant-numeric:tabular-nums}
 .fine{font-size:13px;color:var(--muted);text-align:center;padding-bottom:48px;margin:0}
 footer{border-top:1px solid #e3ebf3}
 footer .wrap{padding-block:26px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between}
@@ -146,7 +147,7 @@ footer a{text-decoration:none;color:var(--ink2)}
 <div class="cc-title">Cross<em>-</em><br>Cover<small>THE DAILY<br>MEDICAL MINI</small></div>
 </div></div>
 <div class="body"><h2>Cross-Cover</h2><p>A brand-new 6×6 medical crossword every midnight, California time. Race the clock, then post your fastest clean solve.</p>
-<div class="meta"><span>Daily puzzle</span><span>Fastest-time leaderboard</span></div>
+<div class="meta"><span class="cc-next" id="ccNext">Daily puzzle</span><span>Fastest-time leaderboard</span></div>
 <div class="play">Play today's puzzle<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div></div>
 </a>
 
@@ -215,5 +216,25 @@ footer a{text-decoration:none;color:var(--ink2)}
 </main>
 
 <footer><div class="wrap"><span>© 2026 Boardside Reviews™ · Not affiliated with or endorsed by ABIM.</span><a href="mailto:support@boardsidereviews.com">support@boardsidereviews.com</a></div></footer>
+<script>
+// Cross-Cover: live countdown to the next puzzle (midnight, California time)
+(function(){
+  var el = document.getElementById('ccNext'); if (!el || !window.Intl) return;
+  function laParts(t){ var o = {}; new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }).formatToParts(new Date(t)).forEach(function(p){ o[p.type] = p.value; }); return o; }
+  function day(t){ var o = laParts(t); return o.year + o.month + o.day; }
+  function msLeft(){
+    var t = Date.now(), o = laParts(t), d = day(t);
+    var g = t + (86400 - (+o.hour * 3600 + +o.minute * 60 + +o.second)) * 1000 - t % 1000;
+    for (var k = 0; k < 4 && day(g) === d; k++) g += 3600e3;          // daylight-saving days
+    for (var j = 0; j < 4 && day(g - 3600e3) !== d; j++) g -= 3600e3;
+    return Math.max(0, g - t);
+  }
+  function paint(){
+    var s = Math.floor(msLeft() / 1000), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+    el.textContent = 'New puzzle in ' + h + ':' + String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0');
+  }
+  paint(); setInterval(paint, 1000);
+})();
+</script>
 </body>
 </html>
