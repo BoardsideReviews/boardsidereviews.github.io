@@ -86,7 +86,7 @@ label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const dt=d=>d?new Date(d).toLocaleString(undefined,{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}):"—";
-let players=[],words=[],accounts=null,q="",pending=null;
+let players=[],words=[],accounts=null,q="",mq="",pending=null,mlScrolled=false;
 const GA_LINK="https://analytics.google.com/analytics/web/";
 function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2600)}
 
@@ -98,6 +98,7 @@ async function boot(){
   let ok=false;try{ok=await BLB.rpc("is_admin")}catch(e){}
   if(!ok){app.innerHTML=`<h1>Admin</h1><div class="card"><span>${esc(u.email)} doesn't have admin access.</span><div><button class="btn ghost" data-a="out">Sign out</button></div></div>`;return}
   app.innerHTML=`<div class="row"><h1>Admin</h1><span class="muted">${esc(u.email)} · <button class="linkbtn" data-a="out">Sign out</button></span></div>
+  <section class="card" id="mailing"><div class="row"><h2>Mailing list</h2><span class="row" style="gap:8px;justify-content:flex-end"><input type="search" id="mq" placeholder="Search name or email" aria-label="Search the mailing list" style="max-width:240px"><button class="btn ghost" data-csv="mailing">Download (CSV)</button></span></div><div id="mlsum" class="muted"></div><div class="tablebox" id="mltable"></div><div id="mlgone"></div></section>
   <section class="card"><div class="row"><h2>Website traffic</h2><a class="btn ghost" href="${GA_LINK}" target="_blank" rel="noopener">Open Google Analytics ↗</a></div><p class="muted" style="margin:0">Visitors, top pages and where traffic comes from are in Google Analytics (sign in as boardsidereviews@gmail.com).</p></section>
   <section class="card"><div class="row"><h2>How people heard about us</h2></div><div id="heard"></div></section>
   <section class="card"><div class="row"><h2>Email your mailing list</h2><span class="muted" id="mlcount"></span></div><p class="muted" style="margin:0">It goes to everyone subscribed at the moment you press Send. Each email opens with “Dear Dr. [last name],” and ends with your signature and an Unsubscribe link, in the same design as the welcome email.</p><label class="fld">Subject<input type="text" id="mlsub" maxlength="150" placeholder="e.g. 3 high-yield ABG pearls"></label><label class="fld">Message<textarea id="mlbody" rows="10" placeholder="Write your message. Leave a blank line between paragraphs. Links become clickable automatically."></textarea></label><div id="mlwarn"></div><div class="row" style="justify-content:flex-start;gap:8px"><button class="btn ghost" data-ml="preview">Preview</button><button class="btn ghost" data-ml="test">Send me a test</button><button class="btn" data-ml="send">Send to mailing list</button></div><div id="mlconfirm"></div><div id="mlpreview"></div><div id="mlhist"></div></section>
@@ -106,6 +107,7 @@ async function boot(){
   <section class="card"><h2>Blocked words</h2><p class="muted" style="margin:0">Names containing these are rejected. Adding a word also clears any current names that match. Red words are blocked even inside longer words; the rest only as a whole word, so real names like Hancock or Nazir still work.</p>
   <form id="wf" class="row" style="justify-content:flex-start"><input type="text" id="w" placeholder="Add a word" aria-label="Word to block" maxlength="30"><label class="chk"><input type="checkbox" id="wany"> Also inside longer words</label><button class="btn">Add</button></form><div class="words" id="words"></div></section>`;
   $("#q").addEventListener("input",e=>{q=e.target.value.toLowerCase();drawPlayers()});
+  $("#mq").addEventListener("input",e=>{mq=e.target.value.toLowerCase();drawMailing()});
   $("#wf").addEventListener("submit",async e=>{e.preventDefault();const v=$("#w").value.trim().toLowerCase();if(!/^[a-z]{2,30}$/.test(v)){toast("Use 2–30 letters, no spaces.");return}
     try{await BLB.rpc("admin_add_blocked_word",{p_word:v,p_anywhere:$("#wany").checked});$("#w").value="";toast("Blocked “"+v+"”");await load()}catch(x){toast(BLB.friendly(x))}});
   await load();
@@ -123,7 +125,7 @@ async function refreshAccounts(){
 }
 function startLive(){
   if(liveTimer)return;
-  liveTimer=setInterval(()=>{if(!document.hidden)refreshAccounts()},30000);
+  liveTimer=setInterval(()=>{if(!document.hidden)refreshAccounts()},10000);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshAccounts()});
   loadHistory();
 }
@@ -149,6 +151,22 @@ function drawAccounts(){
   $("#acctsum").innerHTML=`<span class="live"><i></i>Live · updated ${new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit",second:"2-digit"})}</span> · <b>${acc.length}</b> on the waitlist · <b>${ml.length}</b> on the mailing list · ${accounts.length-acc.length} leaderboard-only`;
   $("#accounts").innerHTML=acc.length?`<table><thead><tr><th>Name</th><th>Email</th><th>Heard from</th><th>Mailing list</th><th>Verified</th><th>Joined</th></tr></thead><tbody>${acc.map(a=>`<tr><td>${esc([a.first_name,a.last_name].filter(Boolean).join(" "))}</td><td>${esc(a.email)}</td><td>${esc(heard(a))}</td><td title="${esc(a.mailing_source?("Last change: "+a.mailing_source+(a.mailing_updated_at?", "+dt(a.mailing_updated_at):"")):"")}">${a.mailing_list?"Yes":"No"}${a.mailing_source==="unsubscribe link"&&!a.mailing_list?' <span class="muted" style="font-size:12px">(unsubscribed)</span>':""}</td><td>${a.verified?"Yes":"No"}</td><td>${dt(a.created_at)}</td></tr>`).join("")}</tbody></table>`:`<p class="muted" style="padding:16px;margin:0">No accounts yet.</p>`;
   drawHeard(acc);
+  drawMailing();
+}
+// Mailing list: only people subscribed right now (verified accounts that ticked the box or turned it on in Profile info).
+// Refreshes every 10 seconds while this tab is open, and right away when you come back to the tab.
+function drawMailing(){
+  if(!$("#mltable"))return;
+  const src=s=>({"sign-up":"At sign-up","settings":"Profile info","unsubscribe link":"Unsubscribe link"})[s]||s||"—";
+  const when=a=>a.mailing_updated_at||a.created_at;
+  const subs=accounts.filter(a=>a.waitlist&&a.mailing_list&&a.verified).sort((x,y)=>new Date(when(y))-new Date(when(x)));
+  const gone=accounts.filter(a=>a.waitlist&&!a.mailing_list&&a.mailing_source&&/unsubscribe|settings/i.test(a.mailing_source)).sort((x,y)=>new Date(when(y))-new Date(when(x)));
+  const shown=subs.filter(a=>!mq||(a.email+" "+(a.first_name||"")+" "+(a.last_name||"")).toLowerCase().includes(mq));
+  $("#mlsum").innerHTML=`<span class="live"><i></i>Live · updated ${new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit",second:"2-digit"})}</span> · <b>${subs.length}</b> subscribed right now${gone.length?` · ${gone.length} opted out`:""}`;
+  $("#mltable").innerHTML=shown.length?`<table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Subscribed</th><th>How</th></tr></thead><tbody>${shown.map((a,i)=>`<tr><td class="muted">${i+1}</td><td>${esc([a.first_name,a.last_name].filter(Boolean).join(" ")||"—")}</td><td>${esc(a.email)}</td><td>${dt(when(a))}</td><td>${esc(src(a.mailing_source))}</td></tr>`).join("")}</tbody></table>`
+    :`<p class="muted" style="padding:16px;margin:0">${subs.length?"No one matches that search.":"No one is on the mailing list yet."}</p>`;
+  $("#mlgone").innerHTML=gone.length?`<details style="margin-top:4px"><summary class="muted" style="cursor:pointer">Opted out (${gone.length})</summary><div class="tablebox" style="margin-top:8px"><table><thead><tr><th>Name</th><th>Email</th><th>Opted out</th><th>How</th></tr></thead><tbody>${gone.map(a=>`<tr><td>${esc([a.first_name,a.last_name].filter(Boolean).join(" ")||"—")}</td><td>${esc(a.email)}</td><td>${dt(when(a))}</td><td>${esc(src(a.mailing_source))}</td></tr>`).join("")}</tbody></table></div></details>`:"";
+  if(!mlScrolled&&location.hash==="#mailing"){mlScrolled=true;$("#mailing").scrollIntoView({behavior:"smooth",block:"start"})}
 }
 function heard(a){return a.heard_from?(a.heard_from==="Other"&&a.heard_from_other?"Other: "+a.heard_from_other:a.heard_from):"—"}
 function drawHeard(acc){
