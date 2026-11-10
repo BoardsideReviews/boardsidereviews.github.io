@@ -395,6 +395,47 @@ body.dark .qrail button.cur{outline-color:#9fc3ea}
 .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line)}
 
+/* clinical data in the stem: vitals and labs laid out as tables (text unchanged; separators kept but hidden) */
+.data .hid{display:none}
+.data .dline+.dline,.data .dline+.dgrp,.data .dgrp+.dline,.data .dgrp+.dgrp{margin-top:10px}
+.data .dlab{display:block;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.data .dtab{display:grid;column-gap:28px;background:#fff;border:1px solid #e3ebf3;border-radius:10px;padding:2px 14px}
+.data .drow{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:7px 0;border-bottom:1px solid #edf2f7;font-size:.94em;line-height:1.4}
+.data .dn{display:inline-block;color:var(--ink2)}
+.data .dn::first-letter{text-transform:uppercase}
+.data .dv{font-weight:650;text-align:right;font-variant-numeric:tabular-nums;color:#14263f}
+.data .drow.full{display:block}
+.data .dtab:not(.vit):not(.one){grid-template-columns:repeat(2,minmax(0,1fr))}
+.data .dtab.one{grid-template-columns:1fr;max-width:480px}
+.data .dtab.vit{grid-template-columns:repeat(auto-fill,minmax(128px,1fr));column-gap:18px}
+.data .vit .drow{flex-direction:column;align-items:flex-start;gap:1px;border-bottom:0;padding:8px 0}
+.data .vit .dn{font-size:12px;font-weight:600;color:var(--muted)}
+.data .vit .dv{text-align:left;font-size:1.05em}
+@media (max-width:560px){.data .dtab,.data .dtab:not(.vit):not(.one){grid-template-columns:1fr;padding:2px 12px;max-width:none}.data .dtab.vit{grid-template-columns:repeat(2,1fr)}}
+.fc-face .data{margin:0 0 10px;padding:10px 12px;background:var(--sky2);border:1px solid #e3ebf3;border-radius:10px;font-size:calc(14px * var(--tz,1))}
+
+/* lab values panel */
+.labs{position:fixed;top:64px;right:14px;bottom:52px;z-index:58;width:420px;max-width:calc(100vw - 28px);display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 48px rgba(11,37,69,.22);overflow:hidden}
+.labs .lhd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px 8px}
+.labs .lhd b{font-size:16px;color:var(--navy)}
+.labs .lhd button{background:none;border:0;font-size:22px;line-height:1;color:var(--muted);padding:2px 6px;border-radius:8px}
+.labs .lsearch{margin:0 14px 8px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px;width:calc(100% - 28px)}
+.labs .lsearch:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+.labs .lbody{flex:1;overflow:auto;padding:0 14px 8px;overscroll-behavior:contain}
+.labs table{width:100%;border-collapse:collapse;font-size:13.5px;line-height:1.4}
+.labs td{padding:6px 4px;border-bottom:1px solid #edf2f7;vertical-align:top}
+.labs td:first-child{color:var(--ink2);width:52%}
+.labs td:last-child{font-weight:600;color:#14263f}
+.labs tr.lv1 td:first-child{padding-left:18px}
+.labs tr.lv2 td:first-child{padding-left:32px}
+.labs tr.grp td{font-weight:700;color:var(--navy)}
+.labs tr.letter td{position:sticky;top:0;background:var(--sky);color:var(--teal);font-weight:800;font-size:12px;padding:4px 6px;border-bottom:0;z-index:1}
+.labs .see{background:none;border:0;padding:0;color:var(--teal);font:inherit;font-weight:600;text-decoration:underline;text-underline-offset:2px;cursor:pointer;text-align:left}
+.labs .lempty{color:var(--muted);font-size:14px;padding:16px 4px}
+.labs .lfoot{border-top:1px solid var(--line);padding:9px 14px;font-size:11.5px;color:var(--muted);background:var(--sky2)}
+.labs .lfoot a{color:var(--teal)}
+@media (max-width:760px){.labs{top:auto;left:8px;right:8px;bottom:calc(84px + env(safe-area-inset-bottom));height:72vh;width:auto;max-width:none}}
+
 /* calculator */
 .calc{position:fixed;right:18px;bottom:54px;z-index:60;width:248px;background:#152f52;border-radius:16px;box-shadow:0 18px 48px rgba(0,0,0,.35);color:#fff;user-select:none;touch-action:none}
 .calc .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 12px 4px;cursor:move;font-size:13px;font-weight:600;opacity:.85}
@@ -553,6 +594,18 @@ body.dark .pill{background:#3b2f12;color:#f3cf7a}
 body.dark .pill.done{background:#0f3f3d;color:#9fe8de}
 body.dark .exp{border-top-color:#3a5070}
 body.dark .stem mark{color:#111}
+body.dark .data .dtab{background:#0f1b2e;border-color:#2a3d58}
+body.dark .data .drow{border-color:#22344d}
+body.dark .data .dn,body.dark .data .dlab,body.dark .data .vit .dn{color:#9fb0c6}
+body.dark .data .dv{color:#eef4fb}
+body.dark .fc-face .data{background:#122036;border-color:#2a3d58}
+body.dark .labs{background:#0f1b2e;border-color:#2a3d58}
+body.dark .labs .lhd b,body.dark .labs tr.grp td,body.dark .labs td:last-child{color:#eef4fb}
+body.dark .labs td{border-color:#22344d}
+body.dark .labs td:first-child,body.dark .labs .lempty,body.dark .labs .lfoot{color:#9fb0c6}
+body.dark .labs .lsearch{background:#122036;border-color:#2a3d58;color:#eef4fb}
+body.dark .labs tr.letter td{background:#122036}
+body.dark .labs .lfoot{background:#0b1626;border-color:#2a3d58}
 body.dark .btn.danger{color:#f19a88;border-color:#6b3a33}
 body.dark .link,body.dark .subjtag{color:var(--teal-bright)}
 body.dark .verdictbar.ok{color:#5fd3a0}
@@ -583,6 +636,7 @@ var ICON = {
   calc: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="1.5" width="10" height="13" rx="2"/><path d="M5.5 4.5h5M5.5 8h.01M8 8h.01M10.5 8h.01M5.5 11h.01M8 11h.01M10.5 11h.01" stroke-linecap="round" stroke-width="1.9"/></svg>',
   grid: '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2"/><rect x="9" y="9" width="5.5" height="5.5" rx="1.2"/></svg>',
   gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  flask: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.2L4.8 18.4A1.8 1.8 0 0 0 6.4 21h11.2a1.8 1.8 0 0 0 1.6-2.6L14 9.2V3"/><path d="M7.5 15h9"/></svg>',
   zoom: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21M8 10.5h5M10.5 8v5"/></svg>',
   full: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
   unfull: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
@@ -1176,6 +1230,7 @@ function screen(nodes, playing, keepScroll) {
   var y = window.scrollY;
   document.body.classList.toggle("playing", !!playing);
   document.querySelectorAll(".calc").forEach(function (c) { c.remove(); });
+  saveLabsState(); document.querySelectorAll(".labs").forEach(function (c) { c.remove(); });
   app.innerHTML = "";
   (Array.isArray(nodes) ? nodes : [nodes]).forEach(function (n) { if (n) app.appendChild(n); });
   window.scrollTo(0, keepScroll ? y : 0);
@@ -1576,7 +1631,7 @@ function fcRender() {
   var face = [h("div", { class: "subjtag" }, "Question ID " + c.num + " · " + c.subject)]
     .concat(tag ? [h("p", { class: "fc-tag" + (c.sure_wrong ? " warn" : "") }, tag)] : [])
     .concat(paras(c.stem || "").map(function (t) { return h("p", null, t); }))
-    .concat((c.data && c.data.length) ? [h("ul", { class: "fc-data" }, c.data.map(function (d) { return h("li", null, d); }))] : [])
+    .concat((c.data && c.data.length) ? [dataEl(c.data)] : [])
     .concat([h("p", { class: "fc-ask" }, c.ask || "")]);
   var back = FC.back ? [
     h("div", { class: "fc-ans" }, [h("b", null, "Answer: " + c.answer + ". "), c.answer_text || ""]),
@@ -1837,6 +1892,7 @@ function renderPlayer(keep) {
     done() ? null : h("span", { class: "clock", id: "clock", title: b.timed ? "Time left" : "Time spent" },
       b.timed ? fmtTime(remaining()) : fmtTime(P.elapsed)),
     h("button", { class: "tbtn", "aria-pressed": String(P.calc), title: "Calculator", "aria-label": "Calculator", onclick: toggleCalc, html: ICON.calc }),
+    h("button", { class: "tbtn", "aria-pressed": String(!!P.labs), title: "Lab values", "aria-label": "Lab values", onclick: toggleLabs, html: ICON.flask }),
     h("button", { class: "tbtn", title: "Text size", "aria-label": "Text size", onclick: openTextSize, html: ICON.zoom }),
     fsSupported() ? h("button", { class: "tbtn", title: fsOn() ? "Exit full screen" : "Full screen", "aria-label": fsOn() ? "Exit full screen" : "Full screen", onclick: toggleFullscreen,
       html: fsOn() ? ICON.unfull : ICON.full }) : null,
@@ -1868,13 +1924,140 @@ function renderPlayer(keep) {
   screen([bar, railEl(), h("div", { class: "pmain" }, main)], true, keep);
   placeRail();
   if (P.calc) mountCalc();
+  if (P.labs) mountLabs();
+}
+
+// ───────────────────────── clinical data (vitals, labs) as tables ─────────────────────────
+// Each data line looks like "Labs: hemoglobin 14.3 g/dL · creatinine 1.0 mg/dL". Lines whose items read as
+// "test value" become a table; everything else (exam, ECG, imaging) stays a plain line. Every character of the
+// original line is kept in order (separators are hidden, not removed), so highlights keep their positions.
+var DATA_VAL = /^(?:[<>≤≥~≈]\s?)?[−–-]?\.?\d|^(?:negative|positive|normal|undetectable|absent|present|elevated|low|high|none|not detected|detected|nonreactive|reactive|trace|pending|unremarkable)\b/i;
+var DATA_NARR = /^(?:examination|exam|history|ecg|imaging|chest|ct|mri|ultrasound|echocardiogram|urinalysis|cognition|mental status|wound|pathology|biopsy)\b/i;
+var DATA_NUM = /^(?:[<>≤≥~≈]\s?)?[−–-]?\.?\d/;
+var DATA_NAME_STOP = /(?:\b(?:CA|type|grade|class|stage|leads?|factor|day|days|week|weeks|hour|hours|month|months|year|years|and|or|of|to|at|with|in|on|after|before|over|than|from|by|per|x|×)|[-–/(+=])$/i;
+var VITAL_NAME = /^(?:BP|blood pressure|pulse|pulse rate|HR|heart rate|respiration rate|respiratory rate|RR|temperature|temp|core temperature|SpO2|SpO₂|oxygen saturation|O2 saturation|MAP|weight|height|BMI|GCS)\b/i;
+function dataSplit(s) {
+  var re = /\s+/g, m;
+  while ((m = re.exec(s))) {
+    var name = s.slice(0, m.index), val = s.slice(m.index + m[0].length);
+    if (name && val && DATA_VAL.test(val) && !DATA_NAME_STOP.test(name)) return [name, m[0], val];
+  }
+  return null;
+}
+function dataParse(line) {
+  var lab = /^([^:·]{1,60}?)(:\s+)(?=\S)/.exec(line), label = lab ? lab[1] : null, lsep = lab ? lab[2] : "";
+  var rest = lab ? line.slice(lab[0].length) : line, items = rest.split(" · ");
+  if (lab && items.length === 1 && DATA_NUM.test(rest) && !DATA_NARR.test(label)) return { kind: "row", label: label, lsep: lsep, cells: [[label, lsep, rest]] };
+  var cells = items.map(dataSplit), first = false;
+  if (lab && items.length >= 2 && !cells[0] && DATA_NUM.test(items[0]) && !DATA_NARR.test(label)) { cells[0] = [label, lsep, items[0]]; first = true; }  // "Creatinine: 1.6 mg/dL · K 5.2 mEq/L"
+  var ok = cells.filter(Boolean).length;
+  if (!lab && items.length === 1 && ok === 1 && DATA_NUM.test(cells[0][2])) return { kind: "row", label: null, lsep: "", cells: [cells[0]] };
+  if ((items.length === 1 && lab && ok === 1 && DATA_NUM.test(cells[0][2])) || (items.length >= 2 && ok >= Math.max(2, Math.ceil(items.length * 0.75))))
+    return { kind: "table", label: first ? null : label, lsep: first ? "" : lsep, items: items, cells: cells };
+  return { kind: "line" };
+}
+function dataRow(c, raw) {
+  return c ? h("div", { class: "drow" }, [h("span", { class: "dn" }, c[0]), h("span", { class: "hid" }, c[1]), h("span", { class: "dv" }, c[2])])
+           : h("div", { class: "drow full" }, h("span", null, raw));
+}
+function dataEl(lines) {
+  var box = h("div", { class: "data" }), rows = null;
+  function flush() { rows = null; }
+  (lines || []).forEach(function (line) {
+    line = String(line == null ? "" : line);
+    var p = dataParse(line);
+    if (p.kind === "row") {
+      if (!rows) { rows = h("div", { class: "dtab one" }); box.appendChild(h("div", { class: "dgrp" }, rows)); }
+      var c = p.cells[0];
+      rows.appendChild(p.label ? h("div", { class: "drow" }, [h("span", { class: "dn" }, c[0]), h("span", { class: "hid" }, c[1]), h("span", { class: "dv" }, c[2])]) : dataRow(c, line));
+      return;
+    }
+    flush();
+    if (p.kind === "line") { box.appendChild(h("div", { class: "dline" }, line)); return; }
+    var vit = (p.label && /^vital|^vitals\b|^other vital/i.test(p.label)) ||
+      p.cells.every(function (c) { return !c || VITAL_NAME.test(c[0]); });
+    var tab = h("div", { class: "dtab" + (vit ? " vit" : p.items.length <= 3 ? " one" : "") });
+    p.items.forEach(function (it, i) {
+      if (i) tab.appendChild(h("span", { class: "hid" }, " · "));
+      tab.appendChild(dataRow(p.cells[i], it));
+    });
+    box.appendChild(h("div", { class: "dgrp" }, [p.label ? h("span", { class: "dlab" }, p.label) : null,
+      p.label ? h("span", { class: "hid" }, p.lsep) : null, tab]));
+  });
+  return box;
+}
+
+// ───────────────────────── lab values panel (beside the calculator) ─────────────────────────
+var LABS = { q: "", top: 0, loading: false };
+function toggleLabs() { P.labs = !P.labs; if (!P.labs) { LABS.q = ""; LABS.top = 0; } renderPlayer(true); }
+function saveLabsState() { var b = $(".labs .lbody"), i = $(".labs .lsearch"); if (b) LABS.top = b.scrollTop; if (i) LABS.q = i.value; }
+function labText(s) {   // "{^8}" superscript, "{_2}" subscript
+  var out = [], re = /\{([\^_])([^}]*)\}/g, at = 0, m;
+  while ((m = re.exec(s))) { if (m.index > at) out.push(s.slice(at, m.index)); out.push(h(m[1] === "^" ? "sup" : "sub", null, m[2])); at = m.index + m[0].length; }
+  if (at < s.length) out.push(s.slice(at));
+  return out;
+}
+function labPlain(s) { return String(s).replace(/\{[\^_]([^}]*)\}/g, "$1"); }
+function mountLabs() {
+  if (!window.BSR_LABS) {
+    if (!LABS.loading) {
+      LABS.loading = true;
+      var sc = document.createElement("script"); sc.src = "lab-ranges.js?v=20261110";
+      sc.onload = function () { LABS.loading = false; if (P && P.labs) mountLabs(); };
+      sc.onerror = function () { LABS.loading = false; toast("Couldn't load the lab values. Check your connection and try again."); };
+      document.head.appendChild(sc);
+    }
+    return;
+  }
+  document.querySelectorAll(".labs").forEach(function (c) { c.remove(); });
+  var D = window.BSR_LABS, rows = D.rows;
+  var input = h("input", { class: "lsearch", type: "search", placeholder: "Search, e.g. sodium, TSH, ferritin", "aria-label": "Search lab values", autocomplete: "off", spellcheck: "false" });
+  input.value = LABS.q;
+  var body = h("div", { class: "lbody" });
+  var panel = h("div", { class: "labs", role: "dialog", "aria-label": "Lab values" }, [
+    h("div", { class: "lhd" }, [h("b", null, "Lab values"), h("button", { "aria-label": "Close lab values", title: "Close", onclick: toggleLabs }, "×")]),
+    input, body,
+    h("div", { class: "lfoot" }, ["Reference ranges: ", h("a", { href: D.source, target: "_blank", rel: "noopener noreferrer" }, D.title), ", the ranges used on the ABIM exam."])
+  ]);
+  // parents of every row, so a match on a sub-row shows its group, and a match on a group shows its sub-rows
+  var par = [], stack = [];
+  rows.forEach(function (r, i) { while (stack.length && rows[stack[stack.length - 1]][2] >= r[2]) stack.pop(); par[i] = stack.slice(); stack.push(i); });
+  function draw() {
+    var q = input.value.trim().toLowerCase(), show = {};
+    rows.forEach(function (r, i) {
+      if (!q) { show[i] = 1; return; }
+      var hay = (labPlain(r[0]) + " " + r[1].map(labPlain).join(" ")).toLowerCase();
+      var anc = par[i].map(function (k) { return labPlain(rows[k][0]).toLowerCase(); }).join(" ");
+      if (hay.indexOf(q) >= 0 || anc.indexOf(q) >= 0) { show[i] = 1; par[i].forEach(function (k) { show[k] = 1; }); }
+    });
+    var tb = h("tbody"), last = "", n = 0;
+    rows.forEach(function (r, i) {
+      if (!show[i]) return;
+      n++;
+      if (r[2] === 0) {
+        var L = /^[A-Za-z]/.test(labPlain(r[0])) ? labPlain(r[0]).charAt(0).toUpperCase() : "#";
+        if (!q && L !== last) { tb.appendChild(h("tr", { class: "letter" }, h("td", { colspan: "2" }, L))); last = L; }
+      }
+      var see = r[1].length && /^See /.test(r[1][0]) ? r[1].join(" ").replace(/^See\s+/, "") : null;
+      var val = see ? [h("span", null, "See "), h("button", { class: "see", type: "button", onclick: function () { input.value = labPlain(see).replace(/,?\s*(serum|urine|plasma)$/i, ""); draw(); body.scrollTop = 0; } }, labText(see))]
+                    : r[1].map(function (x, k) { return [k ? h("br") : null].concat(labText(x)); }).reduce(function (a, b) { return a.concat(b); }, []);
+      tb.appendChild(h("tr", { class: "lv" + r[2] + (r[1].length ? "" : " grp") }, [h("td", null, labText(r[0])), h("td", null, val)]));
+    });
+    body.innerHTML = "";
+    body.appendChild(n ? h("table", null, tb) : h("p", { class: "lempty" }, "No lab matches \u201c" + input.value.trim() + "\u201d."));
+  }
+  input.addEventListener("input", function () { LABS.q = input.value; draw(); body.scrollTop = 0; });
+  input.addEventListener("keydown", function (e) { if (e.key === "Escape") { e.stopPropagation(); if (input.value) { input.value = ""; LABS.q = ""; draw(); } else toggleLabs(); } });
+  draw();
+  document.body.appendChild(panel);
+  body.scrollTop = LABS.top;
 }
 
 // question text + highlights
 function stemArea(q) {
   var bdy = q.body, box = h("div", { class: "stem", id: "stem" });
   paras(bdy.stem).forEach(function (p) { box.appendChild(h("p", null, p)); });
-  if (bdy.data && bdy.data.length) box.appendChild(h("div", { class: "data" }, bdy.data.map(function (d) { return h("div", null, d); })));
+  if (bdy.data && bdy.data.length) box.appendChild(dataEl(bdy.data));
   if (bdy.ad) box.appendChild(adEl(bdy.ad));
   if (q.has_image) box.appendChild(imageEl(q));
   box.appendChild(h("p", { class: "ask" }, bdy.ask));
