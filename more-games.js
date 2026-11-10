@@ -4,6 +4,9 @@
 //   BoardsideMore.html('night-float', roundKey)     → HTML string (same picks while roundKey is unchanged)
 (function () {
   var GAMES = [
+    { id: 'cross-cover', name: 'Cross-Cover', tag: 'Daily medical crossword', href: 'crossword.html',
+      bg: '#f7f1e4', fg: '#14233a', light: true, art:
+      '<svg viewBox="0 0 60 60" width="64" height="64" aria-hidden="true"><rect x="2" y="2" width="56" height="56" fill="#fffdf8" stroke="#14233a" stroke-width="3"/><path d="M20.7 2v56M39.3 2v56M2 20.7h56M2 39.3h56" stroke="#b7ab92" stroke-width="1.2"/><rect x="39.3" y="2" width="18.7" height="18.7" fill="#14233a"/><rect x="2" y="39.3" width="18.7" height="18.7" fill="#14233a"/><rect x="20.7" y="20.7" width="18.6" height="18.6" fill="#f5c451"/><text x="11.3" y="16" font-family="Georgia,serif" font-weight="700" font-size="13" text-anchor="middle" fill="#14233a">C</text><text x="30" y="16" font-family="Georgia,serif" font-weight="700" font-size="13" text-anchor="middle" fill="#14233a">H</text></svg>' },
     { id: 'night-float', name: 'IM Night Float', tag: 'Overnight cross-cover simulator', href: 'night-float.html',
       bg: '#1b1e25', fg: '#f0b54a', art:
       '<div class="bmg-lcd"><span>19:15 · PAGE 1 OF 8</span><b>4B-12: K 6.9. PLS CALL<i>_</i></b></div>' },
@@ -24,7 +27,7 @@
       '<svg viewBox="0 0 30 20" width="96" height="56" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 14h4v-9h7v9h3" stroke="#ffc94a" stroke-width="1.6"/><path d="M16 14h2l1.5-9 2 9h6.5" stroke="#3fe0d0" stroke-width="1.6"/></svg>' }
   ];
   // Pages name some games differently from their leaderboard ids.
-  var ALIAS = { 'hemodynamic-roulette': 'hemo-roulette', 'shrug-the-bug': 'bug-drug' };
+  var ALIAS = { 'hemodynamic-roulette': 'hemo-roulette', 'shrug-the-bug': 'bug-drug', 'crossword': 'cross-cover' };
 
   var css = '\
 .bmg{margin:22px auto 4px;width:100%;max-width:720px;text-align:center;box-sizing:border-box}\

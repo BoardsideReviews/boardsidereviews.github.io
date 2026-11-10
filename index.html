@@ -247,6 +247,7 @@ nav .links a.dd-item:hover{background:var(--sky)}
 .game-lcd .red{color:#ff6b78;text-shadow:0 0 6px rgba(255,107,120,.4)}
 .dd-ic.dd-bug{background:linear-gradient(135deg,#E6DEFF,#FDE1EC);box-shadow:inset 0 -3px 0 #7C4DFF}
 .dd-ic.dd-tt{background:linear-gradient(180deg,#0c1033,#1d2a6b);box-shadow:inset 0 -3px 0 #5ef2e6}
+.dd-ic.dd-cc{background:#f7f1e4;box-shadow:inset 0 -3px 0 #0d7070}
 .dd-ic.dd-vent{background:#05090f;box-shadow:inset 0 -3px 0 #3fe0d0}
 .dd-item.soon .dd-ic{background:var(--sky2);border:1px dashed #c5d3e2}
 nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px solid var(--line);font-size:14px;font-weight:600;color:var(--teal)}
@@ -267,6 +268,7 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <button class="dd-btn" type="button" aria-expanded="false" aria-controls="games-menu">Gamified Learning<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
 <div class="dd-menu" id="games-menu"><div class="dd-panel">
 <!-- Games: add a new <a class="dd-item"> line here for each new game -->
+<a class="dd-item" href="crossword.html"><span class="dd-ic dd-cc" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" fill="#fffdf8" stroke="#14233a" stroke-width="2"/><path d="M8.3 1v22M15.6 1v22M1 8.3h22M1 15.6h22" stroke="#b7ab92" stroke-width="1"/><rect x="15.6" y="1" width="7.4" height="7.3" fill="#14233a"/><rect x="1" y="15.6" width="7.3" height="7.4" fill="#14233a"/><rect x="8.3" y="8.3" width="7.3" height="7.3" fill="#f5c451"/></svg></span><span class="dd-txt"><b>Cross-Cover</b><small>Daily 6×6 medical crossword</small></span></a>
 <a class="dd-item" href="night-float.html"><span class="dd-ic" aria-hidden="true"><span></span></span><span class="dd-txt"><b>IM Night Float</b><small>Overnight cross-cover simulator</small></span></a>
 <a class="dd-item" href="abg-blitz.html"><span class="dd-ic dd-abg" aria-hidden="true">pH</span><span class="dd-txt"><b>ABG Blitz</b><small>3-minute acid–base challenge</small></span></a>
 <a class="dd-item" href="hemodynamic-roulette.html"><span class="dd-ic dd-hemo" aria-hidden="true"><svg width="24" height="14" viewBox="0 0 24 14" fill="none" stroke="#ff6b78" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 11h4l2-8 3 10 2-6h3l2-3 2 7h4"/></svg></span><span class="dd-txt"><b>Hemodynamic Roulette</b><small>60-second shock challenge</small></span></a>
@@ -275,7 +277,7 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <a class="dd-item" href="vent-lab.html"><span class="dd-ic dd-vent" aria-hidden="true"><svg width="30" height="20" viewBox="0 0 30 20" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M2 14h4v-9h7v9h3" stroke="#ffc94a" stroke-width="2"/><path d="M16 14h2l1.5-9 2 9h6.5" stroke="#3fe0d0" stroke-width="2"/></svg></span><span class="dd-txt"><b>Vent Lab</b><small>Ventilator simulator + asynchrony challenge</small></span></a>
 <div class="dd-item soon"><span class="dd-ic" aria-hidden="true"></span><span class="dd-txt"><b>More games</b><small>Coming soon</small></span></div>
 <a class="dd-item" href="leaderboard.html" data-lb hidden><span class="dd-ic dd-lb" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f0b54a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span><span class="dd-txt"><b>Leaderboard</b><small>Top scores across games</small></span></a>
-<a class="dd-all" href="#games">About the games →</a>
+<a class="dd-all" href="games.html">See all games →</a>
 </div></div>
 </div>
 <a href="#about">About</a>
@@ -399,6 +401,7 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <button class="picker-btn" type="button" aria-expanded="false" aria-controls="picker-list">Pick a game<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
 <div class="picker-list" id="picker-list"></div>
 </div>
+<a class="lb-link" href="games.html">Browse all games →</a>
 <a class="lb-link" href="leaderboard.html" data-lb hidden>See the leaderboard →</a>
 </div>
 <small>Free, plays in your browser. For education only; fictional patients and simulated values.</small>
@@ -410,10 +413,11 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <div class="screen"><div class="dim">HEMODYNAMIC ROULETTE · 0:38 LEFT</div><div class="abg-row"><span class="red">ART 78/62 (67)</span><span>HR 128</span></div><div class="abg-row"><span>RAP 18</span><span>PCWP 19</span><span>CI 1.6</span></div><div>RA = PAD = PCWP → <span class="hi">EQUALIZED</span><span class="cur">_</span></div></div>
 <div class="screen"><div class="dim">DON'T SHRUG THE BUG · LEVEL 8 · RESISTANCE</div><div>ENTEROBACTER ON DAY 4 OF CEFTRIAXONE. FEVER IS BACK.</div><div>AmpC DEREPRESSED → <span class="hi">CEFEPIME</span><span class="cur">_</span></div></div>
 <div class="screen"><div class="dim">TITRATE TONIGHT · 02:14 · REM</div><div class="abg-row"><span>CPAP 9</span><span class="red">SpO₂ 86%</span></div><div>EFFORT ON, FLOW FLAT → OBSTRUCTIVE → <span class="hi">CPAP 10</span><span class="cur">_</span></div></div>
+<div class="screen"><div class="dim">CROSS-COVER · DAILY MINI · 0:47</div><div>1A: FEELING COLD WITH A FEVER (6)</div><div>C H I L L S → <span class="hi">SOLVED</span><span class="cur">_</span></div></div>
 <div class="screen"><div class="dim">VENT LAB · AC/VC · VC-CMVs · ASYNCHRONY</div><div class="abg-row"><span>Ppeak <span class="hi">38</span></span><span>Pplat 17</span><span>PEEP 5</span></div><div>FLOW BUMPS, NO BREATH → <span class="hi">FAILED TRIGGER</span><span class="cur">_</span></div></div>
 </div>
 </div>
-<div class="ticker-dots"><span class="on"></span><span></span><span></span><span></span><span></span><span></span></div>
+<div class="ticker-dots"><span class="on"></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
 </div>
 </div>
 </div>

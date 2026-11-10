@@ -17,11 +17,16 @@
     no_name: "Pick a display name first.",
     banned: "This account can't post to the leaderboard.",
     not_signed_in: "Sign in first.",
-    not_admin: "This page is for the site owner."
+    not_admin: "This page is for the site owner.",
+    already_posted: "You've already posted a time for this puzzle. Your first clean solve is the one that counts.",
+    stale_puzzle: "This puzzle's board is closed. Times post for today's puzzle only.",
+    too_quick: "That time is too fast to post.",
+    bad_time: "That time couldn't be posted."
   };
   function friendly(err) {
     if (!err) return "";
     var m = err.message || String(err);
+    if (/scores_cross_cover_once/.test(m)) return MESSAGES.already_posted;
     if (/profiles_name_key_key|duplicate key/.test(m)) return "Someone already has that name. Try another.";
     if (/Token has expired|invalid|otp/i.test(m) && /token|otp|code/i.test(m)) return "That code didn't work. Check it, or send a new one.";
     if (/rate limit|security purposes|seconds/i.test(m)) return "Too many codes requested. Wait a minute, then try again.";
@@ -77,6 +82,12 @@
   async function boardPoints(game, variant, days, limit) {
     need();
     var r = await sb.rpc("get_points_leaderboard", { p_game: game, p_variant: variant, p_days: days || null, p_limit: limit || 50 });
+    if (r.error) throw r.error;
+    return r.data || [];
+  }
+  async function boardTime(game, variant, limit) {
+    need();
+    var r = await sb.rpc("get_time_leaderboard", { p_game: game, p_variant: variant, p_limit: limit || 50 });
     if (r.error) throw r.error;
     return r.data || [];
   }
@@ -205,7 +216,7 @@
   window.BLB = {
     enabled: enabled, friendly: friendly, user: user, profile: profile,
     sendCode: sendCode, verify: verify, setName: setName, submit: submit,
-    board: board, boardPoints: boardPoints, rpc: rpc, signOut: signOut, dialog: dialog,
+    board: board, boardPoints: boardPoints, boardTime: boardTime, rpc: rpc, signOut: signOut, dialog: dialog,
     onAuth: function (fn) { if (sb) sb.auth.onAuthStateChange(function () { fn(); }); }
   };
 })();

@@ -1,0 +1,36 @@
+name: Cross-Cover puzzles
+
+# Keeps 10 years of daily Cross-Cover puzzles built ahead of time.
+# Runs once a month, adds the days that have rolled into the 10-year window,
+# and commits the updated crossword-data/ files. Existing days never change.
+# If this ever stops running, the site still builds each day's puzzle live.
+
+on:
+  schedule:
+    - cron: "17 9 1 * *"   # 1st of every month, ~3-4am Central
+  workflow_dispatch:        # manual "Run workflow" button
+
+permissions:
+  contents: write
+
+jobs:
+  extend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build missing days
+        run: node tools/crossword-build.js 3650
+      - name: Commit if anything changed
+        run: |
+          if [ -n "$(git status --porcelain crossword-data)" ]; then
+            git config user.name "boardside-bot"
+            git config user.email "boardsidereviews@gmail.com"
+            git add crossword-data
+            git commit -m "Cross-Cover: extend daily puzzles"
+            git push
+          else
+            echo "Already up to date"
+          fi

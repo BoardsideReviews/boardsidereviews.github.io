@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LJQ2NG232B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LJQ2NG232B');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cross-Cover: the daily medical crossword | Boardside Reviews</title>
+<meta name="description" content="Cross-Cover: a free daily 6x6 medical crossword from Boardside Reviews. A new puzzle every midnight, California time. Race the clock and post your fastest clean solve.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%20role%3D%22img%22%20aria-label%3D%22Boardside%20Reviews%20mark%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
+<script src="lb-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="lb.js"></script>
+<script src="more-games.js"></script>
+<script src="crossword-words.js"></script>
+<script src="crossword-engine.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Libre+Franklin:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --paper:#f7f1e4;--paper2:#efe6d2;--ink:#14233a;--ink2:#3e4c61;--muted:#6f7684;--rule:#d8ccb2;
+  --teal:#0d7070;--teal-hi:#bfe5df;--teal-lo:#e3f2ef;--amber:#f5c451;--coral:#c2462f;--coral-lo:#f8e1da;
+  --cell:min(64px,calc((100vw - 40px)/6));
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:'Libre Franklin',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-image:linear-gradient(var(--paper),var(--paper)),repeating-linear-gradient(0deg,transparent 0 31px,rgba(20,35,58,.035) 31px 32px);background-blend-mode:multiply}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+
+/* masthead */
+.mast{border-bottom:3px double var(--ink);background:var(--paper)}
+.mast .in{max-width:1080px;margin:0 auto;padding:12px max(16px,env(safe-area-inset-left)) 10px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex:none}
+.brand svg{width:38px;height:38px;display:block}
+.brand span{font-weight:700;font-size:14px;letter-spacing:.02em;color:var(--ink2)}
+.title{flex:1;min-width:0;text-align:center}
+.title h1{margin:0;font-family:Fraunces,Georgia,serif;font-weight:800;font-size:clamp(26px,4.4vw,40px);line-height:1;letter-spacing:-.01em}
+.title h1 i{font-style:normal;color:var(--teal)}
+.title .dateline{margin-top:4px;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.clock{flex:none;display:flex;align-items:center;gap:8px}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:18px;min-width:58px;text-align:right}
+.iconbtn{border:1.5px solid var(--ink);background:transparent;border-radius:999px;width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center}
+.iconbtn:hover{background:var(--paper2)}
+@media (max-width:560px){.brand span{display:none}.title .dateline{font-size:10.5px;letter-spacing:.08em}.timer{font-size:16px;min-width:48px}.iconbtn{width:32px;height:32px}}
+
+.dl-short{display:none}
+@media (max-width:560px){.dl-long{display:none}.dl-short{display:inline}}
+.preview{background:var(--amber);color:var(--ink);text-align:center;font-size:13px;font-weight:700;padding:6px 12px}
+
+main{max-width:1080px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left)) 40px}
+.board{display:grid;grid-template-columns:auto minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:860px){.board{grid-template-columns:1fr;gap:16px}}
+.left{display:flex;flex-direction:column;align-items:center;gap:12px}
+
+/* clue bar */
+.cluebar{width:calc(var(--cell)*6 + 6px);display:flex;align-items:stretch;background:var(--teal-hi);border:2px solid var(--ink);border-radius:6px;min-height:58px}
+.cluebar button{border:0;background:transparent;width:38px;flex:none;font-size:20px;font-weight:700;color:var(--ink2)}
+.cluebar button:hover{background:rgba(255,255,255,.35)}
+.cluebar .txt{flex:1;display:flex;align-items:center;gap:10px;padding:8px 4px;font-size:16px;line-height:1.3;font-weight:500}
+.cluebar .txt b{font-weight:800;white-space:nowrap}
+
+/* grid */
+.gridwrap{position:relative}
+.grid{display:grid;grid-template-columns:repeat(6,var(--cell));grid-template-rows:repeat(6,var(--cell));border:3px solid var(--ink);background:var(--ink);gap:0;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.cell{position:relative;background:#fffdf8;border-right:1px solid #b7ab92;border-bottom:1px solid #b7ab92;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.cell:nth-child(6n){border-right:0}
+.cell:nth-last-child(-n+6){border-bottom:0}
+.cell.blk{background:var(--ink);cursor:default}
+.cell .n{position:absolute;top:2px;left:4px;font-size:calc(var(--cell)*.2);font-weight:600;line-height:1;color:var(--ink2)}
+.cell .l{font-size:calc(var(--cell)*.56);font-weight:700;line-height:1;margin-top:calc(var(--cell)*.1);text-transform:uppercase}
+.cell.word{background:var(--teal-hi)}
+.cell.sel{background:var(--amber)}
+.cell.wrong .l{color:var(--coral)}
+.cell.wrong::after{content:"";position:absolute;inset:0;background:linear-gradient(to top right,transparent calc(50% - 1px),rgba(194,70,47,.75) calc(50% - 1px),rgba(194,70,47,.75) calc(50% + 1px),transparent calc(50% + 1px));pointer-events:none}
+.cell.rev::before{content:"";position:absolute;top:0;right:0;border-style:solid;border-width:0 calc(var(--cell)*.22) calc(var(--cell)*.22) 0;border-color:transparent var(--coral) transparent transparent}
+.cell.ok .l{color:var(--teal)}
+.grid.solved .cell:not(.blk){animation:wave .6s ease both}
+@keyframes wave{40%{transform:scale(1.08);background:var(--teal-hi)}}
+
+.veil{position:absolute;inset:0;background:rgba(247,241,228,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:18px;border:3px solid var(--ink)}
+.veil h2{margin:0;font-family:Fraunces,Georgia,serif;font-weight:800;font-size:28px;line-height:1.1}
+.veil p{margin:0;font-size:14.5px;line-height:1.45;color:var(--ink2);max-width:30ch}
+.veil small{font-size:12px;color:var(--muted);max-width:32ch;line-height:1.4}
+.big{border:0;background:var(--ink);color:var(--paper);font-weight:800;font-size:17px;letter-spacing:.04em;padding:14px 30px;border-radius:999px;box-shadow:0 4px 0 #000}
+.big:active{transform:translateY(2px);box-shadow:0 2px 0 #000}
+.big.teal{background:var(--teal);box-shadow:0 4px 0 #084a4a}
+
+/* tools */
+.tools{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;width:calc(var(--cell)*6 + 6px)}
+.tool{position:relative}
+.tool > button{border:1.5px solid var(--ink);background:transparent;border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:700}
+.tool > button:hover{background:var(--paper2)}
+.menu{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);z-index:20;background:#fffdf8;border:2px solid var(--ink);border-radius:10px;box-shadow:0 10px 24px rgba(20,35,58,.2);padding:4px;display:none;min-width:150px}
+.tool.open .menu{display:flex;flex-direction:column}
+.menu button{border:0;background:transparent;text-align:left;padding:9px 12px;border-radius:6px;font-size:14px;font-weight:600}
+.menu button:hover{background:var(--teal-lo)}
+.assistnote{font-size:12px;color:var(--muted);text-align:center;max-width:calc(var(--cell)*6 + 6px)}
+
+/* clue lists */
+.lists{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media (max-width:560px){.lists{grid-template-columns:1fr}}
+.lists h3{margin:0 0 6px;font-family:Fraunces,Georgia,serif;font-size:20px;font-weight:800;border-bottom:2px solid var(--ink);padding-bottom:4px}
+.lists ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.lists li{display:flex;gap:10px;padding:7px 8px;border-radius:6px;font-size:15px;line-height:1.35;cursor:pointer;border-left:4px solid transparent}
+.lists li b{min-width:20px;font-weight:800}
+.lists li:hover{background:var(--paper2)}
+.lists li.cur{background:var(--teal-hi);border-left-color:var(--teal)}
+.lists li.cross{border-left-color:var(--teal-hi)}
+.lists li.done span{color:var(--muted)}
+.howto{margin-top:18px;font-size:13px;color:var(--muted);line-height:1.5}
+.howto kbd{font:inherit;font-weight:700;border:1px solid var(--rule);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:#fffdf8;color:var(--ink2)}
+
+/* on-screen keyboard (touch devices) */
+.kb{position:sticky;bottom:0;z-index:15;background:var(--paper2);border-top:2px solid var(--ink);padding:8px 4px calc(8px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px;margin:0 calc(-1*max(16px,env(safe-area-inset-left)))}
+.kb .row{display:flex;justify-content:center;gap:5px}
+.kb button{flex:0 1 9.2%;max-width:44px;height:46px;border:0;border-radius:6px;background:#fffdf8;box-shadow:0 2px 0 #b7ab92;font-weight:700;font-size:17px;padding:0}
+.kb button:active{background:var(--amber)}
+.kb button.wide{flex-basis:15%;max-width:70px;font-size:13px}
+
+/* toast */
+.toast{position:fixed;left:50%;top:84px;transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--paper);font-weight:700;font-size:14.5px;padding:10px 18px;border-radius:999px;box-shadow:0 10px 24px rgba(0,0,0,.25);animation:tin .25s ease}
+@keyframes tin{from{opacity:0;transform:translate(-50%,-8px)}}
+
+/* solved dialog */
+.back{position:fixed;inset:0;z-index:50;background:rgba(20,35,58,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px 14px;overflow-y:auto}
+.sheet{width:min(560px,100%);background:var(--paper);border:3px solid var(--ink);border-radius:14px;box-shadow:0 30px 70px rgba(0,0,0,.35);padding:24px clamp(16px,4vw,28px) 22px;position:relative;animation:pop .35s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.sheet .x{position:absolute;top:10px;right:10px}
+.stamp{display:inline-block;font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:2px solid var(--teal);color:var(--teal);padding:3px 8px;border-radius:4px;transform:rotate(-3deg)}
+.stamp.assist{border-color:var(--coral);color:var(--coral)}
+.sheet h2{margin:10px 0 2px;font-family:Fraunces,Georgia,serif;font-weight:800;font-size:clamp(34px,8vw,48px);line-height:1}
+.sheet .sub{margin:0;color:var(--ink2);font-size:15px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}
+.stats div{background:#fffdf8;border:1.5px solid var(--rule);border-radius:10px;padding:10px;text-align:center}
+.stats span{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stats strong{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.row2{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ghost{border:1.5px solid var(--ink);background:transparent;border-radius:999px;padding:10px 18px;font-weight:700;font-size:14.5px}
+.ghost:hover{background:var(--paper2)}
+.note{font-size:13px;color:var(--muted);line-height:1.45;margin:8px 0 0}
+.note.err{color:var(--coral)}
+.posted{font-weight:700;color:var(--teal)}
+.sec{margin-top:20px}
+.sec h3{margin:0 0 8px;font-family:Fraunces,Georgia,serif;font-size:19px;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.sec h3 small{font-family:'Libre Franklin',sans-serif;font-size:12px;font-weight:600;color:var(--muted)}
+.lb ol{list-style:none;margin:0;padding:0;border:1.5px solid var(--rule);border-radius:10px;overflow:hidden;background:#fffdf8}
+.lb li{display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid #eee5d3;font-size:14.5px}
+.lb li:last-child{border-bottom:0}
+.lb li .n{width:24px;font-weight:800}
+.lb li .who{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.lb li .t{font-weight:800;font-variant-numeric:tabular-nums}
+.lb li.me{background:var(--teal-lo)}
+.lb .empty{padding:14px;border:1.5px dashed var(--rule);border-radius:10px;font-size:14px;color:var(--muted);text-align:center}
+.lb a{display:inline-block;margin-top:8px;font-size:13.5px;font-weight:700;color:var(--teal);text-decoration:none}
+.answers{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.answers li{display:flex;gap:12px;align-items:baseline;font-size:14px;line-height:1.35}
+.answers li b{font-weight:800;letter-spacing:.08em;min-width:74px;color:var(--teal)}
+.next{margin-top:18px;padding-top:14px;border-top:2px dotted var(--rule);text-align:center;font-size:14px;color:var(--ink2)}
+.next strong{font-variant-numeric:tabular-nums}
+body.veiled .lists,body.veiled .cluebar .txt{filter:blur(7px);pointer-events:none;user-select:none;-webkit-user-select:none}
+.loading{min-height:50vh;display:flex;align-items:center;justify-content:center;font-family:Fraunces,Georgia,serif;font-size:22px;color:var(--ink2)}
+@media (prefers-reduced-motion:reduce){.grid.solved .cell,.sheet,.toast{animation:none}}
+</style>
+</head>
+<body>
+<header class="mast"><div class="in">
+  <a class="brand" href="/" aria-label="Boardside Reviews home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg><span>Boardside Reviews</span></a>
+  <div class="title"><h1>Cross<i>-</i>Cover</h1><div class="dateline" id="dateline">The daily medical mini</div></div>
+  <div class="clock"><span class="timer" id="timer" aria-label="Elapsed time">0:00</span><button class="iconbtn" id="pauseBtn" type="button" aria-label="Pause" hidden><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.4" height="12" rx="1" fill="currentColor"/><rect x="8.6" y="1" width="3.4" height="12" rx="1" fill="currentColor"/></svg></button></div>
+</div></header>
+<div class="preview" id="previewBar" hidden></div>
+
+<main id="app"><div class="loading" id="loading">Scrubbing in…</div></main>
+
+<script>
+(function(){
+'use strict';
+var X = window.BoardsideXword, BANK = window.BOARDSIDE_XWORD_WORDS;
+var GAME = 'cross-cover';
+var $ = function(s, el){ return (el||document).querySelector(s); };
+var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+var store = {
+  get: function(k){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch(e){ return null; } },
+  set: function(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+var hasLB = function(){ return !!(window.BLB && BLB.enabled && BLB.boardTime); };
+function fmt(sec){ sec = Math.max(0, Math.floor(sec)); var h = Math.floor(sec/3600), m = Math.floor(sec%3600/60), s = sec%60; return (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(s).padStart(2,'0'); }
+function longDate(ds){ var p = ds.split('-'); return new Date(Date.UTC(+p[0], +p[1]-1, +p[2], 12)).toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric', timeZone:'UTC' }); }
+function shortDate(ds){ var p = ds.split('-'); return new Date(Date.UTC(+p[0], +p[1]-1, +p[2], 12)).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', timeZone:'UTC' }); }
+function toast(msg){ var t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role','status'); t.textContent = msg; document.body.appendChild(t); setTimeout(function(){ t.remove(); }, 2200); }
+
+// ── Which puzzle? Today in California, or ?date=YYYY-MM-DD for a preview ──
+var today = X.todayLA();
+var qd = new URLSearchParams(location.search).get('date');
+var DATE = (qd && /^\d{4}-\d{2}-\d{2}$/.test(qd)) ? qd : today;
+var PREVIEW = DATE !== today;
+if (PREVIEW) { var pb = $('#previewBar'); pb.hidden = false; pb.innerHTML = 'Preview of the ' + esc(longDate(DATE)) + ' puzzle. Times from previews don\'t post. <a href="crossword.html">Play today\'s</a>'; }
+
+// ── Build (or load the cached) puzzle ──
+function bankSig(){ var h = 0; for (var i = 0; i < BANK.length; i++) h = (h * 31 + BANK.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+var P, cacheKey = 'cc:p2:' + DATE + ':' + bankSig();
+// Puzzles are pre-built a decade ahead in crossword-data/YYYY.json (no repeats, ever).
+// If that file can't be reached, the same engine builds the day live.
+function build(){
+  P = store.get(cacheKey);
+  if (P && P.letters) return init();
+  fetch('crossword-data/' + DATE.slice(0, 4) + '.json', { cache: 'no-cache' })
+    .then(function(r){ return r.ok ? r.json() : {}; })
+    .catch(function(){ return {}; })
+    .then(function(data){
+      P = data[DATE] ? X.fromRows(DATE, data[DATE], BANK) : null;
+      if (!P) P = X.generate(DATE, BANK);
+      store.set(cacheKey, P);
+      init();
+    })
+    .catch(function(e){ $('#app').innerHTML = '<div class="loading">Today\'s puzzle didn\'t load. Refresh to try again.</div>'; console.error(e); });
+}
+
+// ── State ──
+var S, entries, cellSlots, slots, sel = { cell: 0, dir: 'across' }, tick = null, lastNow = 0;
+function stateKey(){ return 'cc:s1:' + DATE; }
+function save(){ S.entries = entries; store.set(stateKey(), S); }
+function init(){
+  slots = P.across.concat(P.down);
+  cellSlots = [];
+  for (var c = 0; c < 36; c++) cellSlots.push({});
+  slots.forEach(function(s){ s.cells.forEach(function(c){ cellSlots[c][s.dir] = s; }); });
+  S = store.get(stateKey()) || { entries: null, elapsed: 0, started: false, done: false, assisted: false, wrong: {}, revealed: {}, posted: false, solveTime: null };
+  entries = S.entries || P.letters.map(function(x){ return x === null ? null : ''; });
+  $('#dateline').innerHTML = 'No. ' + P.number + ' · <span class="dl-long">' + esc(longDate(DATE)) + '</span><span class="dl-short">' + esc(shortDate(DATE)) + '</span>';
+  render();
+  var first = slots[0];
+  select(firstEmpty(first) , first.dir);
+  paintTimer();
+  if (S.done) { lockSolved(false); }
+  else if (S.started) { showVeil('paused'); }
+  else showVeil('start');
+}
+
+// ── Layout ──
+var touch = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+function render(){
+  var app = $('#app');
+  app.innerHTML =
+    '<div class="board"><div class="left">' +
+      '<div class="cluebar" aria-live="polite"><button type="button" id="prevClue" aria-label="Previous clue">‹</button><div class="txt" id="clueTxt"></div><button type="button" id="nextClue" aria-label="Next clue">›</button></div>' +
+      '<div class="gridwrap"><div class="grid" id="grid" role="grid" aria-label="Crossword grid"></div><div class="veil" id="veil" hidden></div></div>' +
+      '<div class="tools">' +
+        '<div class="tool" data-tool><button type="button">Check ▾</button><div class="menu"><button data-act="check-cell">Square</button><button data-act="check-word">Word</button><button data-act="check-all">Puzzle</button></div></div>' +
+        '<div class="tool" data-tool><button type="button">Reveal ▾</button><div class="menu"><button data-act="rev-cell">Square</button><button data-act="rev-word">Word</button><button data-act="rev-all">Puzzle</button></div></div>' +
+        '<div class="tool"><button type="button" data-act="clear">Clear</button></div>' +
+      '</div>' +
+      '<div class="assistnote" id="assistnote">' + (S.assisted ? 'Assisted solve: this time won\'t post to the leaderboard.' : 'Using Check or Reveal keeps your time off the leaderboard.') + '</div>' +
+    '</div>' +
+    '<div class="right"><div class="lists">' +
+      '<div><h3>Across</h3><ol id="acrossList"></ol></div><div><h3>Down</h3><ol id="downList"></ol></div>' +
+    '</div>' +
+    '<p class="howto">' + (touch ? 'Tap a square to type; tap it again to switch direction.' : 'Type to fill. <kbd>Space</kbd> or click a square twice to switch direction. <kbd>Tab</kbd> jumps to the next clue, arrows move, <kbd>Backspace</kbd> erases.') +
+    ' A new puzzle drops every midnight, California time. Some squares belong to one answer only.</p></div></div>' +
+    (touch ? '<div class="kb" id="kb"></div>' : '');
+  var g = $('#grid'), html = '';
+  for (var c = 0; c < 36; c++) {
+    if (P.letters[c] === null) { html += '<div class="cell blk" aria-hidden="true"></div>'; continue; }
+    var n = P.numbers[c];
+    html += '<div class="cell" role="gridcell" data-c="' + c + '">' + (n ? '<span class="n">' + n + '</span>' : '') + '<span class="l"></span></div>';
+  }
+  g.innerHTML = html;
+  function li(s){ return '<li data-dir="' + s.dir + '" data-num="' + s.num + '"><b>' + s.num + '</b><span>' + esc(s.clue) + '</span></li>'; }
+  $('#acrossList').innerHTML = P.across.map(li).join('');
+  $('#downList').innerHTML = P.down.map(li).join('');
+  if (touch) {
+    var rows = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
+    $('#kb').innerHTML = rows.map(function(r, i){
+      return '<div class="row">' + (i === 2 ? '<button type="button" class="wide" data-k="dir" aria-label="Switch direction">⇄</button>' : '') +
+        r.split('').map(function(ch){ return '<button type="button" data-k="' + ch + '">' + ch + '</button>'; }).join('') +
+        (i === 2 ? '<button type="button" class="wide" data-k="back" aria-label="Backspace">⌫</button>' : '') + '</div>';
+    }).join('');
+  }
+  wire();
+  paintCells();
+}
+
+function slotOf(cell, dir){ return cellSlots[cell][dir]; }
+function curSlot(){ return slotOf(sel.cell, sel.dir); }
+function firstEmpty(s){ for (var i = 0; i < s.cells.length; i++) if (!entries[s.cells[i]]) return s.cells[i]; return s.cells[0]; }
+function select(cell, dir){
+  if (P.letters[cell] === null) return;
+  if (dir && cellSlots[cell][dir]) sel.dir = dir;
+  else if (!cellSlots[cell][sel.dir]) sel.dir = sel.dir === 'across' ? 'down' : 'across';
+  sel.cell = cell;
+  paintCells();
+}
+function paintCells(){
+  var s = curSlot(), inWord = {};
+  if (s) s.cells.forEach(function(c){ inWord[c] = 1; });
+  document.querySelectorAll('#grid .cell[data-c]').forEach(function(el){
+    var c = +el.dataset.c;
+    el.classList.toggle('sel', c === sel.cell);
+    el.classList.toggle('word', !!inWord[c] && c !== sel.cell);
+    el.classList.toggle('wrong', !!S.wrong[c]);
+    el.classList.toggle('rev', !!S.revealed[c]);
+    el.classList.toggle('ok', S.done);
+    el.querySelector('.l').textContent = entries[c] || '';
+  });
+  if (s) $('#clueTxt').innerHTML = '<b>' + s.num + (s.dir === 'across' ? 'A' : 'D') + '</b><span>' + esc(s.clue) + '</span>';
+  var other = slotOf(sel.cell, sel.dir === 'across' ? 'down' : 'across');
+  document.querySelectorAll('.lists li').forEach(function(li){
+    var sl = findSlot(li.dataset.dir, +li.dataset.num);
+    li.classList.toggle('cur', sl === s);
+    li.classList.toggle('cross', sl === other);
+    li.classList.toggle('done', sl.cells.every(function(c){ return !!entries[c]; }));
+  });
+  var cur = document.querySelector('.lists li.cur');
+  if (cur && cur.scrollIntoViewIfNeeded) cur.scrollIntoViewIfNeeded(false);
+}
+function findSlot(dir, num){ return (dir === 'across' ? P.across : P.down).filter(function(s){ return s.num === num; })[0]; }
+
+// ── Clock ──
+function running(){ return S.started && !S.done && !paused && !document.hidden; }
+var paused = false;
+function paintTimer(){ $('#timer').textContent = fmt(S.elapsed / 1000); $('#pauseBtn').hidden = !S.started || S.done; }
+function startClock(){
+  stopClock(); lastNow = performance.now();
+  tick = setInterval(function(){
+    var now = performance.now();
+    if (running()) { S.elapsed += now - lastNow; paintTimer(); if (Math.floor(S.elapsed / 5000) !== Math.floor((S.elapsed - (now - lastNow)) / 5000)) save(); }
+    lastNow = now;
+  }, 250);
+}
+function stopClock(){ if (tick) clearInterval(tick); tick = null; }
+document.addEventListener('visibilitychange', function(){
+  if (document.hidden && S && S.started && !S.done) { save(); showVeil('paused'); }
+  lastNow = performance.now();
+});
+
+function showVeil(kind){
+  var v = $('#veil'); if (!v) return;
+  if (kind === 'start') {
+    v.innerHTML = '<h2>Ready?</h2><p>Twelve-ish answers, all medicine. The clock starts when you do.</p><button class="big" id="goBtn" type="button">Start</button><small>Post your fastest clean solve to today\'s leaderboard. Check or Reveal keeps a time off the board.</small>';
+  } else if (kind === 'paused') {
+    paused = true;
+    v.innerHTML = '<h2>Paused</h2><p>Your time is saved at ' + fmt(S.elapsed / 1000) + '.</p><button class="big" id="goBtn" type="button">Resume</button>';
+  }
+  v.hidden = false; document.body.classList.add('veiled');
+  $('#goBtn').onclick = function(){ v.hidden = true; document.body.classList.remove('veiled'); paused = false; if (!S.started) { S.started = true; save(); } paintTimer(); startClock(); };
+  $('#goBtn').focus();
+}
+
+// ── Input ──
+function type(ch){
+  if (S.done || !S.started || paused) return;
+  var c = sel.cell;
+  if (S.revealed[c]) { advance(); return; }
+  entries[c] = ch; delete S.wrong[c];
+  advance(); save(); paintCells(); maybeFinished();
+}
+function advance(){
+  var s = curSlot(), i = s.cells.indexOf(sel.cell);
+  for (var k = i + 1; k < s.cells.length; k++) if (!entries[s.cells[k]]) { sel.cell = s.cells[k]; return paintCells(); }
+  if (s.cells.every(function(c){ return !!entries[c]; })) {
+    // word complete → jump to the next clue that still has an empty square
+    var nxt = nextSlot(s, 1, true);
+    if (nxt) { sel.dir = nxt.dir; sel.cell = firstEmpty(nxt); return paintCells(); }
+    if (i < s.cells.length - 1) sel.cell = s.cells[i + 1];
+  } else {
+    for (var k2 = 0; k2 < s.cells.length; k2++) if (!entries[s.cells[k2]]) { sel.cell = s.cells[k2]; break; }
+  }
+  paintCells();
+}
+function back(){
+  if (S.done || !S.started || paused) return;
+  var c = sel.cell;
+  if (entries[c] && !S.revealed[c]) { entries[c] = ''; delete S.wrong[c]; }
+  else {
+    var s = curSlot(), i = s.cells.indexOf(c);
+    if (i > 0) { sel.cell = s.cells[i - 1]; if (!S.revealed[sel.cell]) { entries[sel.cell] = ''; delete S.wrong[sel.cell]; } }
+  }
+  save(); paintCells();
+}
+function nextSlot(s, step, needEmpty){
+  var i = slots.indexOf(s);
+  for (var k = 1; k <= slots.length; k++) {
+    var t = slots[(i + step * k + slots.length * 2) % slots.length];
+    if (!needEmpty || t.cells.some(function(c){ return !entries[c]; })) return t;
+  }
+  return null;
+}
+function jump(step){ var t = nextSlot(curSlot(), step, false); sel.dir = t.dir; sel.cell = firstEmpty(t); paintCells(); }
+function move(dr, dc){
+  var dir = dc ? 'across' : 'down';
+  if (sel.dir !== dir && cellSlots[sel.cell][dir]) { sel.dir = dir; return paintCells(); }
+  var r = Math.floor(sel.cell / 6), c = sel.cell % 6;
+  for (;;) {
+    r += dr; c += dc;
+    if (r < 0 || r > 5 || c < 0 || c > 5) return;
+    var id = r * 6 + c;
+    if (P.letters[id] !== null) { select(id, cellSlots[id][dir] ? dir : null); return; }
+  }
+}
+function toggleDir(){ var o = sel.dir === 'across' ? 'down' : 'across'; if (cellSlots[sel.cell][o]) { sel.dir = o; paintCells(); } }
+
+function wire(){
+  $('#grid').addEventListener('click', function(e){
+    var el = e.target.closest('.cell[data-c]'); if (!el) return;
+    var c = +el.dataset.c;
+    if (c === sel.cell) toggleDir(); else select(c);
+  });
+  document.querySelectorAll('.lists li').forEach(function(li){
+    li.addEventListener('click', function(){ var s = findSlot(li.dataset.dir, +li.dataset.num); sel.dir = s.dir; sel.cell = firstEmpty(s); paintCells(); });
+  });
+  $('#prevClue').onclick = function(){ jump(-1); };
+  $('#nextClue').onclick = function(){ jump(1); };
+  $('#pauseBtn').onclick = function(){ save(); showVeil('paused'); };
+  document.querySelectorAll('[data-tool] > button').forEach(function(b){
+    b.addEventListener('click', function(e){ e.stopPropagation(); var t = b.parentNode, o = !t.classList.contains('open'); closeMenus(); t.classList.toggle('open', o); });
+  });
+  document.addEventListener('click', closeMenus);
+  document.querySelectorAll('[data-act]').forEach(function(b){ b.addEventListener('click', function(e){ e.stopPropagation(); closeMenus(); act(b.dataset.act); }); });
+  var kb = $('#kb');
+  if (kb) kb.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b) return;
+    var k = b.dataset.k; if (k === 'back') back(); else if (k === 'dir') toggleDir(); else type(k);
+  });
+}
+function closeMenus(){ document.querySelectorAll('.tool.open').forEach(function(t){ t.classList.remove('open'); }); }
+document.addEventListener('keydown', function(e){
+  if (!P || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (document.querySelector('.back')) { if (e.key === 'Escape') closeSheet(); return; }
+  var v = $('#veil');
+  if (v && !v.hidden) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#goBtn').click(); } return; }
+  var k = e.key;
+  if (/^[a-zA-Z]$/.test(k)) { e.preventDefault(); type(k.toUpperCase()); }
+  else if (k === 'Backspace' || k === 'Delete') { e.preventDefault(); back(); }
+  else if (k === 'ArrowLeft') { e.preventDefault(); move(0, -1); }
+  else if (k === 'ArrowRight') { e.preventDefault(); move(0, 1); }
+  else if (k === 'ArrowUp') { e.preventDefault(); move(-1, 0); }
+  else if (k === 'ArrowDown') { e.preventDefault(); move(1, 0); }
+  else if (k === ' ') { e.preventDefault(); toggleDir(); }
+  else if (k === 'Tab' || k === 'Enter') { e.preventDefault(); jump(e.shiftKey ? -1 : 1); }
+});
+
+// ── Check / Reveal / Clear ──
+function cellsFor(scope){ return scope === 'cell' ? [sel.cell] : scope === 'word' ? curSlot().cells : slots.reduce(function(a, s){ return a.concat(s.cells); }, []).filter(function(c, i, arr){ return arr.indexOf(c) === i; }); }
+function act(a){
+  if (a === 'clear') {
+    if (S.done) return;
+    entries = entries.map(function(x, c){ return x === null ? null : (S.revealed[c] ? x : ''); }); S.wrong = {};
+    save(); paintCells(); return;
+  }
+  if (S.done || !S.started || paused) return;
+  var parts = a.split('-'), kind = parts[0], cells = cellsFor(parts[1]);
+  S.assisted = true; $('#assistnote').textContent = 'Assisted solve: this time won\'t post to the leaderboard.';
+  if (kind === 'check') {
+    var bad = 0;
+    cells.forEach(function(c){ if (entries[c] && entries[c] !== P.letters[c]) { S.wrong[c] = 1; bad++; } });
+    toast(bad ? bad + (bad === 1 ? ' square is' : ' squares are') + ' off.' : 'All filled squares are right.');
+  } else {
+    cells.forEach(function(c){ if (entries[c] !== P.letters[c]) { entries[c] = P.letters[c]; S.revealed[c] = 1; delete S.wrong[c]; } });
+  }
+  save(); paintCells(); maybeFinished();
+}
+
+// ── Finishing ──
+function maybeFinished(){
+  for (var c = 0; c < 36; c++) if (entries[c] === '') return;
+  for (var c2 = 0; c2 < 36; c2++) if (entries[c2] !== null && entries[c2] !== P.letters[c2]) { toast('Grid full, but something\'s off. Keep going.'); return; }
+  S.done = true; S.solveTime = Math.max(1, Math.round(S.elapsed / 1000)); stopClock();
+  if (!PREVIEW) bumpStreak();
+  save(); paintTimer();
+  lockSolved(true);
+}
+function bumpStreak(){
+  var st = store.get('cc:stats') || { last: null, streak: 0, best: 0, solves: 0, fastest: null };
+  if (st.last === DATE) return;
+  st.streak = (st.last && X.dayNum(DATE) - X.dayNum(st.last) === 1) ? st.streak + 1 : 1;
+  st.best = Math.max(st.best, st.streak); st.solves++; st.last = DATE;
+  if (!S.assisted && (!st.fastest || S.solveTime < st.fastest)) st.fastest = S.solveTime;
+  store.set('cc:stats', st);
+}
+function lockSolved(celebrate){
+  var g = $('#grid'); paintCells();
+  if (celebrate) { g.classList.add('solved'); Array.prototype.forEach.call(g.children, function(el, i){ el.style.animationDelay = ((Math.floor(i / 6) + i % 6) * 45) + 'ms'; }); }
+  $('#veil').hidden = true; document.body.classList.remove('veiled');
+  $('#assistnote').innerHTML = '<button class="ghost" type="button" id="reopen">See results</button>';
+  $('#reopen').onclick = openSheet;
+  setTimeout(openSheet, celebrate ? 900 : 0);
+}
+
+var countdown = null;
+function closeSheet(){ var b = document.querySelector('.back'); if (b) b.remove(); if (countdown) clearInterval(countdown); }
+function openSheet(){
+  closeSheet(); document.querySelectorAll('.toast').forEach(function(t){ t.remove(); });
+  var st = store.get('cc:stats') || { streak: 0, best: 0, solves: 0 };
+  var clean = !S.assisted, lb = hasLB() && !PREVIEW;
+  var back = document.createElement('div'); back.className = 'back';
+  back.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="solvedH">' +
+    '<button class="iconbtn x" type="button" aria-label="Close" data-close>✕</button>' +
+    '<span class="stamp' + (clean ? '' : ' assist') + '">' + (clean ? 'Clean solve' : 'Assisted') + '</span>' +
+    '<h2 id="solvedH">' + fmt(S.solveTime) + '</h2>' +
+    '<p class="sub">Cross-Cover No. ' + P.number + ' · ' + esc(longDate(DATE)) + '</p>' +
+    '<div class="stats"><div><span>Streak</span><strong>' + (PREVIEW ? '–' : st.streak) + '</strong></div><div><span>Best streak</span><strong>' + (st.best || 0) + '</strong></div><div><span>Solved</span><strong>' + (st.solves || 0) + '</strong></div></div>' +
+    '<div class="row2"><button class="big teal" type="button" id="shareBtn">Share</button>' +
+      (lb ? (clean ? (S.posted ? '<span class="posted">Your time is on the board</span>' : '<button class="ghost" type="button" id="postBtn">Post my time</button>') : '') : '') + '</div>' +
+    '<div id="postNote">' + (lb && !clean ? '<p class="note">Check or Reveal was used, so this time stays off the board. Come back tomorrow for a fresh shot.</p>' : (lb && clean && !S.posted ? '<p class="note">Sign in with your email once. Only your display name shows. Your first clean solve is the one that counts.</p>' : '')) + '</div>' +
+    (lb ? '<div class="sec lb" id="lbBox"><h3>Today\'s fastest <small>Top 10</small></h3><div class="empty">Loading…</div></div>' : '') +
+    '<div class="sec"><h3>Today\'s answers <small>Learn one you missed</small></h3><ul class="answers">' +
+      slots.slice().sort(function(a, b){ return a.num - b.num || (a.dir < b.dir ? -1 : 1); }).map(function(s){ return '<li><b>' + s.answer + '</b><span>' + s.num + (s.dir === 'across' ? 'A' : 'D') + ' · ' + esc(s.clue) + '</span></li>'; }).join('') +
+    '</ul></div>' +
+    '<div class="next" id="nextBox"></div>' +
+    '<div id="more"></div>' +
+  '</div>';
+  document.body.appendChild(back);
+  back.addEventListener('mousedown', function(e){ if (e.target === back) closeSheet(); });
+  back.querySelector('[data-close]').onclick = closeSheet;
+  $('#shareBtn').onclick = share;
+  var post = $('#postBtn'); if (post) post.onclick = postTime;
+  if (lb) paintBoard();
+  if (window.BoardsideMore) BoardsideMore.mount($('#more'), 'cross-cover');
+  var nb = $('#nextBox');
+  function paintNext(){
+    if (X.todayLA() !== today) { nb.innerHTML = 'A new puzzle is ready. <a href="crossword.html" style="font-weight:800;color:var(--teal)">Play it →</a>'; clearInterval(countdown); return; }
+    nb.innerHTML = 'Next puzzle in <strong>' + fmt(X.msUntilNextLA() / 1000) + '</strong> · midnight, California time';
+  }
+  paintNext(); countdown = setInterval(paintNext, 1000);
+}
+function share(){
+  var text = 'Cross-Cover No. ' + P.number + ' 🩺 solved in ' + fmt(S.solveTime) + (S.assisted ? ' (assisted)' : '') + '\nThe daily medical crossword from Boardside Reviews\nhttps://www.boardsidereviews.com/crossword.html';
+  if (navigator.share) { navigator.share({ text: text }).catch(function(){}); return; }
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(function(){ toast('Copied. Paste it anywhere.'); }, function(){ toast('Couldn\'t copy.'); });
+}
+function lbRows(rows){
+  if (!rows.length) return '<div class="empty">No times yet today. Post yours and take #1.</div>';
+  return '<ol>' + rows.map(function(r){ return '<li class="' + (r.is_me ? 'me' : '') + '"><span class="n">' + r.rank + '</span><span class="who">' + esc(r.display_name) + '</span><span class="t">' + fmt(r.seconds) + '</span></li>'; }).join('') + '</ol>';
+}
+async function paintBoard(){
+  var box = $('#lbBox'); if (!box) return;
+  try {
+    var rows = await BLB.boardTime(GAME, DATE, 10);
+    box.innerHTML = '<h3>Today\'s fastest <small>Top 10</small></h3>' + lbRows(rows) + '<a href="leaderboard.html#cross-cover">Full leaderboard →</a>';
+  } catch(e) { box.innerHTML = '<h3>Today\'s fastest</h3><div class="empty">' + esc(BLB.friendly(e)) + '</div>'; }
+}
+async function postTime(){
+  var b = $('#postBtn'); b.disabled = true; b.textContent = 'Posting…';
+  try {
+    var name = await BLB.dialog({ title: 'Post your time', intro: "We'll email you a 6-digit code to verify it's you. No password needed." });
+    if (!name) { b.disabled = false; b.textContent = 'Post my time'; return; }
+    await BLB.submit(GAME, DATE, S.solveTime, S.solveTime);
+    S.posted = true; save();
+    var rk = null; try { var rows = await BLB.boardTime(GAME, DATE, 200); var me = rows.filter(function(r){ return r.is_me; })[0]; rk = me ? me.rank : null; } catch(e){}
+    b.outerHTML = '<span class="posted">Posted as ' + esc(name) + (rk ? ' · #' + rk + ' today' : '') + '</span>';
+    $('#postNote').innerHTML = '';
+    paintBoard();
+  } catch(e) {
+    if (/already_posted|scores_cross_cover_once/.test(e && e.message || '')) { S.posted = true; save(); }
+    b.disabled = false; b.textContent = 'Post my time';
+    $('#postNote').innerHTML = '<p class="note err">' + esc(BLB.friendly(e)) + '</p>';
+  }
+}
+
+// Let the loading text paint, then build.
+setTimeout(function(){
+  try { build(); }
+  catch(e) { $('#app').innerHTML = '<div class="loading">Today\'s puzzle didn\'t load. Refresh to try again.</div>'; console.error(e); }
+}, 30);
+})();
+</script>
+</body>
+</html>

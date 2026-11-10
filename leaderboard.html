@@ -15,10 +15,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <title>Leaderboard | Boardside Reviews</title>
-<meta name="description" content="Top scores from Boardside Reviews games, including IM Night Float, ABG Blitz, and Hemodynamic Roulette.">
+<meta name="description" content="Top scores from Boardside Reviews games, including the Cross-Cover daily crossword, IM Night Float, ABG Blitz, and Hemodynamic Roulette.">
 <style>
 :root{--navy:#0b2545;--teal:#0d7070;--teal-bright:#3cc4b4;--teal-soft:#e2f3f1;--coral:#b9432c;--coral-soft:#fdece7;--ink2:#33465f;--muted:#52627a;--line:#dce3ea;--sky:#eef5fc;--sky2:#f5f9fd;--amber:#f0b54a}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:#fff;color:var(--navy);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 button{font:inherit;cursor:pointer}
@@ -78,7 +79,7 @@ tr.mine td{background:var(--teal-soft)}
 <body>
 <header><div class="wrap">
 <a class="brand" href="/" aria-label="Boardside Reviews home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Boardside Reviews mark"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg><span>Boardside Reviews</span></a>
-<nav><a href="/#games">Games</a><a href="night-float.html">Night Float</a><a href="abg-blitz.html">ABG Blitz</a><a href="hemodynamic-roulette.html">Hemo Roulette</a><a href="bug-drug.html">Shrug the Bug</a><a href="titrate-tonight.html">Titrate Tonight</a><a href="vent-lab.html">Vent Lab</a></nav>
+<nav><a href="/">Home</a><a href="games.html">All games</a></nav>
 </div></header>
 <main>
 <section class="hero"><div class="wrap">
@@ -89,8 +90,11 @@ tr.mine td{background:var(--teal-soft)}
 <div class="wrap">
 <div class="controls">
 <div class="picker" id="picker"></div>
-<div class="picker"><span class="group">PERIOD</span><div class="seg" id="period">
+<div class="picker" id="periodBox"><span class="group">PERIOD</span><div class="seg" id="period">
 <button type="button" data-days="" aria-pressed="true">All time</button><button type="button" data-days="7" aria-pressed="false">This week</button>
+</div></div>
+<div class="picker" id="dayBox" hidden><span class="group">PUZZLE</span><div class="seg" id="day">
+<button type="button" data-ago="0" aria-pressed="true">Today</button><button type="button" data-ago="1" aria-pressed="false">Yesterday</button>
 </div></div>
 </div>
 <div class="me" id="me" hidden></div>
@@ -102,6 +106,7 @@ tr.mine td{background:var(--teal-soft)}
 <script>
 // Boards shown on this page. Add a line here when a new game gets a leaderboard.
 const BOARDS=[
+  {id:"cross-cover",group:"CROSS-COVER",label:"Cross-Cover",game:"cross-cover",play:"crossword.html",time:true},
   {id:"night-float-standard",group:"IM NIGHT FLOAT",label:"Standard night",game:"night-float",variant:"standard",play:"night-float.html"},
   {id:"night-float-black-cloud",group:"IM NIGHT FLOAT",label:"Black cloud",game:"night-float",variant:"black-cloud",play:"night-float.html"},
   {id:"abg-blitz",group:"ABG BLITZ",label:"ABG Blitz",game:"abg-blitz",variant:"3-min",play:"abg-blitz.html",points:true},
@@ -111,7 +116,11 @@ const BOARDS=[
   {id:"vent-lab",group:"VENT LAB",label:"Asynchrony Challenge",game:"vent-lab",variant:"1-min",play:"vent-lab.html",points:true},
   {id:"questions",group:"BOARD QUESTIONS",label:"Question sets",game:"questions",variant:"all",soon:"Question-set rankings open when the first playable question set goes live."}
 ];
-let cur=BOARDS.find(b=>b.id===location.hash.slice(1))||BOARDS[0], days=null;
+let cur=BOARDS.find(b=>b.id===location.hash.slice(1))||BOARDS[0], days=null, ago=0;
+// California date of a Cross-Cover puzzle (each day has its own board)
+function laDate(daysAgo){const f=new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"});const p=f.formatToParts(new Date());const o={};p.forEach(x=>o[x.type]=x.value);const d=new Date(Date.UTC(+o.year,+o.month-1,+o.day)-daysAgo*864e5);return d.toISOString().slice(0,10)}
+const fmtTime=s=>{s=Math.max(0,s|0);const m=Math.floor(s/60),r=s%60;return m+":"+String(r).padStart(2,"0")};
+const fmtClock=d=>new Date(d).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmtDate=d=>new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
@@ -138,6 +147,16 @@ async function drawBoard(){
   if(!BLB.enabled){box.innerHTML=`<div class="empty"><b>The leaderboard opens soon.</b><span>Scores will appear here once posting goes live.</span></div>`;return}
   if(cur.soon){box.innerHTML=`<div class="empty"><b>Coming soon</b><span>${esc(cur.soon)}</span></div>`;return}
   box.innerHTML=`<div class="empty"><b>Loading…</b></div>`;
+  $("#periodBox").hidden=!!cur.time; $("#dayBox").hidden=!cur.time;
+  if(cur.time){
+    const v=laDate(ago); let rows;
+    try{rows=await BLB.boardTime(cur.game,v,100)}
+    catch(e){box.innerHTML=`<div class="empty"><b>Couldn't load the leaderboard.</b><span>${esc(BLB.friendly(e))}</span><button class="btn ghost" data-a="retry">Try again</button></div>`;return}
+    if(!rows.length){box.innerHTML=`<div class="empty"><b>No times ${ago?"for yesterday's puzzle":"yet today"}.</b><span>${ago?"Today's puzzle is waiting.":"Solve today's puzzle clean and take the top spot."}</span><a class="btn" href="crossword.html">Play today's puzzle</a></div>`;return}
+    box.innerHTML=`<table><thead><tr><th>#</th><th>Player</th><th class="num">Time</th><th class="num hide-sm">Posted</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.is_me?"mine":""}"><td class="rank">${r.rank<=3?`<span class="medal m${r.rank}">${r.rank}</span>`:r.rank}</td><td class="name">${esc(r.display_name)}${r.is_me?`<span class="you">YOU</span>`:""}</td><td class="num pct">${fmtTime(r.seconds)}</td><td class="num hide-sm">${fmtClock(r.achieved_at)}</td></tr>`).join("")}</tbody></table>`;
+    $("#note").textContent=`Puzzle for ${new Date(v+"T12:00:00Z").toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",timeZone:"UTC"})}. Fastest clean solve wins; each player's first post counts. Ties go to whoever posted first.`;
+    return;
+  }
   let rows;
   try{rows=cur.points?await BLB.boardPoints(cur.game,cur.variant,days,100):await BLB.board(cur.game,cur.variant,days,100)}
   catch(e){box.innerHTML=`<div class="empty"><b>Couldn't load the leaderboard.</b><span>${esc(BLB.friendly(e))}</span><button class="btn ghost" data-a="retry">Try again</button></div>`;return}
@@ -148,6 +167,7 @@ async function drawBoard(){
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.id){cur=BOARDS.find(x=>x.id===b.dataset.id);try{history.replaceState(null,"","#"+cur.id)}catch(_){}drawPicker();drawBoard();return}
+  if(b.dataset.ago!==undefined){ago=+b.dataset.ago;document.querySelectorAll("#day button").forEach(x=>x.setAttribute("aria-pressed",x===b));drawBoard();return}
   if(b.dataset.days!==undefined){days=b.dataset.days?+b.dataset.days:null;document.querySelectorAll("#period button").forEach(x=>x.setAttribute("aria-pressed",x===b));drawBoard();return}
   const a=b.dataset.a;
   if(a==="retry")drawBoard();

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LJQ2NG232B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LJQ2NG232B');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gamified Learning | Boardside Reviews</title>
+<meta name="description" content="Free internal medicine games from Boardside Reviews: a daily medical crossword, a night float simulator, ABG and hemodynamics challenges, a bug-drug game, CPAP titration, and a ventilator lab.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%20role%3D%22img%22%20aria-label%3D%22Boardside%20Reviews%20mark%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&family=Fraunces:opsz,wght@9..144,800&family=Fredoka:wght@600&family=JetBrains+Mono:wght@600;700&family=Libre+Franklin:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0b2545;--teal:#0d7070;--teal-bright:#3cc4b4;--teal-soft:#e2f3f1;--ink2:#33465f;--muted:#52627a;--line:#dce3ea;--sky:#eef5fc;--sky2:#f5f9fd;--amber:#f0b54a}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:#fff;color:var(--navy);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid #e3ebf3}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand svg{width:44px;height:44px;display:block}
+.brand span{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:500;letter-spacing:-.01em;white-space:nowrap}
+.brand span b{font-weight:800}
+.brand span b i{font-style:normal;color:var(--teal)}
+header nav{display:flex;align-items:center;gap:20px;font-size:15px;font-weight:500}
+header nav a{text-decoration:none;color:var(--ink2)}
+header nav a:hover{color:var(--teal)}
+header nav a.btn{background:var(--navy);color:#fff;border-radius:12px;padding:10px 16px;font-weight:600}
+@media (max-width:640px){.brand span{display:none}header nav{gap:14px;font-size:14px}}
+
+.hero{background:linear-gradient(180deg,var(--sky) 0%,#fff 100%);border-bottom:1px solid #e3ebf3}
+.hero .wrap{padding-block:56px 44px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px 40px}
+.hero-copy{display:flex;flex-direction:column;gap:14px;max-width:660px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--teal)}
+h1{margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(40px,6.4vw,68px);line-height:1;letter-spacing:-.035em;text-wrap:balance}
+h1 span{color:var(--teal)}
+.hero p{margin:0;font-size:18px;line-height:28px;color:var(--muted)}
+.lbcta{display:inline-flex;align-items:center;gap:10px;text-decoration:none;background:#fff;border:1px solid #cfe0f1;border-radius:14px;padding:12px 16px;font-weight:600;color:var(--navy);box-shadow:0 6px 18px rgba(11,37,69,.06)}
+.lbcta:hover{border-color:var(--teal)}
+.lbcta svg{flex:none}
+
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;padding-block:44px 80px}
+@media (max-width:980px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:620px){.grid{grid-template-columns:1fr;gap:22px}}
+.card{display:flex;flex-direction:column;text-decoration:none;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.card:hover,.card:focus-visible{transform:translateY(-4px);box-shadow:0 22px 44px rgba(11,37,69,.14);border-color:#c7d6e6}
+.thumb{position:relative;aspect-ratio:16/10;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.thumb > *{transition:transform .35s ease}
+.card:hover .thumb > .art{transform:scale(1.04)}
+.badge{position:absolute;top:12px;left:12px;z-index:2;background:var(--amber);color:#2b1d00;font-size:11px;font-weight:800;letter-spacing:.08em;padding:5px 9px;border-radius:999px}
+.body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
+.body h2{margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:21px;letter-spacing:-.01em}
+.body p{margin:0;font-size:15px;line-height:23px;color:var(--muted);flex:1}
+.meta{display:flex;flex-wrap:wrap;gap:6px;padding-top:6px}
+.meta span{font-size:12px;font-weight:600;color:var(--ink2);background:var(--sky);border-radius:999px;padding:4px 10px}
+.play{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:14px;border-top:1px solid #eef2f6;font-weight:600;font-size:15px;color:var(--teal)}
+.play svg{transition:transform .15s}
+.card:hover .play svg{transform:translateX(4px)}
+.fine{font-size:13px;color:var(--muted);text-align:center;padding-bottom:48px;margin:0}
+footer{border-top:1px solid #e3ebf3}
+footer .wrap{padding-block:26px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between}
+footer a{text-decoration:none;color:var(--ink2)}
+
+/* thumbnails: each game keeps its own look */
+.t-cc{background:#f7f1e4;background-image:repeating-linear-gradient(0deg,transparent 0 15px,rgba(20,35,58,.05) 15px 16px)}
+.cc-wrap{display:flex;align-items:center;gap:18px}
+.cc-grid{display:grid;grid-template-columns:repeat(6,26px);grid-template-rows:repeat(6,26px);border:3px solid #14233a;background:#14233a;transform:rotate(-4deg);box-shadow:8px 8px 0 rgba(20,35,58,.15)}
+.cc-grid i{background:#fffdf8;border-right:1px solid #b7ab92;border-bottom:1px solid #b7ab92;font:700 15px/26px 'Libre Franklin',Inter,sans-serif;font-style:normal;text-align:center;color:#14233a}
+.cc-grid i.b{background:#14233a}
+.cc-grid i.w{background:#bfe5df}
+.cc-grid i.s{background:#f5c451}
+.cc-title{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:30px;line-height:.95;color:#14233a}
+.cc-title em{font-style:normal;color:#0d7070}
+.cc-title small{display:block;margin-top:8px;font:700 10.5px/1.3 Inter,sans-serif;letter-spacing:.12em;color:#6f7684}
+.t-nf{background:#1b1e25}
+.nf-pager{width:78%;background:#2a2f38;border-radius:16px;padding:14px;box-shadow:inset 0 -4px 0 #111}
+.nf-lcd{background:#1a1608;border:1px solid rgba(240,181,74,.35);border-radius:10px;padding:12px 14px;font:600 13px/1.55 ui-monospace,'SF Mono',Menlo,Consolas,monospace;color:#f0b54a;text-shadow:0 0 8px rgba(240,181,74,.35)}
+.nf-lcd span{display:block;opacity:.55;font-size:11px}
+.nf-lcd i{font-style:normal;animation:blink 1s steps(1) infinite}
+.t-abg{background:radial-gradient(circle at 30% 20%,#17306a,#0c1630 70%)}
+.abg{display:flex;flex-direction:column;align-items:center;gap:10px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace}
+.abg b{font-size:54px;line-height:1;color:#2ec4b6;border-bottom:4px solid #f0b54a;padding-bottom:4px;text-shadow:0 0 18px rgba(46,196,182,.35)}
+.abg .vals{display:flex;gap:14px;font-size:13px;color:#cfe3ff}
+.abg .chips{display:flex;gap:6px}
+.abg .chips span{font:700 11px/1 Inter,sans-serif;padding:6px 9px;border-radius:999px;background:rgba(46,196,182,.15);color:#7fe9df;border:1px solid rgba(46,196,182,.4)}
+.abg .chips span.hot{background:#f0b54a;color:#1b1400;border-color:#f0b54a}
+.t-hemo{background:#050b1a}
+.hemo{width:88%;display:flex;flex-direction:column;gap:10px;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+.hemo .num{display:flex;justify-content:space-between;color:#ff6b78;font-weight:700;font-size:14px;text-shadow:0 0 8px rgba(255,107,120,.45)}
+.hemo .num span:last-child{color:#7fd8ff;text-shadow:0 0 8px rgba(127,216,255,.45)}
+.hemo .row{display:flex;gap:8px}
+.hemo .row span{flex:1;text-align:center;font:700 12px/1 Inter,sans-serif;padding:8px 0;border-radius:8px;background:#0f1a33;color:#cdd9f2;border:1px solid #1f2d52}
+.hemo .row span.hot{background:#ff6b78;color:#1a0207;border-color:#ff6b78}
+.t-bug{background:linear-gradient(135deg,#E6DEFF,#FDE1EC)}
+.bug{display:flex;align-items:center;gap:16px}
+.bug .tag{font-family:Fredoka,Nunito,sans-serif;font-weight:600;font-size:15px;background:#fff;color:#5C2EC4;border-radius:12px;padding:8px 12px;box-shadow:0 4px 0 #cdbff7}
+.bug .tag.drug{color:#E64078;box-shadow:0 4px 0 #f4bcd0}
+.bug .eq{font:800 22px/1 Inter,sans-serif;color:#5C2EC4}
+.t-tt{background:linear-gradient(180deg,#0c1033,#1d2a6b)}
+.t-tt .stars{position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 12% 20%,#cfd6ff 50%,transparent 51%),radial-gradient(1.2px 1.2px at 78% 14%,#cfd6ff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 64% 38%,#fff 50%,transparent 51%),radial-gradient(1.2px 1.2px at 30% 52%,#cfd6ff 50%,transparent 51%),radial-gradient(1.4px 1.4px at 88% 60%,#fff 50%,transparent 51%)}
+.tt{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;width:84%}
+.tt .hud{display:flex;gap:10px;font:600 13px/1 Fredoka,Nunito,sans-serif}
+.tt .hud span{background:rgba(255,255,255,.1);color:#e6ebff;border-radius:999px;padding:6px 10px}
+.tt .hud span.hot{color:#ffd166}
+.t-vent{background:#05090f}
+.vent{width:86%;display:flex;flex-direction:column;gap:8px;font:600 11px/1 'JetBrains Mono',ui-monospace,Menlo,monospace;color:#7e8ea3}
+.vent .lab{display:flex;justify-content:space-between}
+.vent .lab b{color:#ffc94a;font-weight:700}
+.vent .lab b.t{color:#3fe0d0}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.card,.thumb > *{transition:none}.nf-lcd i{animation:none}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<a class="brand" href="/" aria-label="Boardside Reviews home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg><span><b>Board<i>side</i></b> Reviews</span></a>
+<nav aria-label="Main"><a href="/">Home</a><a href="qbank.html">Question Bank</a><a href="leaderboard.html">Leaderboard</a></nav>
+</div></header>
+
+<main>
+<section class="hero"><div class="wrap">
+<div class="hero-copy">
+<span class="eyebrow">GAMIFIED LEARNING</span>
+<h1>Medicine is more fun <span>when you play it.</span></h1>
+<p>Learning medicine shouldn't feel like another stack of flashcards. These quick, free games put you on the pager, at the blood gas, and at the bedside of a crashing patient, so the patterns stick. Pick one, beat your score, and learn something from every miss.</p>
+</div>
+<a class="lbcta" href="leaderboard.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f0b54a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>See the leaderboards</a>
+</div></section>
+
+<div class="wrap">
+<!-- Games: add a new <a class="card"> block here for each new game -->
+<div class="grid">
+
+<a class="card" href="crossword.html">
+<div class="thumb t-cc"><span class="badge">NEW · DAILY</span><div class="art cc-wrap" aria-hidden="true">
+<div class="cc-grid"><i>C</i><i>H</i><i>I</i><i>L</i><i>L</i><i>S</i><i class="w">H</i><i class="s">I</i><i class="w">P</i><i class="b"></i><i class="b"></i><i class="b"></i><i>F</i><i>L</i><i>A</i><i>S</i><i>H</i><i class="b"></i><i class="b"></i><i>A</i><i>P</i><i>N</i><i>E</i><i>A</i><i class="b"></i><i class="b"></i><i class="b"></i><i>A</i><i>M</i><i>L</i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="cc-title">Cross<em>-</em><br>Cover<small>THE DAILY<br>MEDICAL MINI</small></div>
+</div></div>
+<div class="body"><h2>Cross-Cover</h2><p>A brand-new 6×6 medical crossword every midnight, California time. Race the clock, then post your fastest clean solve.</p>
+<div class="meta"><span>Daily puzzle</span><span>Fastest-time leaderboard</span></div>
+<div class="play">Play today's puzzle<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div></div>
+</a>
+
+<a class="card" href="night-float.html">
+<div class="thumb t-nf"><div class="art nf-pager" aria-hidden="true"><div class="nf-lcd"><span>19:15 · PAGE 1 OF 8</span>4B-12 RN: K 6.9 ON AM LAB. MISSED HD TODAY. PLS CALL<i>_</i></div></div></div>
+<div class="body"><h2>IM Night Float</h2><p>Answer overnight pages, work up patients, make the call, and collect teaching pearls along the way.</p>
+<div class="meta"><span>Cross-cover simulator</span><span>Leaderboard</span></div>
+<div class="play">Start your shift<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div></div>
+</a>
+
+<a class="card" href="abg-blitz.html">
+<div class="thumb t-abg"><div class="art abg" aria-hidden="true"><b>pH 7.24</b><div class="vals"><span>PaCO₂ 39</span><span>HCO₃⁻ 16</span><span>AG 12</span></div><div class="chips"><span class="hot">Metabolic acidosis</span><span>Resp. acidosis</span></div></div></div>
+<div class="body"><h2>ABG Blitz</h2><p>Read each gas and name every primary acid–base disorder. How many can you get in 3 minutes?</p>
+<div class="meta"><span>3 minutes</span><span>Leaderboard</span></div>
+<div class="play">Read the gas<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div></div>
+</a>
+
+<a class="card" href="hemodynamic-roulette.html">
+<div class="thumb t-hemo"><div class="art hemo" aria-hidden="true">
+<div class="num"><span>ART 78/62 (67)</span><span>CI 1.6</span></div>
+<svg viewBox="0 0 240 60" width="100%" height="58" fill="none" stroke="#ff6b78" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M0 46h20l8-30 11 36 7-20h18l8-12 7 24h20l8-30 11 36 7-20h18l8-12 7 24h20l8-30 11 36 7-20h12"/></svg>
+<div class="row"><span>Distributive</span><span class="hot">Cardiogenic</span><span>Obstructive</span></div>
+</div></div>
+<div class="body"><h2>Hemodynamic Roulette</h2><p>Read the Swan-Ganz numbers and call the shock: distributive, cardiogenic, obstructive, or hypovolemic.</p>
+<div class="meta"><span>60 seconds</span><span>Leaderboard</span></div>
+<div class="play">Spin the wheel<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div></div>
+</a>
+
+<a class="card" href="bug-drug.html">
+<div class="thumb t-bug"><div class="art bug" aria-hidden="true">
+<svg viewBox="0 0 30 30" width="96" height="96"><circle cx="15" cy="15" r="13" fill="#F3EEE2" stroke="#3a4a45" stroke-width="1.6"/><circle cx="15" cy="15" r="7" fill="#fff" stroke="#1F9D63" stroke-width="1" stroke-dasharray="2 2"/><circle cx="15" cy="15" r="2.2" fill="#fff" stroke="#8a8272"/><circle cx="7" cy="10" r="1.6" fill="#5C2EC4"/><circle cx="9" cy="8.2" r="1.6" fill="#5C2EC4"/><rect x="20" y="19" width="5" height="2.2" rx="1.1" fill="#E64078" transform="rotate(-30 22 20)"/><rect x="6" y="20" width="5" height="2.2" rx="1.1" fill="#E64078" transform="rotate(20 8 21)"/><circle cx="22" cy="8" r="1.5" fill="#5C2EC4"/></svg>
+<div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start"><span class="tag">Enterobacter</span><span class="eq">↓</span><span class="tag drug">Cefepime</span></div>
+</div></div>
+<div class="body"><h2>Don't Shrug the Bug</h2><p>Match the bug to the drug and level up: Gram stain, susceptibility, resistance, clinical clues, then attending rounds.</p>
+<div class="meta"><span>Level ladder</span><span>Leaderboard</span></div>
+<div class="play">Match the bug<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div></div>
+</a>
+
+<a class="card" href="titrate-tonight.html">
+<div class="thumb t-tt"><span class="stars" aria-hidden="true"></span><div class="art tt" aria-hidden="true">
+<svg viewBox="0 0 26 26" width="58" height="58"><circle cx="11" cy="11" r="7" fill="#fff4c9"/><circle cx="14.5" cy="8.5" r="6.2" fill="#121845"/><text x="17" y="9" font-family="sans-serif" font-weight="700" font-size="6" fill="#cfd6ff">z</text></svg>
+<svg viewBox="0 0 240 40" width="100%" height="40" fill="none" stroke="#5ef2e6" stroke-width="2.4" stroke-linecap="round"><path d="M0 22q15-16 30 0t30 0 30 0 30 0h30q15-16 30 0t30 0 30 0"/></svg>
+<div class="hud"><span>02:14 · REM</span><span>CPAP 9</span><span class="hot">SpO₂ 86%</span></div>
+</div></div>
+<div class="body"><h2>Titrate Tonight</h2><p>Work a sleep lab night shift. Titrate CPAP, read flow and effort, and learn OSA, OHS, and central sleep apnea.</p>
+<div class="meta"><span>Night shift</span><span>Leaderboard</span></div>
+<div class="play">Dim the lights<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div></div>
+</a>
+
+<a class="card" href="vent-lab.html">
+<div class="thumb t-vent"><div class="art vent" aria-hidden="true">
+<div class="lab"><span>PRESSURE</span><b>Ppeak 38</b></div>
+<svg viewBox="0 0 240 44" width="100%" height="44" fill="none" stroke="#ffc94a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M0 36h14v-26h40l6 26h20v-26h40l6 26h20v-26h40l6 26h20v-26h28"/></svg>
+<div class="lab"><span>FLOW</span><b class="t">Asynchrony?</b></div>
+<svg viewBox="0 0 240 44" width="100%" height="44" fill="none" stroke="#3fe0d0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M0 22h14l4-16 4 16h32l6 16 4-16h12l4-16 4 16h28l4-6 4 6h12l4-16 4 16h32l6 16 4-16h40"/></svg>
+</div></div>
+<div class="body"><h2>Vent Lab</h2><p>A live ventilator simulator with scalars, every major mode, a step-by-step basics course, and a 1-minute asynchrony challenge.</p>
+<div class="meta"><span>Simulator</span><span>1-minute challenge</span></div>
+<div class="play">Open the lab<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div></div>
+</a>
+
+</div>
+<p class="fine">Free, plays in your browser. For education only; fictional patients and simulated values.</p>
+</div>
+</main>
+
+<footer><div class="wrap"><span>© 2026 Boardside Reviews™ · Not affiliated with or endorsed by ABIM.</span><a href="mailto:support@boardsidereviews.com">support@boardsidereviews.com</a></div></footer>
+</body>
+</html>
