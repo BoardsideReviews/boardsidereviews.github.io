@@ -198,7 +198,7 @@ declare
 <tr><td align="center" style="padding:28px 12px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#ffffff;border:1px solid #dce3ea;border-radius:16px;">
 <tr><td style="padding:32px 32px 8px 32px;">
-<a href="https://www.boardsidereviews.com/" style="text-decoration:none;"><img src="https://www.boardsidereviews.com/email/logo.png" width="220" height="38" alt="Boardside Reviews" style="display:block;border:0;width:220px;height:auto;"></a>
+<a href="https://www.boardsidereviews.com/" style="text-decoration:none;"><img src="https://www.boardsidereviews.com/email/logo-tagline.png" width="300" height="54" alt="Boardside Reviews: Where boards meet the bedside" style="display:block;border:0;width:300px;max-width:100%;height:auto;"></a>
 </td></tr>
 <tr><td style="padding:18px 32px 0 32px;font-family:Inter,Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#33465f;">
 <p style="margin:0 0 14px 0;">{{GREETING}}</p>
