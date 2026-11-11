@@ -102,6 +102,18 @@ figure.img figcaption{font-size:12px;color:var(--muted)}
 .why{margin:0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:3px}
 details.dd summary{cursor:pointer;color:var(--teal);font-weight:600;font-size:14px}
 details.dd p{margin:6px 0 0;font-size:14px}
+.rc{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:#fff}
+.rc.high{border-left:5px solid var(--coral)}.rc.med{border-left:5px solid var(--amber)}.rc.low{border-left:5px solid #9fb0c6}
+.rc .rh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.pri{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.pri.high{background:var(--coral-soft);color:var(--coral)}.pri.med{background:#fff4dc;color:#7a5200}.pri.low{background:#eef2f6;color:#52627a}
+.rc p{margin:0;font-size:14.5px;line-height:1.55;color:var(--ink2)}
+.rc .sg{background:var(--sky2);border-radius:8px;padding:8px 10px}
+.rc textarea{font:inherit;font-size:14px;padding:8px 10px;border:1px solid #c9d5e2;border-radius:8px;min-height:64px;resize:vertical;width:100%;box-sizing:border-box}
+.rc .rrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rcs{display:flex;flex-direction:column;gap:10px}
+.rcs h4{margin:0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--coral)}
+.tag.rcn{background:var(--coral-soft);color:var(--coral)}
 .pearl b.cz{background:#d6efec;border-radius:3px;padding:0 3px}
 .pearl{background:var(--sky2);border-left:3px solid var(--teal);padding:8px 12px;border-radius:6px;font-size:14.5px}
 .refs{font-size:13.5px;color:var(--ink2);white-space:pre-line}
@@ -155,7 +167,7 @@ const L5=["A","B","C","D","E"];
 const STATUS={todo:"To review",ok:"Looks good",change:"Needs a change"};
 const SECTIONS=["Laboratory studies","Urinalysis","Arterial blood gas","Venous blood gas","Pulmonary function testing","Cerebrospinal fluid","Pleural fluid","Synovial fluid","Ascitic fluid","Hemodynamic measurements","Ventilator settings","24-hour urine collection","Microbiology","Study results"];
 function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2800)}
-let index=[],rows=[],shown=20,F={tag:"",subject:"",status:"",q:""},editing=null,imgCache={};
+let RC={},RCX={},index=[],rows=[],shown=20,F={tag:"",subject:"",status:"",q:""},editing=null,imgCache={};
 try{const s=JSON.parse(localStorage.getItem("bsr-qed-f")||"null");if(s)F=Object.assign(F,s)}catch(e){}
 const saveF=()=>{try{localStorage.setItem("bsr-qed-f",JSON.stringify(F))}catch(e){}};
 
@@ -167,12 +179,13 @@ async function boot(){
   let ok=false;try{ok=await BLB.rpc("is_admin")}catch(e){}
   if(!ok){app.innerHTML=`<h1>Question editor</h1><div class="card"><span>${esc(u.email)} doesn't have admin access.</span></div>`;return}
   try{index=await BLB.rpc("admin_q_index")||[]}catch(x){app.innerHTML=`<h1>Question editor</h1><div class="card">${esc(BLB.friendly(x))}</div>`;return}
+  await loadRCX();
   const subs=[...new Set(index.map(r=>r.subject))].sort();
   app.innerHTML=`<div class="row"><h1>Question editor</h1><span class="acts"><button class="btn" data-new>+ New question</button><a class="linkbtn" href="admin.html">← Admin</a></span></div>
   <p class="muted" style="margin:0;max-width:78ch">The question is on the left and its explanation on the right, as learners see them. Press <b>Edit</b> to change any part, then <b>Save</b> and confirm: the change goes straight to the live question bank. The previous version is always kept.</p>
   <div class="stats" id="stats"></div>
   <div class="filters">
-    <select id="ft" aria-label="Show"><option value="">All questions</option><option value="decide">Needs your decision</option><option value="change">Marked “Needs a change”</option><option value="todo">Not reviewed yet</option><option value="ok">Marked “Looks good”</option><option value="edited">Edited here</option><option value="removed">Removed from the bank</option></select>
+    <select id="ft" aria-label="Show"><option value="">All questions</option><option value="rc">Has my comments (high first)</option><option value="rc-high">Comments: high priority</option><option value="rc-med">Comments: medium priority</option><option value="rc-low">Comments: low priority</option><option value="rc-wait">You replied, waiting for Claude</option><option value="decide">Needs your decision</option><option value="change">Marked “Needs a change”</option><option value="todo">Not reviewed yet</option><option value="ok">Marked “Looks good”</option><option value="edited">Edited here</option><option value="removed">Removed from the bank</option></select>
     <select id="fs" aria-label="Subject"><option value="">All subjects</option>${subs.map(s=>`<option>${esc(s)}</option>`).join("")}</select>
     <input type="search" id="fq" placeholder="Find an ID (Pulm-1-09) or QID (849)" aria-label="Find a question">
     <span class="muted" id="cnt"></span>
@@ -185,7 +198,7 @@ async function boot(){
 }
 function stats(){
   const n=f=>index.filter(f).length;
-  $("#stats").innerHTML=[[n(r=>r.active!==false),"questions live"],[n(r=>(r.tags||[]).includes("decide")&&r.status!=="ok"),"need your decision"],[n(r=>r.status==="ok"),"looks good"],[n(r=>r.status==="change"),"need a change"],[n(r=>r.edits>0),"edited here"]]
+  $("#stats").innerHTML=[[n(r=>r.active!==false),"questions live"],[n(r=>(r.tags||[]).includes("decide")&&r.status!=="ok"),"need your decision"],[n(r=>r.status==="ok"),"looks good"],[n(r=>r.status==="change"),"need a change"],[n(r=>r.edits>0),"edited here"],[n(r=>rcN(r.id,"high")),"high-priority comments"],[n(r=>rcN(r.id,"med")),"medium"],[n(r=>rcN(r.id,"low")),"low"],[n(r=>(RCX[r.id]||{}).waiting>0),"replied, waiting for Claude"]]
     .map(([v,l])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
 }
 function match(r){
@@ -195,6 +208,11 @@ function match(r){
   if(t==="decide"&&!(r.tags||[]).includes("decide"))return false;
   if(["ok","change","todo"].includes(t)&&r.status!==t)return false;
   if(t==="edited"&&!(r.edits>0))return false;
+  if(t==="rc"&&!rcN(r.id))return false;
+  if(t==="rc-high"&&!rcN(r.id,"high"))return false;
+  if(t==="rc-med"&&!rcN(r.id,"med"))return false;
+  if(t==="rc-low"&&!rcN(r.id,"low"))return false;
+  if(t==="rc-wait"&&!((RCX[r.id]||{}).waiting>0))return false;
   if(F.subject&&r.subject!==F.subject)return false;
   if(F.q){const q=F.q.toLowerCase();if(!(r.id.toLowerCase().includes(q)||String(r.num)===q))return false}
   return true;
@@ -202,7 +220,8 @@ function match(r){
 async function go(){
   if(editing&&!confirmLeave())return;
   saveF();shown=20;editing=null;
-  const ids=index.filter(match).map(r=>r.id);
+  let ids=index.filter(match).map(r=>r.id);
+  if(F.tag.startsWith("rc"))ids.sort((a,b)=>rcRank(b)-rcRank(a));
   $("#cnt").textContent=ids.length+" shown";
   rows=ids.map(id=>({id,_stub:true}));
   await loadMore();
@@ -211,7 +230,7 @@ async function loadMore(){
   const need=rows.slice(0,shown).filter(r=>r._stub).map(r=>r.id);
   if(need.length){
     $("#list").innerHTML=rows.length?`<div class="card muted">Loading…</div>`:`<div class="card muted">Nothing matches.</div>`;
-    try{const got=await BLB.rpc("admin_q_rows",{p_ids:need})||[];const m=new Map(got.map(g=>[g.id,g]));rows=rows.map(r=>m.get(r.id)||r)}
+    try{const got=await BLB.rpc("admin_q_rows",{p_ids:need})||[];const m=new Map(got.map(g=>[g.id,g]));rows=rows.map(r=>m.get(r.id)||r);await loadRC(need)}
     catch(x){$("#list").innerHTML=`<div class="card">${esc(BLB.friendly(x))}</div>`;return}
   }
   draw();
@@ -231,6 +250,20 @@ function imgHTML(r){
     return`<figure class="img" data-img="${esc(r.id)}"><div class="muted" style="font-size:13px">Loading image…</div>${c}</figure>`}
   return`<figure class="img" data-img="${esc(r.id)}"><img src="${src}" alt="Exhibit for ${esc(r.id)}">${c}</figure>`;
 }
+/* ---------- review comments (from Claude's audits) ---------- */
+const PRI={high:"High",med:"Medium",low:"Low"};
+function rcN(id,p){const x=RCX[id];if(!x)return 0;return p?(x[p]||0):(x.high||0)+(x.med||0)+(x.low||0)}
+function rcRank(id){const x=RCX[id]||{};return (x.high||0)*10000+(x.med||0)*100+(x.low||0)}
+async function loadRCX(){try{const a=await BLB.rpc("admin_rc_index")||[];RCX={};a.forEach(x=>RCX[x.question_id]=x)}catch(e){RCX={}}}
+async function loadRC(ids){if(!ids.length)return;try{const a=await BLB.rpc("admin_rc_for",{p_ids:ids})||[];ids.forEach(id=>RC[id]=[]);a.forEach(c=>(RC[c.question_id]=RC[c.question_id]||[]).push(c))}catch(e){}}
+function rcHTML(r){
+  const cs=RC[r.id]||[];if(!cs.length)return"";
+  return `<div class="rcs"><h4>Claude's review comments (${cs.length})</h4>${cs.map(c=>`<div class="rc ${esc(c.priority)}" data-rc="${c.id}">
+    <div class="rh"><span class="pri ${esc(c.priority)}">${PRI[c.priority]||esc(c.priority)}</span>${c.category?`<span>${esc(c.category)}</span>`:""}<span>${c.status==="replied"?"You replied: Claude will update the question, then remove this comment":"Open"}</span></div>
+    <p>${esc(c.comment)}</p>${c.suggestion?`<p class="sg"><b>Suggested fix:</b> ${esc(c.suggestion)}</p>`:""}
+    <textarea data-rcreply="${c.id}" placeholder="Your reply: e.g. agree, fix it; keep as is; or what to change instead">${esc(c.reply||"")}</textarea>
+    <div class="rrow"><button type="button" class="btn sm" data-rcsend="${c.id}">${c.reply?"Update reply":"Send reply"}</button><span class="muted" style="font-size:13px">${c.replied_at?"Replied "+new Date(c.replied_at).toLocaleString():""}</span></div></div>`).join("")}</div>`;
+}
 function viewCard(r){
   const b=r.body||{},e=r.explain||{},tags=r.tags||[],ch=b.choices||{};
   const left=`<h4>Question</h4>${paras(b.stem).map(p=>`<p>${esc(p)}</p>`).join("")}${b.exam?`<p>${esc(b.exam)}</p>`:""}${tbl(b.tests)}${(b.notes||[]).map(t=>`<p>${esc(t)}</p>`).join("")}${(!b.tests&&b.data&&b.data.length)?`<ul>${b.data.map(d=>`<li>${esc(d)}</li>`).join("")}</ul>`:""}${imgHTML(r)}<p class="ask">${esc(b.ask)}</p>
@@ -242,9 +275,9 @@ function viewCard(r){
     ${(e.summaries||[]).length?`<h4>Summary</h4>${e.summaries.map(s=>summ(s,e.ref_links)).join("")}`:""}
     <h4>References</h4><div class="refs">${linkRefs(e.references,e.ref_links)}</div>`;
   const notes=(tags.includes("decide")||(r.fixes||[]).length)?`<details class="dd"${tags.includes("decide")&&r.status!=="ok"?" open":""}><summary>Notes from the layout update</summary><div class="box">${(r.fixes||[]).length?`<ul>${r.fixes.map(x=>`<li>${x.action==="flag"?"<b>Your call:</b> ":""}${esc(x.test||"")}${x.old?": "+esc(x.old)+" → "+esc(x.new||""):""}. ${esc(x.reason||"")}</li>`).join("")}</ul>`:""}${r.flags?`<p style="margin:6px 0 0">${esc(r.flags)}</p>`:""}</div></details>`:"";
-  return `<section class="q" data-id="${esc(r.id)}"><div class="qh"><h3>${esc(r.id)} <small>QID ${r.num} · ${esc(r.subject)}${r.edits?` · edited ${r.edits}×`:""}</small> ${r.active===false?'<span class="tag change">Removed from the bank</span>':(tags.includes("decide")&&r.status!=="ok"?'<span class="tag decide">Needs your decision</span>':"")}${r.active===false?"":`<span class="tag ${esc(r.status)}">${esc(STATUS[r.status]||STATUS.todo)}</span>`}</h3>
+  return `<section class="q" data-id="${esc(r.id)}"><div class="qh"><h3>${esc(r.id)} <small>QID ${r.num} · ${esc(r.subject)}${r.edits?` · edited ${r.edits}×`:""}</small> ${r.active===false?'<span class="tag change">Removed from the bank</span>':(tags.includes("decide")&&r.status!=="ok"?'<span class="tag decide">Needs your decision</span>':"")}${r.active===false?"":`<span class="tag ${esc(r.status)}">${esc(STATUS[r.status]||STATUS.todo)}</span>`}${rcN(r.id)?`<span class="tag rcn">${rcN(r.id)} comment${rcN(r.id)>1?"s":""}${rcN(r.id,"high")?" · "+rcN(r.id,"high")+" high":""}</span>`:""}</h3>
   <div class="acts">${r.active===false?`<button class="btn sm" data-restore>Put back in the bank</button>`:`<button class="btn sm" data-edit>Edit</button><button class="btn sm ghost ${r.status==="ok"?"on":""}" data-mark="ok">Looks good</button><button class="btn sm ghost ${r.status==="change"?"on":""}" data-mark="change">Needs a change</button><button class="btn sm danger" data-remove>Remove</button>`}</div></div><div data-rmconfirm></div>
-  <div class="cols"><div>${left}</div><div>${right}</div></div>${notes}</section>`;
+  <div class="cols"><div>${left}</div><div>${right}</div></div>${notes}${rcHTML(r)}</section>`;
 }
 function draw(){
   const L=$("#list");
@@ -431,6 +464,8 @@ document.addEventListener("click",async ev=>{
     if(!c.length&&!editing.isNew){$("#econfirm").innerHTML=`<div class="warn">Nothing has changed.</div>`;return}
     if(editing.isNew){$("#econfirm").innerHTML=`<div class="warn" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><span>Add this question to the live bank under <b>${esc(editing.subject)}</b>? Learners can get it right away.</span><span><button type="button" class="btn sm" data-go>Confirm and add</button> <button type="button" class="btn sm ghost" data-nogo>Keep editing</button></span></div>`;return}
     $("#econfirm").innerHTML=`<div class="warn" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><span>Save to the live question bank? Changed: <b>${esc(c.join(", "))}</b>. The previous version is kept.</span><span><button type="button" class="btn sm" data-go>Confirm and save</button> <button type="button" class="btn sm ghost" data-nogo>Keep editing</button></span></div>`;return}
+  if(b.dataset.rcsend){const id=+b.dataset.rcsend,ta=document.querySelector(`[data-rcreply="${id}"]`),txt=(ta?ta.value:"").trim();
+    b.disabled=true;try{const c=await BLB.rpc("admin_rc_reply",{p_id:id,p_reply:txt});for(const k in RC){RC[k]=RC[k].map(x=>x.id===id?c:x)}await loadRCX();stats();draw();toast(txt?"Reply saved. I'll update the question and clear the comment.":"Reply cleared.")}catch(x){b.disabled=false;toast(BLB.friendly(x))}return}
   if(b.hasAttribute("data-nogo")){$("#econfirm").innerHTML="";return}
   if(b.hasAttribute("data-go")){await doSave();return}
 });
