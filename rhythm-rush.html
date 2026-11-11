@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LJQ2NG232B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LJQ2NG232B');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rhythm Rush: 60-second ECG challenge | Boardside Reviews</title>
+<meta name="description" content="Rhythm Rush: read the rhythm strip and call it. 41 rhythms, from Wenckebach to torsades, 60 seconds on the clock. A free ECG game from Boardside Reviews with a leaderboard.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%20role%3D%22img%22%20aria-label%3D%22Boardside%20Reviews%20mark%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
+<script src="lb-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="lb.js"></script>
+<script src="more-games.js"></script>
+<script src="rhythm-engine.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{--body:#e9e7e1;--panel:#f6f5f1;--char:#23272b;--char2:#3a4046;--muted:#6b7077;--red:#d64848;--red-lo:#fbe3e1;--green:#1f9d63;--green-lo:#dcf3e7;--led:#3ad07a;--paper:#fff5f3;--line:#d6d3cb}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--body);color:var(--char);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.mono{font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace}
+
+/* machine header */
+.top{background:var(--char);color:#f2f0ea;border-bottom:4px solid #111}
+.top .in{max-width:980px;margin:0 auto;padding:10px max(16px,env(safe-area-inset-left));display:flex;align-items:center;gap:14px}
+.home{display:flex;align-items:center;gap:10px;text-decoration:none;flex:none}
+.home svg{width:34px;height:34px;display:block}
+.title{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
+.title h1{margin:0;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:clamp(17px,3.4vw,23px);letter-spacing:.06em;white-space:nowrap}
+.title h1 b{color:var(--red)}
+.led{width:9px;height:9px;border-radius:50%;background:var(--led);box-shadow:0 0 8px var(--led);flex:none;animation:beat 1s infinite}
+@keyframes beat{0%,100%{opacity:1}50%{opacity:.35}}
+.readout{display:flex;gap:8px;flex:none}
+.ro{background:#111;border:1px solid #444;border-radius:6px;padding:4px 10px;text-align:right;min-width:72px}
+.ro span{display:block;font:600 9px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#8b9097}
+.ro strong{display:block;font:700 19px/1.15 'IBM Plex Mono',monospace;color:var(--led);font-variant-numeric:tabular-nums}
+.ro.time strong{color:#ffb35c}
+.ro.time.low strong{color:#ff6b6b}
+@media (max-width:520px){.home svg{width:30px;height:30px}.ro{min-width:60px;padding:3px 8px}.ro strong{font-size:16px}.title .led{display:none}}
+
+main{max-width:980px;margin:0 auto;padding:18px max(14px,env(safe-area-inset-left)) 40px}
+.bar{height:8px;background:#cfccc4;border-radius:999px;overflow:hidden;margin-bottom:12px}
+.bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--red),#ff8a5c);transform-origin:left;transition:transform .2s linear}
+
+/* strip */
+.printer{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 10px 26px rgba(35,39,43,.12)}
+.slot{height:6px;background:#2b2f34;border-radius:6px;margin:0 6px 8px;box-shadow:inset 0 2px 3px rgba(0,0,0,.6)}
+canvas.strip{display:block;width:100%;border-radius:4px;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.stripmeta{display:flex;justify-content:space-between;gap:10px;margin-top:8px;font:600 12px/1.3 'IBM Plex Mono',monospace;color:var(--muted);letter-spacing:.04em}
+.streak{color:var(--red)}
+
+/* answers */
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.ans{position:relative;text-align:left;border:2px solid var(--char);background:#fff;border-radius:12px;padding:14px 14px 14px 44px;font-weight:600;font-size:16px;line-height:1.25;min-height:62px;box-shadow:0 3px 0 var(--char);transition:transform .06s}
+.ans:hover{background:#fbfaf7}
+.ans:active{transform:translateY(2px);box-shadow:0 1px 0 var(--char)}
+.ans kbd{position:absolute;left:12px;top:50%;transform:translateY(-50%);font:700 12px/1 'IBM Plex Mono',monospace;border:1.5px solid var(--char2);border-radius:5px;padding:4px 6px;color:var(--char2)}
+.ans.right{background:var(--green-lo);border-color:var(--green);box-shadow:0 3px 0 var(--green)}
+.ans.wrong{background:var(--red-lo);border-color:var(--red);box-shadow:0 3px 0 var(--red)}
+.ans:disabled{cursor:default}
+@media (max-width:560px){.answers{grid-template-columns:1fr;gap:8px}.ans{min-height:50px;padding:11px 12px 11px 40px;font-size:15px}}
+.clue{min-height:44px;margin-top:10px;font-size:14.5px;line-height:1.4;color:var(--char2);display:flex;align-items:center;gap:10px}
+.clue b{color:var(--red)}
+.pop{position:fixed;z-index:30;pointer-events:none;font:700 22px/1 'IBM Plex Mono',monospace;color:var(--green);animation:up .8s ease-out forwards}
+.pop.neg{color:var(--red)}
+@keyframes up{to{transform:translateY(-46px);opacity:0}}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:clamp(18px,4vw,30px);box-shadow:0 10px 26px rgba(35,39,43,.1)}
+.hero{display:grid;grid-template-columns:1.1fr 1fr;gap:26px;align-items:center}
+@media (max-width:760px){.hero{grid-template-columns:1fr}}
+.eyebrow{font:700 11px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:var(--red)}
+.hero h2{margin:10px 0 8px;font-family:'IBM Plex Mono',monospace;font-size:clamp(30px,5vw,44px);line-height:1.02;letter-spacing:-.01em}
+.hero p{margin:0 0 14px;font-size:16px;line-height:1.55;color:var(--char2)}
+.rules{margin:0 0 18px;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14.5px;color:var(--char2)}
+.rules li::before{content:"▸ ";color:var(--red);font-weight:700}
+.go{border:0;background:var(--red);color:#fff;font:700 17px/1 'IBM Plex Mono',monospace;letter-spacing:.08em;padding:16px 30px;border-radius:12px;box-shadow:0 4px 0 #8f2626}
+.go:active{transform:translateY(2px);box-shadow:0 2px 0 #8f2626}
+.link{background:none;border:0;padding:0;font-weight:600;color:var(--char2);text-decoration:underline;text-underline-offset:3px}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.best{font:600 13px/1.3 'IBM Plex Mono',monospace;color:var(--muted)}
+
+/* end */
+.end h2{margin:6px 0 0;font:700 clamp(46px,9vw,68px)/1 'IBM Plex Mono',monospace;letter-spacing:-.02em}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stats div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.stats span{display:block;font:600 10px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--muted)}
+.stats strong{display:block;margin-top:6px;font:700 22px/1 'IBM Plex Mono',monospace}
+.ghost{border:2px solid var(--char);background:transparent;border-radius:12px;padding:12px 18px;font-weight:700}
+.ghost:hover{background:#fff}
+.note{font-size:13px;color:var(--muted);line-height:1.45;margin:8px 0 0}
+.note.err{color:var(--red)}
+.posted{font-weight:700;color:var(--green)}
+.sec{margin-top:24px}
+.sec h3{margin:0 0 10px;font:700 15px/1.2 'IBM Plex Mono',monospace;letter-spacing:.06em;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.sec h3 small{font:500 12px/1 'IBM Plex Sans',sans-serif;color:var(--muted);letter-spacing:0}
+.misses{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.misses li{background:#fff;border:1px solid var(--line);border-left:4px solid var(--red);border-radius:8px;padding:9px 12px;font-size:14px;line-height:1.4}
+.misses li b{display:block;font-size:14.5px}
+.lb ol{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.lb li{display:flex;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid #eeebe4;font-size:14.5px}
+.lb li:last-child{border-bottom:0}
+.lb li .n{width:24px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.lb li .who{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.lb li .s{font:700 14.5px/1 'IBM Plex Mono',monospace}
+.lb li.me{background:var(--green-lo)}
+.lb .empty{padding:14px;border:1.5px dashed var(--line);border-radius:10px;font-size:14px;color:var(--muted);text-align:center}
+.lb a{display:inline-block;margin-top:8px;font-size:13.5px;font-weight:700;color:var(--red);text-decoration:none}
+
+/* strip library */
+.lib-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}
+.lib-head h2{margin:0;font:700 26px/1.1 'IBM Plex Mono',monospace}
+.lib-head p{margin:6px 0 0;color:var(--char2);font-size:14.5px}
+.fam{margin:22px 0 8px;font:700 12px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;color:var(--red)}
+.libitem{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px 12px;margin-bottom:12px}
+.libitem header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+.libitem header b{font-size:15.5px}
+.libitem header button{border:1px solid var(--char2);background:#fff;border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600;flex:none}
+.libitem p{margin:8px 0 0;font-size:14px;color:var(--char2);line-height:1.4}
+.fine{margin-top:22px;font-size:12.5px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:reduce){.led{animation:none}.pop{animation:none;opacity:0}}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <a class="home" href="games.html" aria-label="Boardside Reviews games"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg></a>
+  <div class="title"><span class="led" aria-hidden="true"></span><h1>RHYTHM <b>RUSH</b></h1></div>
+  <div class="readout"><div class="ro"><span>SCORE</span><strong id="score">0</strong></div><div class="ro time" id="timeBox"><span>TIME</span><strong id="time">1:00</strong></div></div>
+</div></header>
+
+<main id="app"></main>
+
+<script>
+(function(){
+'use strict';
+var E = window.BoardsideECG, GAME = 'rhythm-rush', VARIANT = '1-min', ROUND = 60;
+var $ = function(s, el){ return (el||document).querySelector(s); };
+var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+var store = { get: function(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } }, set: function(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} } };
+var hasLB = function(){ return !!(window.BLB && BLB.enabled && BLB.boardPoints); };
+var rnd = Math.random;
+function shuffle(a){ for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+var FAM_LABEL = { sinus:'SINUS', af:'ATRIAL FIBRILLATION', flutter:'ATRIAL FLUTTER', svt:'OTHER SUPRAVENTRICULAR', vent:'VENTRICULAR', block:'AV BLOCKS', pace:'PACEMAKER', cond:'CONDUCTION & INTERVALS', lytes:'ELECTROLYTES & DRUGS' };
+var RELATED = { sinus:['block','svt'], af:['flutter','svt'], flutter:['af','svt'], svt:['af','flutter','sinus'], vent:['pace','cond'], block:['sinus','pace'], pace:['vent','block'], cond:['lytes','vent'], lytes:['cond','vent'] };
+
+// ── Routing: game (default) or strip library (#library) ──
+function route(){ stopRound(); if (location.hash === '#library') library(); else intro(); }
+window.addEventListener('hashchange', route);
+
+// ── Intro ──
+function intro(){
+  setReadout(0, ROUND);
+  var best = store.get('rr:best');
+  $('#app').innerHTML =
+    '<div class="card hero"><div>' +
+      '<span class="eyebrow">60-SECOND ECG CHALLENGE</span>' +
+      '<h2>Read the strip.<br>Call the rhythm.</h2>' +
+      '<p>A strip prints. Four choices. Pick fast, because the clock never stops.</p>' +
+      '<ul class="rules"><li>41 rhythms, from sinus arrhythmia to torsades</li><li>Faster answers and hot streaks score more</li><li>A wrong answer costs 50 points and shows you the tell</li><li>Keys 1 to 4 work on a keyboard</li></ul>' +
+      '<div class="row"><button class="go" id="startBtn" type="button">START ▸</button><button class="link" type="button" id="libBtn">Study the strip library</button></div>' +
+      (best ? '<p class="best" style="margin-top:14px">YOUR BEST: ' + best + '</p>' : '') +
+    '</div><div><canvas class="strip" id="demo" aria-label="Sample rhythm strip"></canvas><div class="stripmeta"><span>LEAD II · V1</span><span id="demoName"></span></div></div></div>' +
+    '<p class="fine">Strips are computer-generated teaching tracings, not recordings from real patients. Educational use only.</p>';
+  $('#startBtn').onclick = startRound;
+  $('#libBtn').onclick = function(){ location.hash = 'library'; };
+  var demoIds = ['nsr', 'af_rvr', 'mob1', 'tdp', 'fl41'], di = 0;
+  function demo(){ var c = $('#demo'); if (!c) return; var id = demoIds[di++ % demoIds.length]; E.draw(c, E.make(id, rnd)); }
+  demo(); introTimer = setInterval(demo, 2600);
+  $('#startBtn').focus();
+}
+var introTimer = null;
+
+// ── Round ──
+var G = null, raf = null;
+function setReadout(score, secs){
+  $('#score').textContent = score;
+  var s = Math.max(0, Math.ceil(secs)); $('#time').textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  $('#timeBox').classList.toggle('low', secs <= 10 && G && !G.over);
+}
+function stopRound(){ if (introTimer) clearInterval(introTimer); introTimer = null; if (raf) cancelAnimationFrame(raf); raf = null; if (G) G.over = true; }
+function startRound(){
+  stopRound();
+  G = { score: 0, answered: 0, right: 0, streak: 0, bestStreak: 0, start: performance.now(), recent: [], misses: {}, over: false, locked: false, q: null };
+  $('#app').innerHTML =
+    '<div class="bar"><i id="bar"></i></div>' +
+    '<div class="printer"><div class="slot"></div><canvas class="strip" id="strip" aria-label="Rhythm strip"></canvas>' +
+    '<div class="stripmeta"><span>LEAD II · V1 · 6 SEC</span><span class="streak" id="streak"></span></div></div>' +
+    '<div class="answers" id="answers"></div><div class="clue" id="clue" aria-live="polite"></div>';
+  next(); tick();
+}
+function tick(){
+  if (!G || G.over) return;
+  var left = ROUND - (performance.now() - G.start) / 1000;
+  setReadout(G.score, left);
+  $('#bar').style.transform = 'scaleX(' + Math.max(0, left / ROUND) + ')';
+  if (left <= 0) return endRound();
+  raf = requestAnimationFrame(tick);
+}
+function pickRhythm(){
+  var pool = E.RHYTHMS.filter(function(r){ return G.recent.indexOf(r.id) < 0; });
+  var r = pool[Math.floor(rnd() * pool.length)];
+  G.recent.push(r.id); if (G.recent.length > 8) G.recent.shift();
+  return r;
+}
+function options(r){
+  var same = shuffle(E.RHYTHMS.filter(function(x){ return x.family === r.family && x.id !== r.id; }));
+  var near = shuffle(E.RHYTHMS.filter(function(x){ return RELATED[r.family].indexOf(x.family) >= 0; }));
+  var any = shuffle(E.RHYTHMS.filter(function(x){ return x.id !== r.id; }));
+  var out = [r], pools = [same.slice(0, 2), near, same, any];
+  pools.forEach(function(p){ p.forEach(function(x){ if (out.length < 4 && out.indexOf(x) < 0) out.push(x); }); });
+  return shuffle(out);
+}
+function next(){
+  if (G.over) return;
+  var r = pickRhythm(), strip = E.make(r.id, rnd), opts = options(r);
+  G.q = { r: r, strip: strip, opts: opts, shown: performance.now() };
+  G.locked = false;
+  $('#answers').innerHTML = opts.map(function(o, i){ return '<button class="ans" type="button" data-i="' + i + '"><kbd>' + (i + 1) + '</kbd>' + esc(o.name) + '</button>'; }).join('');
+  $('#answers').querySelectorAll('.ans').forEach(function(b){ b.onclick = function(){ answer(+b.dataset.i, b); }; });
+  $('#clue').innerHTML = '';
+  printStrip();
+  $('#streak').textContent = G.streak >= 3 ? 'STREAK ' + G.streak + ' · ×' + mult().toFixed(1) : '';
+}
+function printStrip(){
+  var c = $('#strip'), t0 = performance.now(), q = G.q;
+  (function frame(){
+    if (!G || G.q !== q || !c.isConnected) return;
+    var p = Math.min(1, (performance.now() - t0) / 420);
+    E.draw(c, q.strip, { progress: p });
+    if (p < 1) requestAnimationFrame(frame);
+  })();
+}
+function mult(){ return 1 + Math.min(G.streak, 10) * 0.1; }
+function answer(i, btn){
+  if (!G || G.over || G.locked) return;
+  G.locked = true;
+  var q = G.q, pick = q.opts[i], ok = pick.id === q.r.id, secs = (performance.now() - q.shown) / 1000;
+  var buttons = $('#answers').querySelectorAll('.ans');
+  buttons.forEach(function(b){ b.disabled = true; });
+  G.answered++;
+  var delta;
+  if (ok) {
+    var bonus = Math.round(50 * Math.max(0, Math.min(1, (6 - secs) / 4.5)));
+    delta = Math.round((100 + bonus) * mult());
+    G.score += delta; G.right++; G.streak++; G.bestStreak = Math.max(G.bestStreak, G.streak);
+    btn.classList.add('right');
+  } else {
+    delta = -Math.min(50, G.score); G.score += delta; G.streak = 0;
+    btn.classList.add('wrong');
+    buttons[q.opts.indexOf(q.r)].classList.add('right');
+    G.misses[q.r.id] = (G.misses[q.r.id] || 0) + 1;
+    $('#clue').innerHTML = '<b>' + esc(q.r.name) + ':</b> <span>' + esc(q.r.clue) + '</span>';
+  }
+  setReadout(G.score, ROUND - (performance.now() - G.start) / 1000);
+  pop(btn, delta);
+  setTimeout(next, ok ? 280 : 1300);
+}
+function pop(el, d){
+  if (!d) return;
+  var r = el.getBoundingClientRect(), p = document.createElement('div');
+  p.className = 'pop' + (d < 0 ? ' neg' : ''); p.textContent = (d > 0 ? '+' : '') + d;
+  p.style.left = (r.right - 70) + 'px'; p.style.top = (r.top + 8) + 'px';
+  document.body.appendChild(p); setTimeout(function(){ p.remove(); }, 850);
+}
+document.addEventListener('keydown', function(e){
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (G && !G.over && /^[1-4]$/.test(e.key)) { var b = $('#answers').querySelectorAll('.ans')[+e.key - 1]; if (b) { e.preventDefault(); b.click(); } }
+  else if (e.key === 'Enter' && $('#startBtn') && document.activeElement === document.body) { e.preventDefault(); $('#startBtn').click(); }
+});
+window.addEventListener('resize', function(){ if (G && !G.over && G.q && $('#strip')) E.draw($('#strip'), G.q.strip); });
+
+// ── End ──
+function endRound(){
+  G.over = true; setReadout(G.score, 0); $('#timeBox').classList.remove('low');
+  var best = store.get('rr:best') || 0, isBest = G.score > best; if (isBest) store.set('rr:best', G.score);
+  var acc = G.answered ? Math.round(100 * G.right / G.answered) : 0, lb = hasLB();
+  var missIds = Object.keys(G.misses);
+  $('#app').innerHTML = '<div class="card end">' +
+    '<span class="eyebrow">' + (isBest && G.score > 0 ? 'NEW PERSONAL BEST' : 'TIME') + '</span>' +
+    '<h2>' + G.score + '</h2>' +
+    '<div class="stats"><div><span>CORRECT</span><strong>' + G.right + '/' + G.answered + '</strong></div><div><span>ACCURACY</span><strong>' + acc + '%</strong></div><div><span>BEST STREAK</span><strong>' + G.bestStreak + '</strong></div><div><span>YOUR BEST</span><strong>' + Math.max(best, G.score) + '</strong></div></div>' +
+    '<div class="row"><button class="go" id="againBtn" type="button">PLAY AGAIN ▸</button>' + (lb && G.score > 0 ? '<button class="ghost" id="postBtn" type="button">Post my score</button>' : '') + '<button class="link" type="button" id="libBtn2">Strip library</button></div>' +
+    '<div id="postNote">' + (lb && G.score > 0 ? '<p class="note">Sign in with your email once. Only your display name shows.</p>' : '') + '</div>' +
+    (missIds.length ? '<div class="sec"><h3>THE ONES THAT GOT YOU <small>Learn the tell</small></h3><ul class="misses">' + missIds.map(function(id){ var r = E.byId[id]; return '<li><b>' + esc(r.name) + '</b>' + esc(r.clue) + '</li>'; }).join('') + '</ul></div>' : '') +
+    (lb ? '<div class="sec lb" id="lbBox"><h3>TOP 10 <small>All time</small></h3><div class="empty">Loading…</div></div>' : '') +
+    '<div id="more"></div></div>';
+  $('#againBtn').onclick = startRound; $('#againBtn').focus();
+  $('#libBtn2').onclick = function(){ location.hash = 'library'; };
+  var pb = $('#postBtn'); if (pb) pb.onclick = postScore;
+  if (lb) paintBoard();
+  if (window.BoardsideMore) BoardsideMore.mount($('#more'), 'rhythm-rush');
+}
+async function paintBoard(){
+  var box = $('#lbBox'); if (!box) return;
+  try {
+    var rows = await BLB.boardPoints(GAME, VARIANT, null, 10);
+    box.innerHTML = '<h3>TOP 10 <small>All time</small></h3>' + (rows.length ? '<ol>' + rows.map(function(r){ return '<li class="' + (r.is_me ? 'me' : '') + '"><span class="n">' + r.rank + '</span><span class="who">' + esc(r.display_name) + '</span><span class="s">' + (r.best_score != null ? r.best_score : r.score) + '</span></li>'; }).join('') + '</ol>' : '<div class="empty">No scores yet. Post yours and take #1.</div>') + '<a href="leaderboard.html#rhythm-rush">Full leaderboard →</a>';
+  } catch(e) { box.innerHTML = '<h3>TOP 10</h3><div class="empty">' + esc(BLB.friendly(e)) + '</div>'; }
+}
+async function postScore(){
+  var b = $('#postBtn'), score = G.score; b.disabled = true; b.textContent = 'Posting…';
+  try {
+    var name = await BLB.dialog({ title: 'Post your score', intro: "We'll email you a 6-digit code to verify it's you. No password needed." });
+    if (!name) { b.disabled = false; b.textContent = 'Post my score'; return; }
+    await BLB.submit(GAME, VARIANT, score, score);
+    var rk = null; try { var rows = await BLB.boardPoints(GAME, VARIANT, null, 200); var me = rows.filter(function(r){ return r.is_me; })[0]; rk = me ? me.rank : null; } catch(e){}
+    b.outerHTML = '<span class="posted">Posted as ' + esc(name) + (rk ? ' · #' + rk : '') + '</span>';
+    $('#postNote').innerHTML = ''; paintBoard();
+  } catch(e) {
+    b.disabled = false; b.textContent = 'Post my score';
+    $('#postNote').innerHTML = '<p class="note err">' + esc(BLB.friendly(e)) + '</p>';
+  }
+}
+
+// ── Strip library ──
+function library(){
+  setReadout(0, ROUND);
+  var fams = []; E.RHYTHMS.forEach(function(r){ if (fams.indexOf(r.family) < 0) fams.push(r.family); });
+  $('#app').innerHTML = '<div class="lib-head"><div><h2>Strip library</h2><p>All 41 rhythms with the tell for each. Hit "New example" to see another version.</p></div><button class="go" type="button" id="startBtn">START A ROUND ▸</button></div>' +
+    fams.map(function(f){
+      return '<div class="fam">' + FAM_LABEL[f] + '</div>' + E.RHYTHMS.filter(function(r){ return r.family === f; }).map(function(r){
+        return '<div class="libitem"><header><b>' + esc(r.name) + '</b><button type="button" data-new="' + r.id + '">New example</button></header><canvas class="strip" data-id="' + r.id + '"></canvas><p>' + esc(r.clue) + '</p></div>';
+      }).join('');
+    }).join('') + '<p class="fine">Strips are computer-generated teaching tracings, not recordings from real patients.</p>';
+  $('#startBtn').onclick = function(){ history.replaceState(null, '', location.pathname); startRound(); };
+  var io = 'IntersectionObserver' in window ? new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting && !e.target.dataset.drawn) { e.target.dataset.drawn = 1; E.draw(e.target, E.make(e.target.dataset.id, rnd)); } }); }, { rootMargin: '300px' }) : null;
+  document.querySelectorAll('canvas[data-id]').forEach(function(c){ if (io) io.observe(c); else E.draw(c, E.make(c.dataset.id, rnd)); });
+  document.querySelectorAll('[data-new]').forEach(function(b){ b.onclick = function(){ var c = b.closest('.libitem').querySelector('canvas'); E.draw(c, E.make(b.dataset.new, rnd)); }; });
+}
+
+route();
+})();
+</script>
+</body>
+</html>

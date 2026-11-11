@@ -334,3 +334,8 @@ alter table public.scores add constraint titrate_tonight_cap
 alter table public.scores drop constraint if exists vent_lab_cap;
 alter table public.scores add constraint vent_lab_cap
   check (game <> 'vent-lab' or score <= 90000);
+
+-- Rhythm Rush (60 seconds of play): cap obviously fake posts.
+alter table public.scores drop constraint if exists rhythm_rush_cap;
+alter table public.scores add constraint rhythm_rush_cap
+  check (game <> 'rhythm-rush' or score <= 20000);

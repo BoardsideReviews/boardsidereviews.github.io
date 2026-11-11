@@ -12,10 +12,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gamified Learning | Boardside Reviews</title>
-<meta name="description" content="Free internal medicine games from Boardside Reviews: a daily medical crossword, a night float simulator, ABG and hemodynamics challenges, a bug-drug game, CPAP titration, and a ventilator lab.">
+<meta name="description" content="Free internal medicine games from Boardside Reviews: a daily medical crossword, a 60-second ECG rhythm challenge, a night float simulator, ABG and hemodynamics challenges, a bug-drug game, CPAP titration, and a ventilator lab.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%20role%3D%22img%22%20aria-label%3D%22Boardside%20Reviews%20mark%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&family=Fraunces:opsz,wght@9..144,800&family=Fredoka:wght@600&family=JetBrains+Mono:wght@600;700&family=Libre+Franklin:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&family=Fraunces:opsz,wght@9..144,800&family=Fredoka:wght@600&family=IBM+Plex+Mono:wght@700&family=IBM+Plex+Sans:wght@600&family=JetBrains+Mono:wght@600;700&family=Libre+Franklin:wght@700&display=swap" rel="stylesheet">
 <style>
 :root{--navy:#0b2545;--teal:#0d7070;--teal-bright:#3cc4b4;--teal-soft:#e2f3f1;--ink2:#33465f;--muted:#52627a;--line:#dce3ea;--sky:#eef5fc;--sky2:#f5f9fd;--amber:#f0b54a}
 *{box-sizing:border-box}
@@ -82,6 +82,16 @@ footer a{text-decoration:none;color:var(--ink2)}
 .cc-title{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:30px;line-height:.95;color:#14233a}
 .cc-title em{font-style:normal;color:#0d7070}
 .cc-title small{display:block;margin-top:8px;font:700 10.5px/1.3 Inter,sans-serif;letter-spacing:.12em;color:#6f7684}
+.t-rr{background:#e9e7e1}
+.rr{width:86%;display:flex;flex-direction:column;gap:8px}
+.rr-top{display:flex;justify-content:space-between;align-items:center;background:#23272b;color:#f2f0ea;border-radius:8px;padding:7px 10px;font:700 12px/1 'IBM Plex Mono',ui-monospace,Menlo,monospace;letter-spacing:.06em}
+.rr-top b{color:#d64848}
+.rr-top i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3ad07a;box-shadow:0 0 6px #3ad07a;margin-right:6px;vertical-align:1px}
+.rr-t{color:#ffb35c}
+.rr-paper{background-color:#fff5f3;background-image:linear-gradient(rgba(214,72,72,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(214,72,72,.35) 1px,transparent 1px),linear-gradient(rgba(232,120,120,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(232,120,120,.15) 1px,transparent 1px);background-size:20px 20px,20px 20px,4px 4px,4px 4px;border-radius:4px;padding:4px 0}
+.rr-ans{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.rr-ans span{background:#fff;border:2px solid #23272b;border-radius:8px;padding:6px 8px;font:600 12px/1 'IBM Plex Sans',Inter,sans-serif;color:#23272b;box-shadow:0 2px 0 #23272b}
+.rr-ans span.hot{background:#dcf3e7;border-color:#1f9d63;box-shadow:0 2px 0 #1f9d63}
 .t-nf{background:#1b1e25}
 .nf-pager{width:78%;background:#2a2f38;border-radius:16px;padding:14px;box-shadow:inset 0 -4px 0 #111}
 .nf-lcd{background:#1a1608;border:1px solid rgba(240,181,74,.35);border-radius:10px;padding:12px 14px;font:600 13px/1.55 ui-monospace,'SF Mono',Menlo,Consolas,monospace;color:#f0b54a;text-shadow:0 0 8px rgba(240,181,74,.35)}
@@ -161,6 +171,17 @@ footer a{text-decoration:none;color:var(--ink2)}
 <div class="body"><h2>Vent Lab</h2><p>A live ventilator simulator with scalars, every major mode, a step-by-step basics course, and a 1-minute asynchrony challenge.</p>
 <div class="meta"><span>Simulator</span><span>1-minute challenge</span></div>
 <div class="play">Open the lab<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div></div>
+</a>
+
+<a class="card" href="rhythm-rush.html">
+<div class="thumb t-rr"><span class="badge">NEW</span><div class="art rr" aria-hidden="true">
+<div class="rr-top"><span><i></i>RHYTHM <b>RUSH</b></span><span class="rr-t">0:42</span></div>
+<div class="rr-paper"><svg viewBox="0 0 260 70" width="100%" height="70" fill="none" stroke="#1d1d1d" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M0 44h10l3-3 3 3h8l2 3 4-34 4 40 3-9 6 0 7-6 7 6h12l3-3 3 3h20l2 3 4-34 4 40 3-9 6 0 7-6 7 6h4l3-3 3 3h8l3-3 3 3h4l2 3 4-34 4 40 3-9 6 0 7-6 7 6h26l3-3 3 3h8"/></svg></div>
+<div class="rr-ans"><span>Mobitz I</span><span class="hot">Mobitz II</span></div>
+</div></div>
+<div class="body"><h2>Rhythm Rush</h2><p>A strip prints, you call the rhythm. 41 rhythms from Wenckebach to torsades, 60 seconds on the clock.</p>
+<div class="meta"><span>60 seconds</span><span>Leaderboard</span></div>
+<div class="play">Read the strip<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div></div>
 </a>
 
 <a class="card" href="night-float.html">

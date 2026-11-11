@@ -7,6 +7,9 @@
     { id: 'cross-cover', name: 'Cross-Cover', tag: 'Daily medical crossword', href: 'crossword.html',
       bg: '#f7f1e4', fg: '#14233a', light: true, art:
       '<svg viewBox="0 0 60 60" width="64" height="64" aria-hidden="true"><rect x="2" y="2" width="56" height="56" fill="#fffdf8" stroke="#14233a" stroke-width="3"/><path d="M20.7 2v56M39.3 2v56M2 20.7h56M2 39.3h56" stroke="#b7ab92" stroke-width="1.2"/><rect x="39.3" y="2" width="18.7" height="18.7" fill="#14233a"/><rect x="2" y="39.3" width="18.7" height="18.7" fill="#14233a"/><rect x="20.7" y="20.7" width="18.6" height="18.6" fill="#f5c451"/><text x="11.3" y="16" font-family="Georgia,serif" font-weight="700" font-size="13" text-anchor="middle" fill="#14233a">C</text><text x="30" y="16" font-family="Georgia,serif" font-weight="700" font-size="13" text-anchor="middle" fill="#14233a">H</text></svg>' },
+    { id: 'rhythm-rush', name: 'Rhythm Rush', tag: '60-second ECG challenge', href: 'rhythm-rush.html',
+      bg: '#fff5f3', fg: '#23272b', light: true, art:
+      '<svg viewBox="0 0 60 40" width="72" height="48" aria-hidden="true"><rect width="60" height="40" fill="#fff5f3"/><path d="M0 10h60M0 20h60M0 30h60M10 0v40M20 0v40M30 0v40M40 0v40M50 0v40" stroke="rgba(214,72,72,.35)" stroke-width=".8"/><path d="M0 26h10l2-2 2 2h4l2-16 3 20 2-4h6l3-3 3 3h20" fill="none" stroke="#1d1d1d" stroke-width="1.6" stroke-linejoin="round"/></svg>' },
     { id: 'night-float', name: 'IM Night Float', tag: 'Overnight cross-cover simulator', href: 'night-float.html',
       bg: '#1b1e25', fg: '#f0b54a', art:
       '<div class="bmg-lcd"><span>19:15 · PAGE 1 OF 8</span><b>4B-12: K 6.9. PLS CALL<i>_</i></b></div>' },
