@@ -412,6 +412,17 @@ body.dark .qrail button.cur{outline-color:#9fc3ea}
 .data .vit .dn{font-size:12px;font-weight:600;color:var(--muted)}
 .data .vit .dv{text-align:left;font-size:1.05em}
 @media (max-width:560px){.data .dtab,.data .dtab:not(.vit):not(.one){grid-template-columns:1fr;padding:2px 12px;max-width:none}.data .dtab.vit{grid-template-columns:repeat(2,1fr)}}
+/* approved layout (Nov 2026): exam as sentences, results in one plain table, imaging/ECG as sentences */
+.stem .qres{min-width:0;overflow-x:auto;margin:2px 0 14px}
+.qres table{border-collapse:collapse;width:100%;max-width:520px;font-size:.92em;font-variant-numeric:tabular-nums}
+.qres th,.qres td{text-align:left;padding:6px 0;border-bottom:1px solid #e6edf4;vertical-align:top;font-weight:400}
+.qres td.v{text-align:right;padding-left:24px}
+.qres td.v .val{white-space:nowrap}
+.qres .note{color:var(--muted);font-size:.92em}
+.qres th{font-size:.84em;font-weight:700;color:var(--navy);padding-top:14px;border-bottom-color:var(--line)}
+.qres tr:first-child th{padding-top:0}
+.qres sub{font-size:.75em}
+.fc-face .qres{margin:0 0 10px;font-size:calc(14px * var(--tz,1))}
 .fc-face .data{margin:0 0 10px;padding:10px 12px;background:var(--sky2);border:1px solid #e3ebf3;border-radius:10px;font-size:calc(14px * var(--tz,1))}
 
 /* lab values panel */
@@ -598,6 +609,9 @@ body.dark .data .dtab{background:#0f1b2e;border-color:#2a3d58}
 body.dark .data .drow{border-color:#22344d}
 body.dark .data .dn,body.dark .data .dlab,body.dark .data .vit .dn{color:#9fb0c6}
 body.dark .data .dv{color:#eef4fb}
+body.dark .qres th,body.dark .qres td{border-color:#22344d}
+body.dark .qres th{color:#eef4fb}
+body.dark .qres .note{color:#9fb0c6}
 body.dark .fc-face .data{background:#122036;border-color:#2a3d58}
 body.dark .labs{background:#0f1b2e;border-color:#2a3d58}
 body.dark .labs .lhd b,body.dark .labs tr.grp td,body.dark .labs td:last-child{color:#eef4fb}
@@ -1631,7 +1645,7 @@ function fcRender() {
   var face = [h("div", { class: "subjtag" }, "Question ID " + c.num + " · " + c.subject)]
     .concat(tag ? [h("p", { class: "fc-tag" + (c.sure_wrong ? " warn" : "") }, tag)] : [])
     .concat(paras(c.stem || "").map(function (t) { return h("p", null, t); }))
-    .concat((c.data && c.data.length) ? [dataEl(c.data)] : [])
+    .concat(resultsEl(c))
     .concat([h("p", { class: "fc-ask" }, c.ask || "")]);
   var back = FC.back ? [
     h("div", { class: "fc-ans" }, [h("b", null, "Answer: " + c.answer + ". "), c.answer_text || ""]),
@@ -1987,6 +2001,34 @@ function dataEl(lines) {
   return box;
 }
 
+// Approved layout: body.exam (sentences), body.tests ([{h, rows:[[name, result]]}]) and body.notes (sentences).
+// Questions not yet converted fall back to the old body.data lines.
+function resName(t) {          // FEV1, PCO2, PO2, HCO3, SpO2, FIO2 with subscripts; text content unchanged
+  var out = [], re = /\b(FEV|PCO|PO|HCO|SpO|FIO|PaO|PaCO|PvO|PvCO|SvO|ScvO)(\d)\b/g, at = 0, m;
+  while ((m = re.exec(t))) { out.push(t.slice(at, m.index) + m[1]); out.push(h("sub", null, m[2])); at = m.index + m[0].length; }
+  out.push(t.slice(at));
+  return out;
+}
+function resVal(t) {           // "1.6 mg/dL (0.9 mg/dL 1 year ago)": the parenthetical in a lighter note
+  var m = /^(.*?\S)(\s+)(\(.*\))$/.exec(t);
+  return m ? [h("span", { class: "val" }, m[1]), m[2], h("span", { class: "note" }, m[3])] : [h("span", { class: "val" }, t)];
+}
+function resultsEl(o) {
+  var out = [], tests = Array.isArray(o.tests) ? o.tests : [], notes = Array.isArray(o.notes) ? o.notes : [];
+  if (!o.exam && !tests.length && !notes.length) return (o.data && o.data.length) ? [dataEl(o.data)] : [];
+  paras(o.exam).forEach(function (t) { out.push(h("p", null, t)); });
+  if (tests.length) {
+    var tb = h("tbody");
+    tests.forEach(function (sec) {
+      if (sec.h) tb.appendChild(h("tr", null, h("th", { colspan: "2", scope: "colgroup" }, resName(sec.h))));
+      (sec.rows || []).forEach(function (r) { tb.appendChild(h("tr", null, [h("td", null, resName(String(r[0]))), h("td", { class: "v" }, resVal(String(r[1])))])); });
+    });
+    out.push(h("div", { class: "qres" }, h("table", null, tb)));
+  }
+  notes.forEach(function (t) { out.push(h("p", null, t)); });
+  return out;
+}
+
 // ───────────────────────── lab values panel (beside the calculator) ─────────────────────────
 var LABS = { q: "", top: 0, loading: false };
 function toggleLabs() { P.labs = !P.labs; if (!P.labs) { LABS.q = ""; LABS.top = 0; } renderPlayer(true); }
@@ -2057,7 +2099,7 @@ function mountLabs() {
 function stemArea(q) {
   var bdy = q.body, box = h("div", { class: "stem", id: "stem" });
   paras(bdy.stem).forEach(function (p) { box.appendChild(h("p", null, p)); });
-  if (bdy.data && bdy.data.length) box.appendChild(dataEl(bdy.data));
+  resultsEl(bdy).forEach(function (el) { box.appendChild(el); });
   if (bdy.ad) box.appendChild(adEl(bdy.ad));
   if (q.has_image) box.appendChild(imageEl(q));
   box.appendChild(h("p", { class: "ask" }, bdy.ask));
