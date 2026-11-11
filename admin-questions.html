@@ -190,13 +190,13 @@ async function boot(){
   <p class="muted" style="margin:0;max-width:78ch">Go through the audit comments by priority. Write your own comment under any of mine, or add one to any question, then send me the QID and I make the change. Mark each question <b>Good</b> or <b>Bad</b>; tap it again to clear. <b>Edit</b> still lets you change anything yourself.</p>
   <div class="stats" id="stats"></div>
   <div class="filters">
-    <select id="ft" aria-label="Show"><option value="rc">All comments (high first)</option><option value="rc-high">High</option><option value="rc-med">Medium</option><option value="rc-low">Low</option><option value="">All questions</option><option value="removed">Removed questions</option></select>
+    <select id="ft" aria-label="Show"><option value="rc">All comments (high first)</option><option value="rc-high">High</option><option value="rc-med">Medium</option><option value="rc-low">Low</option><option value="ok">Marked Good</option><option value="change">Marked Bad</option><option value="todo">Not marked yet</option><option value="">All questions</option><option value="removed">Removed questions</option></select>
     <select id="fs" aria-label="Subject"><option value="">All subjects</option>${subs.map(s=>`<option>${esc(s)}</option>`).join("")}</select>
     <input type="search" id="fq" placeholder="Find an ID (Pulm-1-09) or QID (849)" aria-label="Find a question">
     <span class="muted" id="cnt"></span>
   </div>
   <div id="list" style="display:flex;flex-direction:column;gap:16px"></div>`;
-  $("#ft").value=F.tag;$("#fs").value=F.subject;$("#fq").value=F.q;
+  if(![...$("#ft").options].some(o=>o.value===F.tag))F.tag="rc";$("#ft").value=F.tag;$("#fs").value=F.subject;$("#fq").value=F.q;
   $("#ft").onchange=e=>{F.tag=e.target.value;go()};$("#fs").onchange=e=>{F.subject=e.target.value;go()};
   let tm;$("#fq").oninput=e=>{clearTimeout(tm);tm=setTimeout(()=>{F.q=e.target.value.trim();go()},250)};
   stats();go();
@@ -210,6 +210,7 @@ function match(r){
   const t=F.tag;
   if(t==="removed")return r.active===false;
   if(r.active===false)return false;
+  if(["ok","change","todo"].includes(t)&&(r.status||"todo")!==t)return false;
   if(t==="rc"&&!rcN(r.id))return false;
   if(t==="rc-high"&&!rcN(r.id,"high"))return false;
   if(t==="rc-med"&&!rcN(r.id,"med"))return false;
