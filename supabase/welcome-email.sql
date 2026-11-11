@@ -89,7 +89,7 @@ declare
 </td></tr>
 <tr><td style="padding:18px 32px 0 32px;font-family:Inter,Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#33465f;">
 <p style="margin:0 0 14px 0;">{{GREETING}}</p>
-<p style="margin:0 0 14px 0;">Thank you for creating a Boardside Reviews account. Boardside is a small, physician-built project, and it truly means a lot that you'd give it a try. Every question is reviewed and verified personally, and I don't take your time for granted.</p>
+<p style="margin:0 0 14px 0;">Thank you for creating a Boardside Reviews&trade; account. Boardside is a small, physician-built project, and it truly means a lot that you'd give it a try. Every question is reviewed and verified personally, and I don't take your time for granted.</p>
 </td></tr>
 <tr><td style="padding:10px 32px 0 32px;font-family:'Plus Jakarta Sans',Inter,Arial,Helvetica,sans-serif;">
 <p style="margin:0 0 12px 0;font-size:17px;font-weight:800;color:#0b2545;">Start here</p>
@@ -123,7 +123,7 @@ The full question bank (about 1,600 questions) and the Boardside Notes book open
 </td></tr>
 <tr><td style="border-top:1px solid #dce3ea;padding:20px 32px 26px 32px;font-family:Inter,Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#52627a;">
 <p style="margin:0 0 10px 0;">Questions? Reply to this email or reach us at <a href="mailto:support@boardsidereviews.com" style="color:#0d7070;text-decoration:none;font-weight:600;">support@boardsidereviews.com</a>.</p>
-<p style="margin:0;">Boardside Reviews &middot; Where boards meet the bedside<br>You're receiving this because you created an account at <a href="https://www.boardsidereviews.com/" style="color:#52627a;">boardsidereviews.com</a>.{{UNSUB_BLOCK}}</p>
+<p style="margin:0;">Boardside Reviews&trade; &middot; Where boards meet the bedside<br>5730 N First St Ste 105 #291, Fresno, CA 93710<br>You're receiving this because you created an account at <a href="https://www.boardsidereviews.com/" style="color:#52627a;">boardsidereviews.com</a>.{{UNSUB_BLOCK}}</p>
 </td></tr>
 </table>
 </td></tr>
@@ -151,7 +151,7 @@ create or replace function public.welcome_email_text(p_last text, p_mailing bool
 returns text language sql immutable as $fn$
   select concat_ws(E'\n',
     case when nullif(trim(p_last), '') is null then 'Hello,' else 'Dear Dr. ' || trim(p_last) || ',' end, '',
-    'Thank you for creating a Boardside Reviews account. Boardside is a small, physician-built project, and it truly means a lot that you''d give it a try. Every question is reviewed and verified personally, and I don''t take your time for granted.', '',
+    'Thank you for creating a Boardside Reviews™ account. Boardside is a small, physician-built project, and it truly means a lot that you''d give it a try. Every question is reviewed and verified personally, and I don''t take your time for granted.', '',
     'Start here:',
     '1. Try the free sets. 80 questions across Pulmonary & Critical Care, Cardiology, GI and Nephrology, in learning or exam mode.',
     '2. Read every explanation. Each answer choice is explained, so the wrong ones teach as much as the right one.',
@@ -162,7 +162,8 @@ returns text language sql immutable as $fn$
     'If anything is unclear, wrong, or could be better, just reply to this email. I read every one.', '',
     'With gratitude,', 'Khaled M. Abdullah, MD', 'Founder, Boardside Reviews', '',
     '---', 'Questions? Reply to this email or reach us at support@boardsidereviews.com.',
-    'Boardside Reviews · Where boards meet the bedside',
+    'Boardside Reviews™ · Where boards meet the bedside',
+    '5730 N First St Ste 105 #291, Fresno, CA 93710',
     'You''re receiving this because you created an account at boardsidereviews.com.',
     case when p_mailing then 'Unsubscribe from the mailing list: ' || p_unsub end);
 $fn$;

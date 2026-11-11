@@ -1070,7 +1070,7 @@ function supportHref(body) {
 }
 function header() {
   return h("header", { class: "top" }, [h("div", { class: "wrap" }, [
-    h("a", { class: "brand", href: "/", html: LOGO + '<span>Boardside Reviews <small>· Question Bank' + (SAMPLE ? ' · Free sample' : '') + '</small></span>' }),
+    h("a", { class: "brand", href: "/", html: LOGO + '<span>Boardside Reviews<sup style="font-size:.5em;font-weight:600;vertical-align:super;line-height:0;margin-left:1px">\u2122</sup> <small>· Question Bank' + (SAMPLE ? ' · Free sample' : '') + '</small></span>' }),
     h("div", { class: "who" }, [
       h("button", { class: "link", onclick: openSettings }, "Settings"),
       SAMPLE && !S.email ? h("button", { class: "link", onclick: function () { showLogin(); } }, "Sign in") : null,

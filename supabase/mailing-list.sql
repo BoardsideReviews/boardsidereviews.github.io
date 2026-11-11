@@ -6,7 +6,7 @@
 --     the Unsubscribe link in any email turns it off. Every change takes effect immediately.
 --   • admin_mailing_send() reads the list at the moment you press Send, so it always goes to the right people.
 -- Marketing emails should carry a postal address (CAN-SPAM). Set it once with:
---   insert into public.mailing_settings (k, v) values ('postal_address', 'Boardside Reviews · PO Box …, City, ST 00000')
+--   insert into public.mailing_settings (k, v) values ('postal_address', '5730 N First St Ste 105 #291, Fresno, CA 93710')
 --   on conflict (k) do update set v = excluded.v;
 
 create table if not exists public.mailing_prefs (
@@ -209,7 +209,7 @@ declare
 </td></tr>
 <tr><td style="border-top:1px solid #dce3ea;padding:20px 32px 26px 32px;font-family:Inter,Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#52627a;">
 <p style="margin:0 0 10px 0;">Questions? Reply to this email or reach us at <a href="mailto:support@boardsidereviews.com" style="color:#0d7070;text-decoration:none;font-weight:600;">support@boardsidereviews.com</a>.</p>
-<p style="margin:0;">Boardside Reviews &middot; Where boards meet the bedside{{ADDRESS}}<br>You're receiving this because you joined the Boardside Reviews mailing list.<br><br><a href="{{UNSUB_URL}}" style="color:#0d7070;font-weight:600;">Unsubscribe</a></p>
+<p style="margin:0;">Boardside Reviews&trade; &middot; Where boards meet the bedside{{ADDRESS}}<br>You're receiving this because you joined the Boardside Reviews mailing list.<br><br><a href="{{UNSUB_URL}}" style="color:#0d7070;font-weight:600;">Unsubscribe</a></p>
 </td></tr>
 </table>
 </td></tr>
@@ -237,7 +237,7 @@ returns text language sql stable as $$
     trim(p_body), '',
     'With gratitude,', 'Khaled M. Abdullah, MD', 'Founder, Boardside Reviews', '', '---',
     'Questions? Reply to this email or reach us at support@boardsidereviews.com.',
-    'Boardside Reviews · Where boards meet the bedside',
+    'Boardside Reviews™ · Where boards meet the bedside',
     (select v from public.mailing_settings where k = 'postal_address'),
     'You''re receiving this because you joined the Boardside Reviews mailing list.',
     'Unsubscribe: ' || p_unsub);
