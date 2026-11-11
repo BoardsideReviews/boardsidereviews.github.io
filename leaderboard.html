@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <title>Leaderboard | Boardside Reviews</title>
-<meta name="description" content="Top scores from Boardside Reviews games, including the Cross-Cover daily crossword, IM Night Float, ABG Blitz, and Hemodynamic Roulette.">
+<meta name="description" content="Top scores from Boardside Reviews games, including the Cross-Cover daily crossword, Co-Pay or No Way, IM Night Float, ABG Blitz, and Hemodynamic Roulette.">
 <style>
 :root{--navy:#0b2545;--teal:#0d7070;--teal-bright:#3cc4b4;--teal-soft:#e2f3f1;--coral:#b9432c;--coral-soft:#fdece7;--ink2:#33465f;--muted:#52627a;--line:#dce3ea;--sky:#eef5fc;--sky2:#f5f9fd;--amber:#f0b54a}
 *{box-sizing:border-box}
@@ -107,6 +107,7 @@ tr.mine td{background:var(--teal-soft)}
 // Boards shown on this page. Add a line here when a new game gets a leaderboard.
 const BOARDS=[
   {id:"cross-cover",group:"CROSS-COVER",label:"Cross-Cover",game:"cross-cover",play:"crossword.html",time:true},
+  {id:"copay-noway",group:"CO-PAY OR NO WAY",label:"Co-Pay or No Way",game:"copay-noway",play:"copay.html",daily:true},
   {id:"rhythm-rush",group:"RHYTHM RUSH",label:"Rhythm Rush",game:"rhythm-rush",variant:"1-min",play:"rhythm-rush.html",points:true},
   {id:"night-float-standard",group:"IM NIGHT FLOAT",label:"Standard night",game:"night-float",variant:"standard",play:"night-float.html"},
   {id:"night-float-black-cloud",group:"IM NIGHT FLOAT",label:"Black cloud",game:"night-float",variant:"black-cloud",play:"night-float.html"},
@@ -148,7 +149,7 @@ async function drawBoard(){
   if(!BLB.enabled){box.innerHTML=`<div class="empty"><b>The leaderboard opens soon.</b><span>Scores will appear here once posting goes live.</span></div>`;return}
   if(cur.soon){box.innerHTML=`<div class="empty"><b>Coming soon</b><span>${esc(cur.soon)}</span></div>`;return}
   box.innerHTML=`<div class="empty"><b>Loading…</b></div>`;
-  $("#periodBox").hidden=!!cur.time; $("#dayBox").hidden=!cur.time;
+  $("#periodBox").hidden=!!(cur.time||cur.daily); $("#dayBox").hidden=!(cur.time||cur.daily);
   if(cur.time){
     const v=laDate(ago); let rows;
     try{rows=await BLB.boardTime(cur.game,v,100)}
@@ -156,6 +157,15 @@ async function drawBoard(){
     if(!rows.length){box.innerHTML=`<div class="empty"><b>No times ${ago?"for yesterday's puzzle":"yet today"}.</b><span>${ago?"Today's puzzle is waiting.":"Solve today's puzzle clean and take the top spot."}</span><a class="btn" href="crossword.html">Play today's puzzle</a></div>`;return}
     box.innerHTML=`<table><thead><tr><th>#</th><th>Player</th><th class="num">Time</th><th class="num hide-sm">Posted</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.is_me?"mine":""}"><td class="rank">${r.rank<=3?`<span class="medal m${r.rank}">${r.rank}</span>`:r.rank}</td><td class="name">${esc(r.display_name)}${r.is_me?`<span class="you">YOU</span>`:""}</td><td class="num pct">${fmtTime(r.seconds)}</td><td class="num hide-sm">${fmtClock(r.achieved_at)}</td></tr>`).join("")}</tbody></table>`;
     $("#note").textContent=`Puzzle for ${new Date(v+"T12:00:00Z").toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",timeZone:"UTC"})}. Fastest clean solve wins; each player's first post counts. Ties go to whoever posted first.`;
+    return;
+  }
+  if(cur.daily){
+    const v=laDate(ago); let rows;
+    try{rows=await BLB.boardPoints(cur.game,v,null,100)}
+    catch(e){box.innerHTML=`<div class="empty"><b>Couldn't load the leaderboard.</b><span>${esc(BLB.friendly(e))}</span><button class="btn ghost" data-a="retry">Try again</button></div>`;return}
+    if(!rows.length){box.innerHTML=`<div class="empty"><b>No streaks ${ago?"for yesterday":"yet today"}.</b><span>${ago?"Today's run is waiting.":"Play today's run and take the top spot."}</span><a class="btn" href="${cur.play}">Play today's run</a></div>`;return}
+    box.innerHTML=`<table><thead><tr><th>#</th><th>Player</th><th class="num">Streak</th><th class="num hide-sm">Posted</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.is_me?"mine":""}"><td class="rank">${r.rank<=3?`<span class="medal m${r.rank}">${r.rank}</span>`:r.rank}</td><td class="name">${esc(r.display_name)}${r.is_me?`<span class="you">YOU</span>`:""}</td><td class="num pct">${r.best_score}</td><td class="num hide-sm">${fmtClock(r.achieved_at)}</td></tr>`).join("")}</tbody></table>`;
+    $("#note").textContent=`Run for ${new Date(v+"T12:00:00Z").toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",timeZone:"UTC"})}. Longest streak wins; each player's first run of the day counts. Ties go to whoever posted first.`;
     return;
   }
   let rows;

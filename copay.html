@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LJQ2NG232B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LJQ2NG232B');
+</script>
+<title>Co-Pay or No Way · Boardside Reviews</title>
+<meta name="description" content="A daily higher-or-lower game for medication prices. Pick which drug costs more or less per day, using what U.S. pharmacies pay (NADAC). One run a day, one wrong pick ends it.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%20role%3D%22img%22%20aria-label%3D%22Boardside%20Reviews%20mark%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
+<script src="lb-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="lb.js"></script>
+<script src="more-games.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Pharmacy shelf at night: navy aisle, cool shelf-label cards, price stickers.
+     MORE = hot orange sticker, LESS = cool blue sticker. Single theme by choice. */
+  --aisle:#101a33;
+  --aisle-2:#18264a;
+  --label:#eef2f7;
+  --ink:#121a2e;
+  --muted:#5b6782;
+  --more:#ff5a2c;
+  --less:#2f7dff;
+  --ok:#17a36b;
+  --bad:#e5383b;
+  --line:rgba(18,26,46,.14);
+  --display:"Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+  --body:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:var(--aisle);
+  background-image:radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size:22px 22px;
+  color:var(--label);font-family:var(--body);font-size:16px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,.card:focus-visible{outline:3px solid #ffd23f;outline-offset:3px}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 40px;display:flex;flex-direction:column;gap:18px;min-height:100%}
+
+/* header */
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.home{display:block;width:40px;height:40px;flex:0 0 40px}
+.home svg{width:40px;height:40px;display:block}
+.logo{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,34px);letter-spacing:-.02em;line-height:1;margin:0;text-wrap:balance}
+.logo span{display:inline-block;background:var(--more);color:#fff;padding:2px 9px 4px;border-radius:6px;transform:rotate(-3deg);margin-left:4px}
+.sub{color:#9fb0d0;font-size:13px;margin-top:4px}
+.hud{display:flex;gap:8px;align-items:center}
+.pill{font-family:var(--mono);font-size:13px;background:var(--aisle-2);border:1px solid rgba(255,255,255,.1);padding:6px 10px;border-radius:999px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill b{color:#ffd23f}
+.iconbtn{background:var(--aisle-2);border:1px solid rgba(255,255,255,.1);color:var(--label);border-radius:999px;width:34px;height:34px;display:grid;place-items:center}
+
+/* prompt */
+.prompt{display:block;font-family:var(--display);font-weight:800;font-size:clamp(22px,4.6vw,32px);text-align:center;text-wrap:balance;letter-spacing:-.01em}
+.prompt .word{display:inline-block;white-space:nowrap;margin-left:6px;padding:2px 12px 5px;border-radius:8px;color:#fff}
+.prompt.more .word{background:var(--more)}
+.prompt.less .word{background:var(--less)}
+.prompt small{display:block;font-family:var(--body);font-weight:500;font-size:13px;color:#9fb0d0;letter-spacing:0;margin-top:2px}
+
+main{display:flex;flex-direction:column;gap:16px}
+/* board */
+.board{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch}
+.vs{align-self:center;font-family:var(--display);font-weight:800;color:#9fb0d0;font-size:18px}
+.card{
+  position:relative;background:var(--label);color:var(--ink);border-radius:14px;padding:18px 18px 16px;
+  border:3px solid transparent;text-align:left;display:flex;flex-direction:column;gap:10px;min-height:260px;
+  box-shadow:0 10px 0 rgba(0,0,0,.25);transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.card::before{ /* shelf-label perforation */
+  content:"";position:absolute;left:14px;right:14px;top:-1px;height:6px;
+  background:radial-gradient(circle at 5px 0, var(--aisle) 3.5px, transparent 4px) 0 0/12px 6px repeat-x;
+}
+.board.live .card:hover{transform:translateY(-3px);box-shadow:0 13px 0 rgba(0,0,0,.25)}
+.board.live.more .card:hover{border-color:var(--more)}
+.board.live.less .card:hover{border-color:var(--less)}
+.card.ok{border-color:var(--ok)}
+.card.bad{border-color:var(--bad)}
+.card.dim{opacity:.72}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);color:var(--muted);padding:3px 7px;border-radius:5px}
+.tag.brand{background:#121a2e;color:#fff;border-color:#121a2e}
+.dname{font-family:var(--display);font-weight:800;font-size:clamp(20px,3.4vw,25px);line-height:1.1;letter-spacing:-.01em;text-wrap:balance}
+.dose{color:var(--muted);font-size:14px}
+.price{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.sticker{
+  font-family:var(--mono);font-weight:700;font-size:clamp(26px,5vw,34px);font-variant-numeric:tabular-nums;
+  background:#ffd23f;color:var(--ink);padding:4px 12px 6px;border-radius:8px;transform:rotate(-2deg);
+  box-shadow:0 3px 0 rgba(0,0,0,.18);white-space:nowrap
+}
+.sticker.hidden{background:var(--ink);color:#ffd23f;letter-spacing:.12em}
+.perday{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.calc{font-family:var(--mono);font-size:11.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;line-height:1.5;overflow-wrap:anywhere}
+.calc b{color:var(--ink);font-weight:700}
+.stamp{position:absolute;top:12px;right:12px;font-family:var(--display);font-weight:800;font-size:13px;color:#fff;padding:3px 9px;border-radius:6px;transform:rotate(4deg)}
+.stamp.ok{background:var(--ok)}.stamp.bad{background:var(--bad)}
+.note{font-size:13px;color:var(--ink);background:#ffd23f33;border-left:3px solid #ffd23f;padding:6px 9px;border-radius:4px}
+.enter{animation:slidein .35s ease-out}
+@keyframes slidein{from{transform:translateX(24px);opacity:.2}to{transform:none;opacity:1}}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+.verdict{min-height:52px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;text-align:center}
+.btn{background:#ffd23f;color:var(--ink);border:0;border-radius:10px;padding:12px 20px;font-weight:600;font-size:16px;box-shadow:0 4px 0 #b8941a}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #b8941a}
+.btn.ghost{background:transparent;color:var(--label);border:1px solid rgba(255,255,255,.25);box-shadow:none}
+
+/* panels */
+.panel{background:var(--label);color:var(--ink);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 10px 0 rgba(0,0,0,.25)}
+.panel h2{font-family:var(--display);font-weight:800;font-size:clamp(24px,4vw,30px);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.panel p{margin:0;max-width:62ch}
+.rules{margin:0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:r}
+.rules li{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;max-width:62ch}
+.rules li::before{counter-increment:r;content:counter(r);font-family:var(--mono);font-weight:700;background:var(--ink);color:#ffd23f;border-radius:6px;text-align:center;padding:2px 0}
+.fine{font-size:13px;color:var(--muted)}
+.fine a{color:var(--ink)}
+.big{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.big .n{font-family:var(--mono);font-weight:700;font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
+.big .l{font-family:var(--display);font-weight:800;font-size:20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.stat .v{font-family:var(--mono);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row .btn.ghost{color:var(--ink);border-color:var(--line)}
+input[type=text]{font:inherit;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink);min-width:0;flex:1 1 180px}
+.lb{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.lb td,.lb th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+.lb th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.lb td.num{font-family:var(--mono);text-align:right}
+.review{display:grid;gap:6px;max-height:340px;overflow:auto;padding-right:4px}
+.rv{display:grid;grid-template-columns:22px 52px 1fr;gap:8px;align-items:center;font-size:13.5px;border-bottom:1px solid var(--line);padding:6px 0}
+.rv .m{font-weight:700}
+.rv .m.ok{color:var(--ok)}.rv .m.bad{color:var(--bad)}
+.rv .q{font-family:var(--mono);font-size:11px;font-weight:700;text-align:center;border-radius:4px;color:#fff;padding:2px 0}
+.rv .q.more{background:var(--more)}.rv .q.less{background:var(--less)}
+.rv .mono{font-family:var(--mono);font-size:12.5px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;border:1px solid rgba(255,255,255,.2);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+footer{margin-top:auto;color:#8193b6;font-size:12px;text-align:center}
+footer a{color:#c8d4ec}
+
+@media (max-width:640px){
+  .board{grid-template-columns:1fr;gap:10px}
+  .vs{justify-self:center}
+  .card{min-height:0}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <a class="home" href="games.html" aria-label="Boardside Reviews games"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg></a>
+      <div>
+        <h1 class="logo">Co-Pay <span>or No Way</span></h1>
+        <div class="sub">Daily drug price higher-or-lower · Boardside Reviews</div>
+      </div>
+    </div>
+    <div class="hud">
+      <span class="pill" id="pzl">#1</span>
+      <span class="pill">Streak <b id="streak">0</b></span>
+      <button class="iconbtn" id="mute" aria-label="Mute sounds" title="Sound on/off">♪</button>
+    </div>
+  </header>
+  <main id="app" aria-live="polite"></main>
+  <footer>
+    Prices: <a href="https://www.medicaid.gov/medicaid/prescription-drugs/pharmacy-pricing/index.html">CMS NADAC</a> file as of <span id="asof"></span>, what pharmacies pay per unit before insurance, times a standard adult dose. Not a retail cash price. Educational use only.<br>© 2026 Boardside Reviews™ · Not affiliated with or endorsed by ABIM. Boardside Reviews™ is a trademark of Khaled M. Abdullah, MD.
+  </footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const DATA = {"meta":{"source":"CMS National Average Drug Acquisition Cost (NADAC)","asOf":"2026-11-11","count":174},"drugs":[{"id":0,"name":"Atorvastatin 40 mg","desc":"ATORVASTATIN 40 MG TABLET","dose":"40 mg daily","cat":"Cardiology","note":"","unitPrice":0.03688,"unit":"EA","qty":1,"days":1,"perDay":0.0369,"brand":false},{"id":1,"name":"Rosuvastatin 20 mg","desc":"ROSUVASTATIN CALCIUM 20 MG TAB","dose":"20 mg daily","cat":"Cardiology","note":"","unitPrice":0.04631,"unit":"EA","qty":1,"days":1,"perDay":0.0463,"brand":false},{"id":2,"name":"Ezetimibe 10 mg","desc":"EZETIMIBE 10 MG TABLET","dose":"10 mg daily","cat":"Cardiology","note":"","unitPrice":0.07045,"unit":"EA","qty":1,"days":1,"perDay":0.0704,"brand":false},{"id":3,"name":"Repatha (evolocumab)","desc":"REPATHA 140 MG/ML SURECLICK","dose":"140 mg SC every 2 weeks","cat":"Cardiology","note":"","unitPrice":282.00927,"unit":"ML","qty":1,"days":14,"perDay":20.1435,"brand":true},{"id":4,"name":"Icosapent ethyl 1 g","desc":"ICOSAPENT ETHYL 1 GRAM CAPSULE","dose":"2 g twice daily","cat":"Cardiology","note":"","unitPrice":0.44809,"unit":"EA","qty":4,"days":1,"perDay":1.7924,"brand":false},{"id":5,"name":"Lisinopril 10 mg","desc":"LISINOPRIL 10 MG TABLET","dose":"10 mg daily","cat":"Cardiology","note":"","unitPrice":0.01797,"unit":"EA","qty":1,"days":1,"perDay":0.018,"brand":false},{"id":6,"name":"Amlodipine 10 mg","desc":"AMLODIPINE BESYLATE 10 MG TAB","dose":"10 mg daily","cat":"Cardiology","note":"","unitPrice":0.01441,"unit":"EA","qty":1,"days":1,"perDay":0.0144,"brand":false},{"id":7,"name":"Losartan 50 mg","desc":"LOSARTAN POTASSIUM 50 MG TAB","dose":"50 mg daily","cat":"Cardiology","note":"","unitPrice":0.03316,"unit":"EA","qty":1,"days":1,"perDay":0.0332,"brand":false},{"id":8,"name":"Hydrochlorothiazide 25 mg","desc":"HYDROCHLOROTHIAZIDE 25 MG TAB","dose":"25 mg daily","cat":"Cardiology","note":"","unitPrice":0.01142,"unit":"EA","qty":1,"days":1,"perDay":0.0114,"brand":false},{"id":9,"name":"Chlorthalidone 25 mg","desc":"CHLORTHALIDONE 25 MG TABLET","dose":"25 mg daily","cat":"Cardiology","note":"","unitPrice":0.07313,"unit":"EA","qty":1,"days":1,"perDay":0.0731,"brand":false},{"id":10,"name":"Spironolactone 25 mg","desc":"SPIRONOLACTONE 25 MG TABLET","dose":"25 mg daily","cat":"Cardiology","note":"","unitPrice":0.0426,"unit":"EA","qty":1,"days":1,"perDay":0.0426,"brand":false},{"id":11,"name":"Furosemide 40 mg (oral)","desc":"FUROSEMIDE 40 MG TABLET","dose":"40 mg daily","cat":"Cardiology","note":"","unitPrice":0.02876,"unit":"EA","qty":1,"days":1,"perDay":0.0288,"brand":false},{"id":12,"name":"Furosemide 40 mg IV","desc":"FUROSEMIDE 40 MG/4 ML VIAL","dose":"40 mg IV twice daily","cat":"Cardiology","note":"","unitPrice":0.26455,"unit":"ML","qty":8,"days":1,"perDay":2.1164,"brand":false},{"id":13,"name":"Torsemide 20 mg","desc":"TORSEMIDE 20 MG TABLET","dose":"20 mg daily","cat":"Cardiology","note":"","unitPrice":0.06215,"unit":"EA","qty":1,"days":1,"perDay":0.0621,"brand":false},{"id":14,"name":"Metoprolol succinate ER 50 mg","desc":"METOPROLOL SUCC ER 50 MG TAB","dose":"50 mg daily","cat":"Cardiology","note":"","unitPrice":0.0494,"unit":"EA","qty":1,"days":1,"perDay":0.0494,"brand":false},{"id":15,"name":"Carvedilol 25 mg","desc":"CARVEDILOL 25 MG TABLET","dose":"25 mg twice daily","cat":"Cardiology","note":"","unitPrice":0.03231,"unit":"EA","qty":2,"days":1,"perDay":0.0646,"brand":false},{"id":16,"name":"Entresto (sacubitril-valsartan)","desc":"ENTRESTO 97 MG-103 MG TABLET","dose":"97/103 mg twice daily","cat":"Cardiology","note":"","unitPrice":11.59281,"unit":"EA","qty":2,"days":1,"perDay":23.1856,"brand":true},{"id":17,"name":"Jardiance (empagliflozin)","desc":"JARDIANCE 10 MG TABLET","dose":"10 mg daily","cat":"Cardiology","note":"","unitPrice":11.18898,"unit":"EA","qty":1,"days":1,"perDay":11.189,"brand":true},{"id":18,"name":"Farxiga (dapagliflozin)","desc":"FARXIGA 10 MG TABLET","dose":"10 mg daily","cat":"Cardiology","note":"","unitPrice":12.07647,"unit":"EA","qty":1,"days":1,"perDay":12.0765,"brand":true},{"id":19,"name":"Kerendia (finerenone)","desc":"KERENDIA 20 MG TABLET","dose":"20 mg daily","cat":"Cardiology","note":"","unitPrice":22.84022,"unit":"EA","qty":1,"days":1,"perDay":22.8402,"brand":true},{"id":20,"name":"Verquvo (vericiguat)","desc":"VERQUVO 10 MG TABLET","dose":"10 mg daily","cat":"Cardiology","note":"","unitPrice":22.72787,"unit":"EA","qty":1,"days":1,"perDay":22.7279,"brand":true},{"id":21,"name":"Corlanor (ivabradine, brand)","desc":"CORLANOR 5 MG TABLET","dose":"5 mg twice daily","cat":"Cardiology","note":"Same molecule as generic ivabradine.","unitPrice":10.00378,"unit":"EA","qty":2,"days":1,"perDay":20.0076,"brand":true},{"id":22,"name":"Ivabradine 5 mg (generic)","desc":"IVABRADINE HCL 5 MG TABLET","dose":"5 mg twice daily","cat":"Cardiology","note":"Same molecule as brand Corlanor.","unitPrice":0.71031,"unit":"EA","qty":2,"days":1,"perDay":1.4206,"brand":false},{"id":23,"name":"Digoxin 125 mcg","desc":"DIGOXIN 125 MCG TABLET","dose":"125 mcg daily","cat":"Cardiology","note":"","unitPrice":0.12334,"unit":"EA","qty":1,"days":1,"perDay":0.1233,"brand":false},{"id":24,"name":"Amiodarone 200 mg","desc":"AMIODARONE HCL 200 MG TABLET","dose":"200 mg daily (maintenance)","cat":"Cardiology","note":"","unitPrice":0.12111,"unit":"EA","qty":1,"days":1,"perDay":0.1211,"brand":false},{"id":25,"name":"Multaq (dronedarone)","desc":"MULTAQ 400 MG TABLET","dose":"400 mg twice daily","cat":"Cardiology","note":"","unitPrice":13.18621,"unit":"EA","qty":2,"days":1,"perDay":26.3724,"brand":true},{"id":26,"name":"Dofetilide 500 mcg","desc":"DOFETILIDE 500 MCG CAPSULE","dose":"500 mcg twice daily","cat":"Cardiology","note":"","unitPrice":0.18724,"unit":"EA","qty":2,"days":1,"perDay":0.3745,"brand":false},{"id":27,"name":"Eliquis (apixaban)","desc":"ELIQUIS 5 MG TABLET","dose":"5 mg twice daily","cat":"Cardiology","note":"","unitPrice":5.52144,"unit":"EA","qty":2,"days":1,"perDay":11.0429,"brand":true},{"id":28,"name":"Xarelto (rivaroxaban)","desc":"XARELTO 20 MG TABLET","dose":"20 mg daily","cat":"Cardiology","note":"","unitPrice":19.53935,"unit":"EA","qty":1,"days":1,"perDay":19.5393,"brand":true},{"id":29,"name":"Warfarin 5 mg","desc":"WARFARIN SODIUM 5 MG TABLET","dose":"5 mg daily","cat":"Cardiology","note":"","unitPrice":0.08916,"unit":"EA","qty":1,"days":1,"perDay":0.0892,"brand":false},{"id":30,"name":"Enoxaparin 40 mg","desc":"ENOXAPARIN 40 MG/0.4 ML SYR","dose":"40 mg SC daily (DVT prophylaxis)","cat":"Cardiology","note":"","unitPrice":7.47202,"unit":"ML","qty":0.4,"days":1,"perDay":2.9888,"brand":false},{"id":31,"name":"Clopidogrel 75 mg","desc":"CLOPIDOGREL 75 MG TABLET","dose":"75 mg daily","cat":"Cardiology","note":"","unitPrice":0.04691,"unit":"EA","qty":1,"days":1,"perDay":0.0469,"brand":false},{"id":32,"name":"Brilinta (ticagrelor, brand)","desc":"BRILINTA 90 MG TABLET","dose":"90 mg twice daily","cat":"Cardiology","note":"Same molecule as generic ticagrelor.","unitPrice":7.415,"unit":"EA","qty":2,"days":1,"perDay":14.83,"brand":true},{"id":33,"name":"Ticagrelor 90 mg (generic)","desc":"TICAGRELOR 90 MG TABLET","dose":"90 mg twice daily","cat":"Cardiology","note":"Same molecule as brand Brilinta.","unitPrice":0.2429,"unit":"EA","qty":2,"days":1,"perDay":0.4858,"brand":false},{"id":34,"name":"Prasugrel 10 mg","desc":"PRASUGREL 10 MG TABLET","dose":"10 mg daily","cat":"Cardiology","note":"","unitPrice":0.25569,"unit":"EA","qty":1,"days":1,"perDay":0.2557,"brand":false},{"id":35,"name":"Aspirin 81 mg","desc":"ASPIRIN 81 MG CHEWABLE TABLET","dose":"81 mg daily","cat":"Cardiology","note":"","unitPrice":0.02528,"unit":"EA","qty":1,"days":1,"perDay":0.0253,"brand":false},{"id":36,"name":"Potassium chloride ER 20 mEq","desc":"POTASSIUM CL ER 20 MEQ TABLET","dose":"20 mEq daily","cat":"Cardiology","note":"","unitPrice":0.14375,"unit":"EA","qty":1,"days":1,"perDay":0.1437,"brand":false},{"id":37,"name":"Trelegy Ellipta 100","desc":"TRELEGY ELLIPTA 100-62.5-25","dose":"1 inhalation daily","cat":"Pulmonary","note":"","unitPrice":11.12153,"unit":"EA","qty":2,"days":1,"perDay":22.2431,"brand":true},{"id":38,"name":"Breo Ellipta 100/25","desc":"BREO ELLIPTA 100-25 MCG INHALR","dose":"1 inhalation daily","cat":"Pulmonary","note":"","unitPrice":5.92929,"unit":"EA","qty":2,"days":1,"perDay":11.8586,"brand":true},{"id":39,"name":"Anoro Ellipta","desc":"ANORO ELLIPTA 62.5-25 MCG INH","dose":"1 inhalation daily","cat":"Pulmonary","note":"","unitPrice":7.91437,"unit":"EA","qty":2,"days":1,"perDay":15.8287,"brand":true},{"id":40,"name":"Incruse Ellipta (umeclidinium)","desc":"INCRUSE ELLIPTA 62.5 MCG INH","dose":"1 inhalation daily","cat":"Pulmonary","note":"","unitPrice":10.78515,"unit":"EA","qty":1,"days":1,"perDay":10.7852,"brand":true},{"id":41,"name":"Arnuity Ellipta 100","desc":"ARNUITY ELLIPTA 100 MCG INH","dose":"1 inhalation daily","cat":"Pulmonary","note":"","unitPrice":6.64891,"unit":"EA","qty":1,"days":1,"perDay":6.6489,"brand":true},{"id":42,"name":"Advair Diskus 250/50","desc":"ADVAIR 250-50 DISKUS","dose":"1 inhalation twice daily","cat":"Pulmonary","note":"","unitPrice":3.12178,"unit":"EA","qty":2,"days":1,"perDay":6.2436,"brand":true},{"id":43,"name":"Symbicort 160/4.5 (brand)","desc":"SYMBICORT 160-4.5 MCG INHALER","dose":"2 puffs twice daily","cat":"Pulmonary","note":"10.2 g inhaler = 120 puffs = 30 days.","unitPrice":23.72747,"unit":"GM","qty":10.2,"days":30,"perDay":8.0673,"brand":true},{"id":44,"name":"Budesonide-formoterol 160/4.5 (generic)","desc":"BUDESONIDE-FORMOTEROL 160-4.5","dose":"2 puffs twice daily","cat":"Pulmonary","note":"10.2 g inhaler = 120 puffs = 30 days.","unitPrice":17.31907,"unit":"GM","qty":10.2,"days":30,"perDay":5.8885,"brand":false},{"id":45,"name":"Breztri Aerosphere","desc":"BREZTRI AEROSPHERE 160-9-4.8 MCG","dose":"2 puffs twice daily","cat":"Pulmonary","note":"10.7 g inhaler = 120 puffs = 30 days.","unitPrice":61.39866,"unit":"GM","qty":10.7,"days":30,"perDay":21.8989,"brand":true},{"id":46,"name":"Spiriva HandiHaler","desc":"SPIRIVA HANDIHALER 18 MCG CAP","dose":"1 capsule inhaled daily","cat":"Pulmonary","note":"","unitPrice":10.61119,"unit":"EA","qty":1,"days":1,"perDay":10.6112,"brand":true},{"id":47,"name":"Spiriva Respimat 2.5","desc":"SPIRIVA RESPIMAT 2.5 MCG INH","dose":"2 puffs daily","cat":"Pulmonary","note":"4 g cartridge = 60 puffs = 30 days.","unitPrice":126.08783,"unit":"GM","qty":4,"days":30,"perDay":16.8117,"brand":true},{"id":48,"name":"Stiolto Respimat","desc":"STIOLTO RESPIMAT INHALER (60)","dose":"2 puffs daily","cat":"Pulmonary","note":"4 g cartridge = 60 puffs = 30 days.","unitPrice":115.76814,"unit":"GM","qty":4,"days":30,"perDay":15.4358,"brand":true},{"id":49,"name":"Yupelri (revefenacin) neb","desc":"YUPELRI 175 MCG/3 ML SOLUTION","dose":"175 mcg nebulized daily","cat":"Pulmonary","note":"","unitPrice":17.43789,"unit":"ML","qty":3,"days":1,"perDay":52.3137,"brand":true},{"id":50,"name":"DuoNeb (ipratropium-albuterol) neb","desc":"IPRATROPIUM-ALBUTEROL 0.5-3(2.5) MG/3 ML","dose":"1 vial nebulized 4 times daily","cat":"Pulmonary","note":"","unitPrice":0.07646,"unit":"ML","qty":12,"days":1,"perDay":0.9175,"brand":false},{"id":51,"name":"Budesonide neb 0.5 mg","desc":"BUDESONIDE 0.5 MG/2 ML SUSP","dose":"0.5 mg nebulized twice daily","cat":"Pulmonary","note":"","unitPrice":0.62672,"unit":"ML","qty":4,"days":1,"perDay":2.5069,"brand":false},{"id":52,"name":"Montelukast 10 mg","desc":"MONTELUKAST SOD 10 MG TABLET","dose":"10 mg daily","cat":"Pulmonary","note":"","unitPrice":0.04321,"unit":"EA","qty":1,"days":1,"perDay":0.0432,"brand":false},{"id":53,"name":"Roflumilast 500 mcg","desc":"ROFLUMILAST 500 MCG TABLET","dose":"500 mcg daily","cat":"Pulmonary","note":"","unitPrice":0.30248,"unit":"EA","qty":1,"days":1,"perDay":0.3025,"brand":false},{"id":54,"name":"Roflumilast 250 mcg (starter dose)","desc":"ROFLUMILAST 250 MCG TABLET","dose":"250 mcg daily for the first 4 weeks","cat":"Pulmonary","note":"The half-strength starter tablet costs more than the full dose.","unitPrice":1.8047,"unit":"EA","qty":1,"days":1,"perDay":1.8047,"brand":false},{"id":55,"name":"Azithromycin 250 mg (COPD prevention)","desc":"AZITHROMYCIN 250 MG TABLET","dose":"250 mg daily","cat":"Pulmonary","note":"","unitPrice":0.27085,"unit":"EA","qty":1,"days":1,"perDay":0.2708,"brand":false},{"id":56,"name":"Pirfenidone 801 mg","desc":"PIRFENIDONE 801 MG TABLET","dose":"801 mg three times daily","cat":"Pulmonary","note":"","unitPrice":1.92417,"unit":"EA","qty":3,"days":1,"perDay":5.7725,"brand":false},{"id":57,"name":"Nintedanib 150 mg","desc":"NINTEDANIB ESYLATE 150 MG CAP","dose":"150 mg twice daily","cat":"Pulmonary","note":"","unitPrice":12.05711,"unit":"EA","qty":2,"days":1,"perDay":24.1142,"brand":false},{"id":58,"name":"Sildenafil 20 mg (PAH)","desc":"SILDENAFIL 20 MG TABLET","dose":"20 mg three times daily","cat":"Pulmonary","note":"","unitPrice":0.05223,"unit":"EA","qty":3,"days":1,"perDay":0.1567,"brand":false},{"id":59,"name":"Tadalafil 20 mg (PAH)","desc":"TADALAFIL 20 MG TABLET","dose":"40 mg daily","cat":"Pulmonary","note":"","unitPrice":0.18871,"unit":"EA","qty":2,"days":1,"perDay":0.3774,"brand":false},{"id":60,"name":"Ambrisentan 10 mg","desc":"AMBRISENTAN 10 MG TABLET","dose":"10 mg daily","cat":"Pulmonary","note":"","unitPrice":7.24102,"unit":"EA","qty":1,"days":1,"perDay":7.241,"brand":false},{"id":61,"name":"Prednisone 10 mg","desc":"PREDNISONE 10 MG TABLET","dose":"10 mg daily","cat":"Pulmonary","note":"","unitPrice":0.0521,"unit":"EA","qty":1,"days":1,"perDay":0.0521,"brand":false},{"id":62,"name":"Dexamethasone 6 mg","desc":"DEXAMETHASONE 6 MG TABLET","dose":"6 mg daily","cat":"Pulmonary","note":"","unitPrice":0.38951,"unit":"EA","qty":1,"days":1,"perDay":0.3895,"brand":false},{"id":63,"name":"Dupixent (dupilumab)","desc":"DUPIXENT 300 MG/2 ML PEN","dose":"300 mg SC every 2 weeks","cat":"Pulmonary","note":"","unitPrice":1008.94039,"unit":"ML","qty":2,"days":14,"perDay":144.1343,"brand":true},{"id":64,"name":"Nicotine patch 21 mg","desc":"NICOTINE 21 MG/24HR PATCH","dose":"1 patch daily","cat":"Pulmonary","note":"","unitPrice":1.98648,"unit":"EA","qty":1,"days":1,"perDay":1.9865,"brand":false},{"id":65,"name":"Varenicline 1 mg","desc":"VARENICLINE 1 MG TABLET","dose":"1 mg twice daily","cat":"Pulmonary","note":"","unitPrice":0.35439,"unit":"EA","qty":2,"days":1,"perDay":0.7088,"brand":false},{"id":66,"name":"Modafinil 200 mg","desc":"MODAFINIL 200 MG TABLET","dose":"200 mg daily","cat":"Sleep","note":"","unitPrice":0.3526,"unit":"EA","qty":1,"days":1,"perDay":0.3526,"brand":false},{"id":67,"name":"Armodafinil 250 mg (generic)","desc":"ARMODAFINIL 250 MG TABLET","dose":"250 mg daily","cat":"Sleep","note":"Same molecule as brand Nuvigil.","unitPrice":0.87507,"unit":"EA","qty":1,"days":1,"perDay":0.8751,"brand":false},{"id":68,"name":"Nuvigil (armodafinil, brand)","desc":"NUVIGIL 250 MG TABLET","dose":"250 mg daily","cat":"Sleep","note":"Same molecule as generic armodafinil.","unitPrice":34.7014,"unit":"EA","qty":1,"days":1,"perDay":34.7014,"brand":true},{"id":69,"name":"Sunosi (solriamfetol)","desc":"SUNOSI 150 MG TABLET","dose":"150 mg daily","cat":"Sleep","note":"","unitPrice":31.33539,"unit":"EA","qty":1,"days":1,"perDay":31.3354,"brand":true},{"id":70,"name":"Belsomra (suvorexant)","desc":"BELSOMRA 20 MG TABLET","dose":"20 mg nightly","cat":"Sleep","note":"","unitPrice":15.20274,"unit":"EA","qty":1,"days":1,"perDay":15.2027,"brand":true},{"id":71,"name":"Zolpidem 10 mg","desc":"ZOLPIDEM TARTRATE 10 MG TABLET","dose":"10 mg nightly","cat":"Sleep","note":"","unitPrice":0.03885,"unit":"EA","qty":1,"days":1,"perDay":0.0389,"brand":false},{"id":72,"name":"Amoxicillin 500 mg","desc":"AMOXICILLIN 500 MG CAPSULE","dose":"500 mg three times daily","cat":"Infectious Disease","note":"","unitPrice":0.07925,"unit":"EA","qty":3,"days":1,"perDay":0.2378,"brand":false},{"id":73,"name":"Amoxicillin-clavulanate 875 mg","desc":"AMOX-CLAV 875-125 MG TABLET","dose":"875 mg twice daily","cat":"Infectious Disease","note":"","unitPrice":0.28178,"unit":"EA","qty":2,"days":1,"perDay":0.5636,"brand":false},{"id":74,"name":"Cephalexin 500 mg capsule","desc":"CEPHALEXIN 500 MG CAPSULE","dose":"500 mg four times daily","cat":"Infectious Disease","note":"Same drug and dose as the tablet.","unitPrice":0.11681,"unit":"EA","qty":4,"days":1,"perDay":0.4672,"brand":false},{"id":75,"name":"Cephalexin 500 mg tablet","desc":"CEPHALEXIN 500 MG TABLET","dose":"500 mg four times daily","cat":"Infectious Disease","note":"Same drug and dose as the capsule.","unitPrice":1.31008,"unit":"EA","qty":4,"days":1,"perDay":5.2403,"brand":false},{"id":76,"name":"Doxycycline hyclate 100 mg","desc":"DOXYCYCLINE HYCLATE 100 MG CAP","dose":"100 mg twice daily","cat":"Infectious Disease","note":"","unitPrice":0.10794,"unit":"EA","qty":2,"days":1,"perDay":0.2159,"brand":false},{"id":77,"name":"Ciprofloxacin 500 mg","desc":"CIPROFLOXACIN HCL 500 MG TAB","dose":"500 mg twice daily","cat":"Infectious Disease","note":"","unitPrice":0.12065,"unit":"EA","qty":2,"days":1,"perDay":0.2413,"brand":false},{"id":78,"name":"Levofloxacin 750 mg","desc":"LEVOFLOXACIN 750 MG TABLET","dose":"750 mg daily","cat":"Infectious Disease","note":"","unitPrice":0.26093,"unit":"EA","qty":1,"days":1,"perDay":0.2609,"brand":false},{"id":79,"name":"Nitrofurantoin monohydrate 100 mg","desc":"NITROFURANTOIN MONO-MCR 100 MG","dose":"100 mg twice daily","cat":"Infectious Disease","note":"","unitPrice":0.27192,"unit":"EA","qty":2,"days":1,"perDay":0.5438,"brand":false},{"id":80,"name":"TMP-SMX DS","desc":"SULFAMETHOXAZOLE-TMP DS TABLET","dose":"1 DS tablet twice daily","cat":"Infectious Disease","note":"","unitPrice":0.04534,"unit":"EA","qty":2,"days":1,"perDay":0.0907,"brand":false},{"id":81,"name":"Linezolid 600 mg","desc":"LINEZOLID 600 MG TABLET","dose":"600 mg twice daily","cat":"Infectious Disease","note":"","unitPrice":1.47407,"unit":"EA","qty":2,"days":1,"perDay":2.9481,"brand":false},{"id":82,"name":"Vancomycin 125 mg oral (C. diff)","desc":"VANCOMYCIN HCL 125 MG CAPSULE","dose":"125 mg four times daily","cat":"Infectious Disease","note":"","unitPrice":1.205,"unit":"EA","qty":4,"days":1,"perDay":4.82,"brand":false},{"id":83,"name":"Fidaxomicin 200 mg (generic)","desc":"FIDAXOMICIN 200 MG TABLET","dose":"200 mg twice daily","cat":"Infectious Disease","note":"Same molecule as brand Dificid.","unitPrice":88.17369,"unit":"EA","qty":2,"days":1,"perDay":176.3474,"brand":false},{"id":84,"name":"Dificid (fidaxomicin, brand)","desc":"DIFICID 200 MG TABLET","dose":"200 mg twice daily","cat":"Infectious Disease","note":"Same molecule as generic fidaxomicin.","unitPrice":248.281,"unit":"EA","qty":2,"days":1,"perDay":496.562,"brand":true},{"id":85,"name":"Metronidazole 500 mg","desc":"METRONIDAZOLE 500 MG TABLET","dose":"500 mg three times daily","cat":"Infectious Disease","note":"","unitPrice":0.10449,"unit":"EA","qty":3,"days":1,"perDay":0.3135,"brand":false},{"id":86,"name":"Oseltamivir 75 mg","desc":"OSELTAMIVIR PHOS 75 MG CAPSULE","dose":"75 mg twice daily","cat":"Infectious Disease","note":"","unitPrice":0.79808,"unit":"EA","qty":2,"days":1,"perDay":1.5962,"brand":false},{"id":87,"name":"Valacyclovir 1 g (zoster)","desc":"VALACYCLOVIR HCL 1 GRAM TABLET","dose":"1 g three times daily","cat":"Infectious Disease","note":"","unitPrice":0.42379,"unit":"EA","qty":3,"days":1,"perDay":1.2714,"brand":false},{"id":88,"name":"Voriconazole 200 mg","desc":"VORICONAZOLE 200 MG TABLET","dose":"200 mg twice daily","cat":"Infectious Disease","note":"","unitPrice":2.05027,"unit":"EA","qty":2,"days":1,"perDay":4.1005,"brand":false},{"id":89,"name":"Posaconazole DR 100 mg","desc":"POSACONAZOLE DR 100 MG TABLET","dose":"300 mg daily (maintenance)","cat":"Infectious Disease","note":"","unitPrice":2.06694,"unit":"EA","qty":3,"days":1,"perDay":6.2008,"brand":false},{"id":90,"name":"Cresemba (isavuconazonium)","desc":"CRESEMBA 186 MG CAPSULE","dose":"372 mg daily (maintenance)","cat":"Infectious Disease","note":"","unitPrice":114.02714,"unit":"EA","qty":2,"days":1,"perDay":228.0543,"brand":true},{"id":91,"name":"Rifampin 300 mg","desc":"RIFAMPIN 300 MG CAPSULE","dose":"600 mg daily","cat":"Infectious Disease","note":"","unitPrice":0.67172,"unit":"EA","qty":2,"days":1,"perDay":1.3434,"brand":false},{"id":92,"name":"Isoniazid 300 mg","desc":"ISONIAZID 300 MG TABLET","dose":"300 mg daily","cat":"Infectious Disease","note":"","unitPrice":3.32221,"unit":"EA","qty":1,"days":1,"perDay":3.3222,"brand":false},{"id":93,"name":"Biktarvy","desc":"BIKTARVY 50-200-25 MG TABLET","dose":"1 tablet daily","cat":"Infectious Disease","note":"","unitPrice":136.75307,"unit":"EA","qty":1,"days":1,"perDay":136.7531,"brand":true},{"id":94,"name":"Descovy (PrEP)","desc":"DESCOVY 200-25 MG TABLET","dose":"1 tablet daily","cat":"Infectious Disease","note":"","unitPrice":74.94147,"unit":"EA","qty":1,"days":1,"perDay":74.9415,"brand":true},{"id":95,"name":"Emtricitabine-tenofovir DF (generic PrEP)","desc":"EMTRICITABINE-TENOFOVIR DISOPROXIL FUMARATE 200-300 MG TAB","dose":"1 tablet daily","cat":"Infectious Disease","note":"","unitPrice":0.52643,"unit":"EA","qty":1,"days":1,"perDay":0.5264,"brand":false},{"id":96,"name":"Epclusa (sofosbuvir-velpatasvir)","desc":"EPCLUSA 400 MG-100 MG TABLET","dose":"1 tablet daily x 12 weeks","cat":"Infectious Disease","note":"","unitPrice":864.99102,"unit":"EA","qty":1,"days":1,"perDay":864.991,"brand":true},{"id":97,"name":"Mavyret (glecaprevir-pibrentasvir)","desc":"MAVYRET 100-40 MG TABLET","dose":"3 tablets daily x 8 weeks","cat":"Infectious Disease","note":"","unitPrice":152.89137,"unit":"EA","qty":3,"days":1,"perDay":458.6741,"brand":true},{"id":98,"name":"Entecavir 0.5 mg","desc":"ENTECAVIR 0.5 MG TABLET","dose":"0.5 mg daily","cat":"Infectious Disease","note":"","unitPrice":0.24599,"unit":"EA","qty":1,"days":1,"perDay":0.246,"brand":false},{"id":99,"name":"Vemlidy (tenofovir alafenamide)","desc":"VEMLIDY 25 MG TABLET","dose":"25 mg daily","cat":"Infectious Disease","note":"","unitPrice":52.00386,"unit":"EA","qty":1,"days":1,"perDay":52.0039,"brand":true},{"id":100,"name":"Atovaquone suspension","desc":"ATOVAQUONE 750 MG/5 ML SUSP","dose":"1500 mg daily (PJP prophylaxis)","cat":"Infectious Disease","note":"","unitPrice":0.75606,"unit":"ML","qty":10,"days":1,"perDay":7.5606,"brand":false},{"id":101,"name":"Dapsone 100 mg","desc":"DAPSONE 100 MG TABLET","dose":"100 mg daily","cat":"Infectious Disease","note":"","unitPrice":0.79942,"unit":"EA","qty":1,"days":1,"perDay":0.7994,"brand":false},{"id":102,"name":"Hydroxychloroquine 200 mg","desc":"HYDROXYCHLOROQUINE 200 MG TAB","dose":"400 mg daily","cat":"Rheumatology","note":"","unitPrice":0.14412,"unit":"EA","qty":2,"days":1,"perDay":0.2882,"brand":false},{"id":103,"name":"Omeprazole 20 mg","desc":"OMEPRAZOLE DR 20 MG CAPSULE","dose":"20 mg daily","cat":"GI","note":"","unitPrice":0.03045,"unit":"EA","qty":1,"days":1,"perDay":0.0305,"brand":false},{"id":104,"name":"Pantoprazole 40 mg (oral)","desc":"PANTOPRAZOLE SOD DR 40 MG TAB","dose":"40 mg daily","cat":"GI","note":"","unitPrice":0.03675,"unit":"EA","qty":1,"days":1,"perDay":0.0367,"brand":false},{"id":105,"name":"Pantoprazole 40 mg IV","desc":"PANTOPRAZOLE SODIUM 40 MG VIAL","dose":"40 mg IV daily","cat":"GI","note":"","unitPrice":2.374,"unit":"EA","qty":1,"days":1,"perDay":2.374,"brand":false},{"id":106,"name":"Famotidine 20 mg","desc":"FAMOTIDINE 20 MG TABLET","dose":"20 mg twice daily","cat":"GI","note":"","unitPrice":0.0282,"unit":"EA","qty":2,"days":1,"perDay":0.0564,"brand":false},{"id":107,"name":"Ondansetron 4 mg","desc":"ONDANSETRON HCL 4 MG TABLET","dose":"4 mg three times daily","cat":"GI","note":"","unitPrice":0.05787,"unit":"EA","qty":3,"days":1,"perDay":0.1736,"brand":false},{"id":108,"name":"Lactulose solution","desc":"LACTULOSE 10 GM/15 ML SOLUTION","dose":"20 g (30 mL) three times daily","cat":"GI","note":"Same dose as the packets.","unitPrice":0.01981,"unit":"ML","qty":90,"days":1,"perDay":1.7829,"brand":false},{"id":109,"name":"Lactulose 20 g packets","desc":"LACTULOSE 20 GM PACKET","dose":"20 g three times daily","cat":"GI","note":"Same dose as the bottle of solution.","unitPrice":8.66598,"unit":"EA","qty":3,"days":1,"perDay":25.9979,"brand":false},{"id":110,"name":"Linzess (linaclotide)","desc":"LINZESS 290 MCG CAPSULE","dose":"290 mcg daily","cat":"GI","note":"","unitPrice":9.01398,"unit":"EA","qty":1,"days":1,"perDay":9.014,"brand":true},{"id":111,"name":"Mesalamine DR 1.2 g","desc":"MESALAMINE DR 1.2 GM TABLET","dose":"4.8 g daily","cat":"GI","note":"","unitPrice":0.74157,"unit":"EA","qty":4,"days":1,"perDay":2.9663,"brand":false},{"id":112,"name":"Ursodiol 300 mg","desc":"URSODIOL 300 MG CAPSULE","dose":"300 mg three times daily","cat":"GI","note":"","unitPrice":0.43331,"unit":"EA","qty":3,"days":1,"perDay":1.2999,"brand":false},{"id":113,"name":"Creon 24,000","desc":"CREON DR 24,000 UNIT CAPSULE","dose":"2 caps with meals, 1 with snacks","cat":"GI","note":"","unitPrice":8.34112,"unit":"EA","qty":8,"days":1,"perDay":66.729,"brand":true},{"id":114,"name":"Metformin 500 mg","desc":"METFORMIN HCL 500 MG TABLET","dose":"1000 mg twice daily","cat":"Endocrine","note":"","unitPrice":0.01483,"unit":"EA","qty":4,"days":1,"perDay":0.0593,"brand":false},{"id":115,"name":"Glipizide 5 mg","desc":"GLIPIZIDE 5 MG TABLET","dose":"5 mg twice daily","cat":"Endocrine","note":"","unitPrice":0.03285,"unit":"EA","qty":2,"days":1,"perDay":0.0657,"brand":false},{"id":116,"name":"Pioglitazone 30 mg","desc":"PIOGLITAZONE HCL 30 MG TABLET","dose":"30 mg daily","cat":"Endocrine","note":"","unitPrice":0.0965,"unit":"EA","qty":1,"days":1,"perDay":0.0965,"brand":false},{"id":117,"name":"Sitagliptin 100 mg (generic)","desc":"SITAGLIPTIN PHOSPHATE 100 MG TABLET","dose":"100 mg daily","cat":"Endocrine","note":"Same molecule as brand Januvia.","unitPrice":3.84929,"unit":"EA","qty":1,"days":1,"perDay":3.8493,"brand":false},{"id":118,"name":"Januvia (sitagliptin, brand)","desc":"JANUVIA 100 MG TABLET","dose":"100 mg daily","cat":"Endocrine","note":"Same molecule as generic sitagliptin.","unitPrice":10.55001,"unit":"EA","qty":1,"days":1,"perDay":10.55,"brand":true},{"id":119,"name":"Ozempic (semaglutide) 1 mg","desc":"OZEMPIC 1 MG/DOSE (4 MG/3 ML) PEN","dose":"1 mg SC weekly","cat":"Endocrine","note":"","unitPrice":331.93928,"unit":"ML","qty":3,"days":28,"perDay":35.5649,"brand":true},{"id":120,"name":"Wegovy (semaglutide) 2.4 mg","desc":"WEGOVY 2.4 MG/0.75 ML PEN","dose":"2.4 mg SC weekly","cat":"Endocrine","note":"","unitPrice":435.57199,"unit":"ML","qty":0.75,"days":7,"perDay":46.6684,"brand":true},{"id":121,"name":"Mounjaro (tirzepatide) 10 mg","desc":"MOUNJARO 10 MG/0.5 ML PEN","dose":"10 mg SC weekly","cat":"Endocrine","note":"","unitPrice":538.75779,"unit":"ML","qty":0.5,"days":7,"perDay":38.4827,"brand":true},{"id":122,"name":"Zepbound (tirzepatide) 10 mg pen","desc":"ZEPBOUND 10 MG/0.5 ML PEN","dose":"10 mg SC weekly","cat":"Endocrine","note":"","unitPrice":526.06981,"unit":"ML","qty":0.5,"days":7,"perDay":37.5764,"brand":true},{"id":123,"name":"Trulicity (dulaglutide) 1.5 mg","desc":"TRULICITY 1.5 MG/0.5 ML PEN","dose":"1.5 mg SC weekly","cat":"Endocrine","note":"","unitPrice":487.62033,"unit":"ML","qty":0.5,"days":7,"perDay":34.83,"brand":true},{"id":124,"name":"Lantus SoloStar","desc":"LANTUS SOLOSTAR 100 UNIT/ML","dose":"40 units daily","cat":"Endocrine","note":"","unitPrice":6.16433,"unit":"ML","qty":0.4,"days":1,"perDay":2.4657,"brand":true},{"id":125,"name":"Insulin glargine-yfgn pen","desc":"INSULIN GLARGINE-YFGN U100 PEN","dose":"40 units daily","cat":"Endocrine","note":"","unitPrice":2.89617,"unit":"ML","qty":0.4,"days":1,"perDay":1.1585,"brand":false},{"id":126,"name":"Humalog KwikPen","desc":"HUMALOG 100 UNIT/ML KWIKPEN","dose":"10 units with each meal","cat":"Endocrine","note":"","unitPrice":10.16465,"unit":"ML","qty":0.3,"days":1,"perDay":3.0494,"brand":true},{"id":127,"name":"Levothyroxine 100 mcg (generic)","desc":"LEVOTHYROXINE 100 MCG TABLET","dose":"100 mcg daily","cat":"Endocrine","note":"Same molecule as brand Synthroid.","unitPrice":0.04954,"unit":"EA","qty":1,"days":1,"perDay":0.0495,"brand":false},{"id":128,"name":"Synthroid 100 mcg (brand)","desc":"SYNTHROID 100 MCG TABLET","dose":"100 mcg daily","cat":"Endocrine","note":"Same molecule as generic levothyroxine.","unitPrice":1.66177,"unit":"EA","qty":1,"days":1,"perDay":1.6618,"brand":true},{"id":129,"name":"Alendronate 70 mg","desc":"ALENDRONATE SODIUM 70 MG TAB","dose":"70 mg weekly","cat":"Endocrine","note":"","unitPrice":0.25712,"unit":"EA","qty":1,"days":7,"perDay":0.0367,"brand":false},{"id":130,"name":"Cinacalcet 60 mg","desc":"CINACALCET HCL 60 MG TABLET","dose":"60 mg daily","cat":"Endocrine","note":"","unitPrice":0.77196,"unit":"EA","qty":1,"days":1,"perDay":0.772,"brand":false},{"id":131,"name":"Sevelamer carbonate 800 mg","desc":"SEVELAMER CARBONATE 800 MG TAB","dose":"1600 mg with each meal","cat":"Renal","note":"","unitPrice":0.21359,"unit":"EA","qty":6,"days":1,"perDay":1.2815,"brand":false},{"id":132,"name":"Tamsulosin 0.4 mg","desc":"TAMSULOSIN HCL 0.4 MG CAPSULE","dose":"0.4 mg daily","cat":"Renal","note":"","unitPrice":0.04892,"unit":"EA","qty":1,"days":1,"perDay":0.0489,"brand":false},{"id":133,"name":"Finasteride 5 mg","desc":"FINASTERIDE 5 MG TABLET","dose":"5 mg daily","cat":"Renal","note":"","unitPrice":0.06864,"unit":"EA","qty":1,"days":1,"perDay":0.0686,"brand":false},{"id":134,"name":"Allopurinol 300 mg","desc":"ALLOPURINOL 300 MG TABLET","dose":"300 mg daily","cat":"Rheumatology","note":"","unitPrice":0.05221,"unit":"EA","qty":1,"days":1,"perDay":0.0522,"brand":false},{"id":135,"name":"Febuxostat 40 mg","desc":"FEBUXOSTAT 40 MG TABLET","dose":"40 mg daily","cat":"Rheumatology","note":"","unitPrice":0.18751,"unit":"EA","qty":1,"days":1,"perDay":0.1875,"brand":false},{"id":136,"name":"Colchicine 0.6 mg tablet","desc":"COLCHICINE 0.6 MG TABLET","dose":"0.6 mg daily","cat":"Rheumatology","note":"Same drug and dose as the capsule.","unitPrice":0.11888,"unit":"EA","qty":1,"days":1,"perDay":0.1189,"brand":false},{"id":137,"name":"Colchicine 0.6 mg capsule","desc":"COLCHICINE 0.6 MG CAPSULE","dose":"0.6 mg daily","cat":"Rheumatology","note":"Same drug and dose as the tablet.","unitPrice":1.69193,"unit":"EA","qty":1,"days":1,"perDay":1.6919,"brand":false},{"id":138,"name":"Methotrexate 2.5 mg","desc":"METHOTREXATE 2.5 MG TABLET","dose":"15 mg weekly","cat":"Rheumatology","note":"","unitPrice":0.16319,"unit":"EA","qty":6,"days":7,"perDay":0.1399,"brand":false},{"id":139,"name":"Humira (adalimumab, brand)","desc":"HUMIRA(CF) PEN 40 MG/0.4 ML","dose":"40 mg SC every 2 weeks","cat":"Rheumatology","note":"Same molecule as adalimumab-aaty.","unitPrice":3367.85034,"unit":"EA","qty":1,"days":14,"perDay":240.5607,"brand":true},{"id":140,"name":"Adalimumab-aaty (biosimilar)","desc":"ADALIMUMAB-AATY(CF) 40 MG/0.4 ML AUTOINJECTOR","dose":"40 mg SC every 2 weeks","cat":"Rheumatology","note":"Biosimilar to Humira.","unitPrice":494.92481,"unit":"EA","qty":1,"days":14,"perDay":35.3518,"brand":false},{"id":141,"name":"Enbrel (etanercept)","desc":"ENBREL 50 MG/ML SURECLICK","dose":"50 mg SC weekly","cat":"Rheumatology","note":"","unitPrice":2083.62477,"unit":"ML","qty":1,"days":7,"perDay":297.6607,"brand":true},{"id":142,"name":"Stelara (ustekinumab) 90 mg","desc":"STELARA 90 MG/ML SYRINGE","dose":"90 mg SC every 8 weeks","cat":"Rheumatology","note":"","unitPrice":29792.78667,"unit":"ML","qty":1,"days":56,"perDay":532.014,"brand":true},{"id":143,"name":"Xeljanz (tofacitinib)","desc":"XELJANZ 5 MG TABLET","dose":"5 mg twice daily","cat":"Rheumatology","note":"","unitPrice":73.77164,"unit":"EA","qty":2,"days":1,"perDay":147.5433,"brand":true},{"id":144,"name":"Rinvoq (upadacitinib)","desc":"RINVOQ ER 15 MG TABLET","dose":"15 mg daily","cat":"Rheumatology","note":"","unitPrice":229.49501,"unit":"EA","qty":1,"days":1,"perDay":229.495,"brand":true},{"id":145,"name":"Otezla (apremilast)","desc":"OTEZLA 30 MG TABLET","dose":"30 mg twice daily","cat":"Rheumatology","note":"","unitPrice":90.588,"unit":"EA","qty":2,"days":1,"perDay":181.176,"brand":true},{"id":146,"name":"Mycophenolate 500 mg","desc":"MYCOPHENOLATE 500 MG TABLET","dose":"500 mg twice daily","cat":"Rheumatology","note":"","unitPrice":0.253,"unit":"EA","qty":2,"days":1,"perDay":0.506,"brand":false},{"id":147,"name":"Azathioprine 50 mg","desc":"AZATHIOPRINE 50 MG TABLET","dose":"150 mg daily","cat":"Rheumatology","note":"","unitPrice":0.12818,"unit":"EA","qty":3,"days":1,"perDay":0.3845,"brand":false},{"id":148,"name":"Tacrolimus 1 mg","desc":"TACROLIMUS 1 MG CAPSULE (IMMEDIATE RELEASE)","dose":"2 mg twice daily","cat":"Rheumatology","note":"","unitPrice":0.15983,"unit":"EA","qty":4,"days":1,"perDay":0.6393,"brand":false},{"id":149,"name":"Hydroxyurea 500 mg","desc":"HYDROXYUREA 500 MG CAPSULE","dose":"1000 mg daily","cat":"Heme/Onc","note":"","unitPrice":0.18447,"unit":"EA","qty":2,"days":1,"perDay":0.3689,"brand":false},{"id":150,"name":"Anastrozole 1 mg","desc":"ANASTROZOLE 1 MG TABLET","dose":"1 mg daily","cat":"Heme/Onc","note":"","unitPrice":0.14855,"unit":"EA","qty":1,"days":1,"perDay":0.1485,"brand":false},{"id":151,"name":"Tamoxifen 20 mg","desc":"TAMOXIFEN 20 MG TABLET","dose":"20 mg daily","cat":"Heme/Onc","note":"","unitPrice":0.27467,"unit":"EA","qty":1,"days":1,"perDay":0.2747,"brand":false},{"id":152,"name":"Sertraline 50 mg","desc":"SERTRALINE HCL 50 MG TABLET","dose":"50 mg daily","cat":"Neuro/Psych","note":"","unitPrice":0.03484,"unit":"EA","qty":1,"days":1,"perDay":0.0348,"brand":false},{"id":153,"name":"Escitalopram 10 mg","desc":"ESCITALOPRAM 10 MG TABLET","dose":"10 mg daily","cat":"Neuro/Psych","note":"","unitPrice":0.03911,"unit":"EA","qty":1,"days":1,"perDay":0.0391,"brand":false},{"id":154,"name":"Bupropion XL 300 mg","desc":"BUPROPION HCL XL 300 MG TABLET","dose":"300 mg daily","cat":"Neuro/Psych","note":"","unitPrice":0.09815,"unit":"EA","qty":1,"days":1,"perDay":0.0982,"brand":false},{"id":155,"name":"Quetiapine 100 mg","desc":"QUETIAPINE FUMARATE 100 MG TAB","dose":"100 mg nightly","cat":"Neuro/Psych","note":"","unitPrice":0.04831,"unit":"EA","qty":1,"days":1,"perDay":0.0483,"brand":false},{"id":156,"name":"Aripiprazole 10 mg","desc":"ARIPIPRAZOLE 10 MG TABLET","dose":"10 mg daily","cat":"Neuro/Psych","note":"","unitPrice":0.11861,"unit":"EA","qty":1,"days":1,"perDay":0.1186,"brand":false},{"id":157,"name":"Vraylar (cariprazine)","desc":"VRAYLAR 3 MG CAPSULE","dose":"3 mg daily","cat":"Neuro/Psych","note":"","unitPrice":50.86166,"unit":"EA","qty":1,"days":1,"perDay":50.8617,"brand":true},{"id":158,"name":"Rexulti (brexpiprazole)","desc":"REXULTI 2 MG TABLET","dose":"2 mg daily","cat":"Neuro/Psych","note":"","unitPrice":49.52468,"unit":"EA","qty":1,"days":1,"perDay":49.5247,"brand":true},{"id":159,"name":"Clozapine 100 mg","desc":"CLOZAPINE 100 MG TABLET","dose":"400 mg daily","cat":"Neuro/Psych","note":"","unitPrice":0.57367,"unit":"EA","qty":4,"days":1,"perDay":2.2947,"brand":false},{"id":160,"name":"Lithium carbonate 300 mg","desc":"LITHIUM CARBONATE 300 MG CAP","dose":"300 mg three times daily","cat":"Neuro/Psych","note":"","unitPrice":0.11293,"unit":"EA","qty":3,"days":1,"perDay":0.3388,"brand":false},{"id":161,"name":"Levetiracetam 500 mg","desc":"LEVETIRACETAM 500 MG TABLET","dose":"500 mg twice daily","cat":"Neuro/Psych","note":"","unitPrice":0.07225,"unit":"EA","qty":2,"days":1,"perDay":0.1445,"brand":false},{"id":162,"name":"Lamotrigine 100 mg","desc":"LAMOTRIGINE 100 MG TABLET","dose":"100 mg twice daily","cat":"Neuro/Psych","note":"","unitPrice":0.04834,"unit":"EA","qty":2,"days":1,"perDay":0.0967,"brand":false},{"id":163,"name":"Gabapentin 300 mg","desc":"GABAPENTIN 300 MG CAPSULE","dose":"300 mg three times daily","cat":"Neuro/Psych","note":"","unitPrice":0.03283,"unit":"EA","qty":3,"days":1,"perDay":0.0985,"brand":false},{"id":164,"name":"Donepezil 10 mg","desc":"DONEPEZIL HCL 10 MG TABLET","dose":"10 mg daily","cat":"Neuro/Psych","note":"","unitPrice":0.04888,"unit":"EA","qty":1,"days":1,"perDay":0.0489,"brand":false},{"id":165,"name":"Carbidopa-levodopa 25/100","desc":"CARBIDOPA-LEVODOPA 25-100 TAB","dose":"1 tablet three times daily","cat":"Neuro/Psych","note":"","unitPrice":0.07361,"unit":"EA","qty":3,"days":1,"perDay":0.2208,"brand":false},{"id":166,"name":"Nurtec ODT (migraine prevention)","desc":"NURTEC ODT 75 MG TABLET","dose":"75 mg every other day","cat":"Neuro/Psych","note":"","unitPrice":128.66304,"unit":"EA","qty":1,"days":2,"perDay":64.3315,"brand":true},{"id":167,"name":"Austedo XR (deutetrabenazine) 24 mg","desc":"AUSTEDO XR 24 MG TABLET","dose":"24 mg daily","cat":"Neuro/Psych","note":"","unitPrice":250.31683,"unit":"EA","qty":1,"days":1,"perDay":250.3168,"brand":true},{"id":168,"name":"Ingrezza (valbenazine) 80 mg","desc":"INGREZZA 80 MG CAPSULE","dose":"80 mg daily","cat":"Neuro/Psych","note":"","unitPrice":291.81522,"unit":"EA","qty":1,"days":1,"perDay":291.8152,"brand":true},{"id":169,"name":"Riluzole 50 mg","desc":"RILUZOLE 50 MG TABLET","dose":"50 mg twice daily","cat":"Neuro/Psych","note":"","unitPrice":0.29134,"unit":"EA","qty":2,"days":1,"perDay":0.5827,"brand":false},{"id":170,"name":"Pyridostigmine 60 mg","desc":"PYRIDOSTIGMINE BR 60 MG TABLET","dose":"60 mg four times daily","cat":"Neuro/Psych","note":"","unitPrice":0.23785,"unit":"EA","qty":4,"days":1,"perDay":0.9514,"brand":false},{"id":171,"name":"Naltrexone 50 mg","desc":"NALTREXONE 50 MG TABLET","dose":"50 mg daily","cat":"Neuro/Psych","note":"","unitPrice":1.12306,"unit":"EA","qty":1,"days":1,"perDay":1.1231,"brand":false},{"id":172,"name":"Buprenorphine-naloxone 8/2 film","desc":"BUPRENORPHINE-NALOXONE 8-2 MG SL FILM","dose":"16/4 mg daily","cat":"Neuro/Psych","note":"Same drug and dose as the SL tablet.","unitPrice":1.94819,"unit":"EA","qty":2,"days":1,"perDay":3.8964,"brand":false},{"id":173,"name":"Buprenorphine-naloxone 8/2 tablet","desc":"BUPRENORPHINE-NALOXONE 8-2 MG SL TABLET","dose":"16/4 mg daily","cat":"Neuro/Psych","note":"Same drug and dose as the SL film.","unitPrice":0.7172,"unit":"EA","qty":2,"days":1,"perDay":1.4344,"brand":false}]};
+
+/* ---------- settings ---------- */
+const GAME = "copay-noway";       // leaderboard id (board per California date)
+const CONFIG = {
+  launchDay: "2026-11-10",        // puzzle #1
+  timeZone: "America/Los_Angeles"
+};
+
+/* ---------- storage (safe) ---------- */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ---------- dates ---------- */
+function dayKey(d = new Date()){
+  return new Intl.DateTimeFormat("en-CA",{timeZone:CONFIG.timeZone,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
+}
+function puzzleNo(key){
+  const [a,b,c] = key.split("-").map(Number), [x,y,z] = CONFIG.launchDay.split("-").map(Number);
+  return Math.max(1, Math.round((Date.UTC(a,b-1,c) - Date.UTC(x,y-1,z)) / 864e5) + 1);
+}
+function msToNext(){
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:CONFIG.timeZone,hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"}).formatToParts(new Date()).map(x=>[x.type,x.value]));
+  const s = (+p.hour % 24) * 3600 + (+p.minute) * 60 + (+p.second);
+  return (86400 - s) * 1000;
+}
+function hms(ms){ const s = Math.max(0, Math.floor(ms/1000)); return [Math.floor(s/3600), Math.floor(s%3600/60), s%60].map(n=>String(n).padStart(2,"0")).join(":"); }
+
+/* ---------- seeded RNG ---------- */
+function hash(str){ let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i=0;i<str.length;i++){ const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909); h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909); return (h2>>>0) * 4294967296 + (h1>>>0); }
+function rng(seed){ let a = seed >>> 0; return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1 | a); t = t + Math.imul(t ^ t>>>7, 61 | t) ^ t; return ((t ^ t>>>14) >>> 0) / 4294967296; }; }
+
+/* ---------- daily run (same for everyone) ---------- */
+const BY_ID = Object.fromEntries(DATA.drugs.map(d=>[d.id,d]));
+function minRatio(r){ return r < 4 ? 3 : r < 10 ? 2 : r < 20 ? 1.5 : 1.25; }
+function buildRun(key){
+  const R = rng(hash("copay-noway:" + key));
+  const pool = DATA.drugs.slice();
+  for (let i = pool.length-1; i > 0; i--){ const j = Math.floor(R()*(i+1)); [pool[i],pool[j]] = [pool[j],pool[i]]; }
+  let ai = pool.findIndex(d => d.perDay >= 0.3 && d.perDay <= 30);
+  let anchor = pool.splice(ai, 1)[0];
+  const rounds = [];
+  let held = 0; // rounds the current anchor has survived
+  for (let r = 0; pool.length; r++){
+    const prompt = r % 2 === 0 ? "more" : "less";
+    const want = held >= 2 ? "challenger" : (R() < 0.35 ? "anchor" : "challenger");
+    const flip = want === "anchor" ? "challenger" : "anchor";
+    const tries = [[want, minRatio(r)], [flip, minRatio(r)], [want, 1.25], [flip, 1.25]];
+    let pick = null, winner = null;
+    for (const [w, ratio] of tries){
+      const challengerHigher = (prompt === "more") === (w === "challenger");
+      const list = pool.filter(c => challengerHigher ? c.perDay >= anchor.perDay * ratio : c.perDay <= anchor.perDay / ratio);
+      if (!list.length) continue;
+      if (r < 6) pick = list[Math.floor(R()*list.length)];
+      else {
+        list.sort((x,y) => Math.abs(Math.log(x.perDay/anchor.perDay)) - Math.abs(Math.log(y.perDay/anchor.perDay)));
+        const top = list.slice(0, Math.min(5, list.length));
+        pick = top[Math.floor(R()*top.length)];
+      }
+      winner = w; break;
+    }
+    if (!pick) break;
+    pool.splice(pool.indexOf(pick), 1);
+    const win = winner === "anchor" ? anchor : pick;
+    rounds.push({ a: anchor.id, c: pick.id, prompt, answer: win.id });
+    held = win === anchor ? held + 1 : 0;
+    anchor = win;
+  }
+  return rounds;
+}
+
+/* ---------- formatting ---------- */
+function money(v){
+  if (v < 0.1) return "$" + v.toFixed(3);
+  if (v < 100) return "$" + v.toFixed(2);
+  return "$" + Math.round(v).toLocaleString("en-US");
+}
+function unitPrice(v){ return "$" + (v >= 100 ? v.toFixed(2) : String(+v.toFixed(4))); }
+function calcLine(d){
+  const per = d.days === 1 ? `${d.qty} ${d.unit}/day` : `${d.qty} ${d.unit} every ${d.days} days`;
+  return `NADAC <b>${unitPrice(d.unitPrice)}/${d.unit}</b> × ${per}<br>Look up: “${d.desc}”`;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- sound ---------- */
+let AC = null, muted = store.get("cp:muted", false);
+function tone(freq, dur, type="sine", when=0, vol=.12){
+  if (muted) return;
+  try{
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime + when, o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+    o.connect(g).connect(AC.destination); o.start(t); o.stop(t + dur);
+  }catch(e){}
+}
+const sfx = {
+  ok(){ tone(1046,.09,"square",0,.06); tone(1568,.22,"square",.08,.06); },
+  bad(){ tone(180,.35,"sawtooth",0,.09); tone(120,.4,"sawtooth",.12,.08); },
+  tick(){ tone(660,.04,"triangle",0,.04); }
+};
+
+/* ---------- state ---------- */
+const KEY = dayKey();
+const RUN = buildRun(KEY);
+const PZL = puzzleNo(KEY);
+let S = store.get("cp:day:" + KEY, null) || { key: KEY, r: 0, picks: [], started: null, ended: null, done: false };
+const stats = store.get("cp:stats", { played: 0, best: 0, last: null });
+const deviceId = store.get("cp:device", null) || (() => { const id = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)); store.set("cp:device", id); return id; })();
+const save = () => store.set("cp:day:" + KEY, S);
+const streakNow = () => S.picks.filter(p => p.ok).length;
+
+const $ = s => document.querySelector(s);
+const app = $("#app");
+$("#pzl").textContent = "#" + PZL;
+$("#asof").textContent = new Date(DATA.meta.asOf + "T12:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
+function hud(){ $("#streak").textContent = streakNow(); $("#mute").textContent = muted ? "×" : "♪"; $("#mute").setAttribute("aria-label", muted ? "Turn sound on" : "Mute sounds"); }
+$("#mute").onclick = () => { muted = !muted; store.set("cp:muted", muted); hud(); };
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(()=>t.classList.remove("on"), 1800); }
+
+/* ---------- screens ---------- */
+function intro(){
+  app.innerHTML = `
+  <section class="panel">
+    <h2>Which drug costs more per day?</h2>
+    <ol class="rules">
+      <li>Every drug is priced per day at a standard adult dose, using what U.S. pharmacies pay for it (NADAC), before insurance.</li>
+      <li>Each round asks you to pick the one that costs <b>more</b> or <b>less</b>. The question switches every round.</li>
+      <li>Get it right and the drug you picked stays on the board. A new challenger takes the other spot.</li>
+      <li>One wrong pick ends your run. Everyone gets the same drugs today, and a new run starts at midnight Pacific.</li>
+    </ol>
+    <div class="row"><button class="btn" id="go">Start today’s run</button><span class="fine">${DATA.meta.count} drugs in the pool</span></div>
+  </section>`;
+  $("#go").onclick = () => { S.started = Date.now(); save(); sfx.tick(); play(); };
+}
+
+function cardHTML(d, opts){
+  const tags = `<span class="tag">${esc(d.cat)}</span>${d.brand ? '<span class="tag brand">Brand</span>' : '<span class="tag">Generic</span>'}`;
+  const sticker = opts.show
+    ? `<span class="sticker" data-v="${d.perDay}">${money(d.perDay)}</span>`
+    : `<span class="sticker hidden">$ ? ? ?</span>`;
+  return `
+    <button class="card ${opts.cls||""}" data-id="${d.id}" ${opts.disabled ? 'disabled aria-disabled="true"' : ""} aria-label="${esc(d.name)}${opts.show ? ", " + money(d.perDay) + " per day" : ", price hidden"}">
+      ${opts.stamp || ""}
+      <div class="tags">${tags}</div>
+      <div class="dname">${esc(d.name)}</div>
+      <div class="dose">${esc(d.dose)}</div>
+      <div class="price">${sticker}<span class="perday">per day</span></div>
+      ${opts.show ? `<div class="calc">${calcLine(d)}</div>` : ""}
+      ${opts.show && opts.note && d.note ? `<div class="note">${esc(d.note)}</div>` : ""}
+    </button>`;
+}
+
+function play(){
+  hud();
+  if (S.r >= RUN.length){ finish(true); return; }
+  const rd = RUN[S.r], A = BY_ID[rd.a], C = BY_ID[rd.c];
+  const isMore = rd.prompt === "more";
+  app.innerHTML = `
+    <div class="prompt ${rd.prompt}">Pick the one that costs <span class="word">${isMore ? "MORE ▲" : "LESS ▼"}</span></div>
+    <div class="board live ${rd.prompt}" id="board">
+      ${cardHTML(A, {show:true})}
+      <div class="vs">VS</div>
+      ${cardHTML(C, {show:false, cls:"enter"})}
+    </div>
+    <div class="verdict" id="verdict"><span class="fine" style="color:#9fb0d0">Round ${S.r + 1} · tap a card</span></div>`;
+  app.querySelectorAll(".card").forEach(el => el.onclick = () => choose(+el.dataset.id));
+}
+
+function countUp(el, v){
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce){ el.textContent = money(v); return; }
+  const t0 = performance.now(), dur = 750;
+  (function step(t){ const k = Math.min(1, (t - t0)/dur), e = 1 - Math.pow(1-k, 3); el.textContent = money(v * e); if (k < 1) requestAnimationFrame(step); else el.textContent = money(v); })(t0);
+}
+
+function choose(id){
+  if (S.done || S.picks.length > S.r) return;
+  const rd = RUN[S.r], ok = id === rd.answer;
+  S.picks.push({ r: S.r, pick: id, ok });
+  if (!ok){ S.done = true; S.ended = Date.now(); }
+  save();
+  const A = BY_ID[rd.a], C = BY_ID[rd.c];
+  const stampFor = d => d.id === rd.answer ? '<span class="stamp ok">CORRECT</span>' : "";
+  const clsFor = d => d.id === id ? (ok ? "ok" : "bad shake") : (d.id === rd.answer ? "ok" : "dim");
+  const board = $("#board");
+  board.classList.remove("live");
+  board.innerHTML = cardHTML(A, {show:true, cls:clsFor(A), stamp:stampFor(A), disabled:true, note:true}) +
+    `<div class="vs">VS</div>` + cardHTML(C, {show:true, cls:clsFor(C), stamp:stampFor(C), disabled:true, note:true});
+  const cs = board.querySelectorAll(".sticker")[1]; countUp(cs, C.perDay);
+  hud();
+  const ratio = Math.max(A.perDay, C.perDay) / Math.min(A.perDay, C.perDay);
+  const gap = ratio >= 10 ? `${Math.round(ratio)}×` : `${ratio.toFixed(1)}×`;
+  const v = $("#verdict");
+  if (ok){
+    sfx.ok();
+    v.innerHTML = `<span><b style="color:#7ee2b0">Correct.</b> ${gap} difference. Your pick stays on the board.</span><button class="btn" id="next">Next round</button>`;
+    S.r += 1; save();
+    const nx = $("#next"); nx.focus({preventScroll:true});
+    nx.onclick = () => { sfx.tick(); play(); };
+  } else {
+    sfx.bad();
+    stats.played += 1; stats.best = Math.max(stats.best, streakNow()); stats.last = KEY; store.set("cp:stats", stats);
+    v.innerHTML = `<span><b style="color:#ff8a8c">Run over.</b> ${gap} difference.</span><button class="btn" id="res">See results</button>`;
+    const rb = $("#res"); rb.focus({preventScroll:true}); rb.onclick = () => finish(false);
+  }
+}
+
+function shareText(perfect){
+  const n = streakNow(), sq = S.picks.map(p => p.ok ? "🟩" : "🟥");
+  const shown = sq.length > 20 ? sq.slice(0, 19).join("") + `…+${sq.length - 19}` : sq.join("");
+  return `Co-Pay or No Way #${PZL} 💊 Streak ${n}${perfect ? " (perfect!)" : ""}\n${shown}\nboardsidereviews.com`;
+}
+
+function finish(perfect){
+  if (!S.done){ S.done = true; S.ended = S.ended || Date.now(); save();
+    if (perfect){ stats.played += 1; stats.best = Math.max(stats.best, streakNow()); stats.last = KEY; store.set("cp:stats", stats); } }
+  hud();
+  const n = streakNow(), t = S.started && S.ended ? S.ended - S.started : 0;
+  const rows = S.picks.map(p => {
+    const rd = RUN[p.r], A = BY_ID[rd.a], C = BY_ID[rd.c];
+    return `<div class="rv"><span class="m ${p.ok ? "ok" : "bad"}">${p.ok ? "✓" : "✗"}</span><span class="q ${rd.prompt}">${rd.prompt === "more" ? "MORE" : "LESS"}</span>
+      <span>${esc(A.name)} <span class="mono">${money(A.perDay)}</span> vs ${esc(C.name)} <span class="mono">${money(C.perDay)}</span></span></div>`;
+  }).join("");
+  app.innerHTML = `
+  <section class="panel">
+    <div class="big"><span class="n">${n}</span><span class="l">${perfect ? "Perfect run. You cleared the whole shelf." : n === 1 ? "correct pick in a row" : "correct picks in a row"}</span></div>
+    <div class="stats">
+      <div class="stat"><div class="k">Puzzle</div><div class="v">#${PZL}</div></div>
+      <div class="stat"><div class="k">Time</div><div class="v">${hms(t).replace(/^00:/,"")}</div></div>
+      <div class="stat"><div class="k">Your best</div><div class="v">${stats.best}</div></div>
+      <div class="stat"><div class="k">Next run in</div><div class="v" id="cd">${hms(msToNext())}</div></div>
+    </div>
+    <div class="row"><button class="btn" id="share">Copy result</button></div>
+  </section>
+  <section class="panel">
+    <h2>Today’s leaderboard</h2>
+    <p class="fine">Longest streak wins. Ties go to whoever posted first.</p>
+    <div class="row" id="postRow"><button class="btn" type="button" id="lbsubmit">Post my streak</button><span class="fine" id="postNote"></span></div>
+    <div id="lb" class="fine">Loading…</div>
+    <a class="fine" href="leaderboard.html#copay-noway">Full leaderboard →</a>
+  </section>
+  <section class="panel">
+    <h2>Your run</h2>
+    <div class="review">${rows || '<span class="fine">No picks yet.</span>'}</div>
+    <p class="fine">Check any price yourself: search the “Look up” text in the <a href="https://www.medicaid.gov/medicaid/prescription-drugs/pharmacy-pricing/index.html">NADAC data</a> (file as of ${$("#asof").textContent}).</p>
+  </section>
+  <div id="more"></div>`;
+  $("#share").onclick = async () => { try{ await navigator.clipboard.writeText(shareText(perfect)); toast("Result copied"); }catch(e){ toast("Copy blocked here. Select and copy: " + shareText(perfect).split("\n")[0]); } };
+  clearInterval(finish.iv); finish.iv = setInterval(() => { const el = $("#cd"); if (!el) return clearInterval(finish.iv); const ms = msToNext(); el.textContent = hms(ms); if (dayKey() !== KEY) location.reload(); }, 1000);
+  const pb = $("#lbsubmit");
+  if (!hasLB()) { $("#postRow").hidden = true; }
+  else if (store.get("cp:posted:" + KEY, false)) { pb.outerHTML = '<span class="posted fine">Posted</span>'; }
+  else pb.onclick = () => postStreak(n);
+  if (window.BoardsideMore) BoardsideMore.mount($("#more"), GAME);
+  loadLB();
+}
+
+/* ---------- leaderboard (shared Boardside board, lb.js) ---------- */
+const hasLB = () => !!(window.BLB && BLB.enabled && BLB.boardPoints);
+async function postStreak(n){
+  const b = $("#lbsubmit"), note = $("#postNote");
+  b.disabled = true; b.textContent = "Posting…"; note.textContent = "";
+  try{
+    const name = await BLB.dialog({ title: "Post your streak", intro: "We'll email you a 6-digit code to verify it's you. No password needed." });
+    if (!name){ b.disabled = false; b.textContent = "Post my streak"; return; }
+    await BLB.submit(GAME, KEY, n, Math.max(1, n));
+    store.set("cp:posted:" + KEY, true);
+    b.outerHTML = '<span class="posted fine">Posted as ' + esc(name) + '</span>';
+    loadLB();
+  }catch(e){
+    b.disabled = false; b.textContent = "Post my streak";
+    note.textContent = BLB.friendly(e);
+  }
+}
+async function loadLB(){
+  const box = $("#lb"); if (!box) return;
+  if (!hasLB()){ box.textContent = "The leaderboard couldn't load. Refresh to try again."; return; }
+  try{
+    const rows = await BLB.boardPoints(GAME, KEY, null, 10);
+    if (!rows.length){ box.textContent = "No one has posted yet today. Be first."; return; }
+    box.innerHTML = `<table class="lb"><thead><tr><th>#</th><th>Player</th><th style="text-align:right">Streak</th></tr></thead><tbody>${
+      rows.map(r => `<tr${r.is_me ? ' style="font-weight:700"' : ""}><td>${r.rank}</td><td>${esc(r.display_name)}${r.is_me ? " (you)" : ""}</td><td class="num">${r.best_score}</td></tr>`).join("")}</tbody></table>`;
+  }catch(e){ box.textContent = BLB.friendly(e); }
+}
+
+/* ---------- boot ---------- */
+hud();
+if (S.done) finish(S.r >= RUN.length && S.picks.every(p=>p.ok));
+else if (S.started) play();
+else intro();
+</script>
+</body>
+</html>
