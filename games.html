@@ -89,9 +89,12 @@ footer a{text-decoration:none;color:var(--ink2)}
 .cp-card small{font:500 10.5px/1.2 'IBM Plex Sans',Inter,sans-serif;color:#5b6782}
 .cp-card s{text-decoration:none;align-self:flex-start;font:700 15px/1 'IBM Plex Mono',ui-monospace,Menlo,monospace;background:#ffd23f;padding:4px 7px 5px;border-radius:6px;transform:rotate(-3deg)}
 .cp-card s.q{background:#121a2e;color:#ffd23f;letter-spacing:.1em}
-.cp-vs{color:#9fb0d0;font:800 12px/1 'Plus Jakarta Sans',Inter,sans-serif}
+.cp-vs{display:flex;flex-direction:column;gap:5px}
+.cp-vs i{font:700 16px/1 'IBM Plex Mono',ui-monospace,Menlo,monospace;font-style:normal;color:#fff;background:#2f7dff;border-radius:6px;padding:4px 7px 5px;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.cp-vs i.g{background:#ff5a2c}
 .cp-ask{grid-column:1/-1;justify-self:center;font:800 13px/1 'Plus Jakarta Sans',Inter,sans-serif;color:#fff}
-.cp-ask b{background:#ff5a2c;padding:3px 7px 4px;border-radius:5px;margin-left:4px}
+.cp-ask b{font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;background:#2f7dff;padding:2px 7px 3px;border-radius:5px;margin:0 3px}
+.cp-ask b.g{background:#ff5a2c}
 .rr{width:86%;display:flex;flex-direction:column;gap:8px}
 .rr-top{display:flex;justify-content:space-between;align-items:center;background:#23272b;color:#f2f0ea;border-radius:8px;padding:7px 10px;font:700 12px/1 'IBM Plex Mono',ui-monospace,Menlo,monospace;letter-spacing:.06em}
 .rr-top b{color:#d64848}
@@ -172,12 +175,12 @@ footer a{text-decoration:none;color:var(--ink2)}
 
 <a class="card" href="copay.html">
 <div class="thumb t-cp"><span class="badge">NEW · DAILY</span><div class="art cp" aria-hidden="true">
-<div class="cp-ask">Which costs <b>MORE ▲</b></div>
+<div class="cp-ask">Is it <b>&lt;</b> or <b class="g">&gt;</b> ?</div>
 <div class="cp-card">Eliquis 5 mg<small>twice daily</small><s>$11.04</s></div>
-<div class="cp-vs">VS</div>
+<div class="cp-vs"><i>&lt;</i><i class="g">&gt;</i></div>
 <div class="cp-card">Warfarin 5 mg<small>daily</small><s class="q">$ ? ?</s></div>
 </div></div>
-<div class="body"><h2>Co-Pay or No Way</h2><p>Which drug costs more per day? Real pharmacy prices, one run a day, and one wrong pick ends your streak.</p>
+<div class="body"><h2>Co-Pay or No Way</h2><p>Does this drug cost less or more per day than the next one? Real pharmacy prices, one run a day, and one wrong sign ends your streak.</p>
 <div class="meta"><span>Daily run</span><span>Longest-streak leaderboard</span></div>
 <div class="play">Play today's run<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></div></div>
 </a>

@@ -69,8 +69,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;fl
 /* prompt */
 .prompt{display:block;font-family:var(--display);font-weight:800;font-size:clamp(22px,4.6vw,32px);text-align:center;text-wrap:balance;letter-spacing:-.01em}
 .prompt .word{display:inline-block;white-space:nowrap;margin-left:6px;padding:2px 12px 5px;border-radius:8px;color:#fff}
-.prompt.more .word{background:var(--more)}
-.prompt.less .word{background:var(--less)}
+.prompt .word{background:var(--aisle-2);border:1px solid rgba(255,255,255,.2);font-family:var(--mono);margin:0 2px}
 .prompt small{display:block;font-family:var(--body);font-weight:500;font-size:13px;color:#9fb0d0;letter-spacing:0;margin-top:2px}
 
 main{display:flex;flex-direction:column;gap:16px}
@@ -86,9 +85,16 @@ main{display:flex;flex-direction:column;gap:16px}
   content:"";position:absolute;left:14px;right:14px;top:-1px;height:6px;
   background:radial-gradient(circle at 5px 0, var(--aisle) 3.5px, transparent 4px) 0 0/12px 6px repeat-x;
 }
-.board.live .card:hover{transform:translateY(-3px);box-shadow:0 13px 0 rgba(0,0,0,.25)}
-.board.live.more .card:hover{border-color:var(--more)}
-.board.live.less .card:hover{border-color:var(--less)}
+.signs{display:flex;flex-direction:column;justify-content:center;gap:12px;min-width:118px}
+.sign{display:flex;flex-direction:column;align-items:center;gap:2px;border:0;border-radius:14px;padding:10px 14px 12px;color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.35);transition:transform .12s ease}
+.sign b{font-family:var(--mono);font-weight:700;font-size:44px;line-height:1}
+.sign small{font-size:12px;font-weight:600;letter-spacing:.02em;opacity:.95;white-space:nowrap}
+.sign[data-s="lt"]{background:var(--less)}
+.sign[data-s="gt"]{background:var(--more)}
+button.sign:hover{transform:translateY(-2px)}
+button.sign:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.sign.result{background:var(--ok)}
+.sign.result.bad{background:var(--bad)}
 .card.ok{border-color:var(--ok)}
 .card.bad{border-color:var(--bad)}
 .card.dim{opacity:.72}
@@ -148,7 +154,7 @@ input[type=text]{font:inherit;padding:11px 12px;border-radius:10px;border:1px so
 .rv .m{font-weight:700}
 .rv .m.ok{color:var(--ok)}.rv .m.bad{color:var(--bad)}
 .rv .q{font-family:var(--mono);font-size:11px;font-weight:700;text-align:center;border-radius:4px;color:#fff;padding:2px 0}
-.rv .q.more{background:var(--more)}.rv .q.less{background:var(--less)}
+.rv .q{background:var(--ink);font-size:13px}
 .rv .mono{font-family:var(--mono);font-size:12.5px}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;border:1px solid rgba(255,255,255,.2);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
@@ -157,7 +163,9 @@ footer a{color:#c8d4ec}
 
 @media (max-width:640px){
   .board{grid-template-columns:1fr;gap:10px}
-  .vs{justify-self:center}
+  .signs{flex-direction:row;justify-content:center}
+  .sign{flex:1;max-width:170px;padding:8px 10px 10px}
+  .sign b{font-size:34px}
   .card{min-height:0}
 }
 @media (prefers-reduced-motion:reduce){
@@ -226,23 +234,19 @@ function rng(seed){ let a = seed >>> 0; return function(){ a |= 0; a = a + 0x6D2
 /* ---------- daily run (same for everyone) ---------- */
 const BY_ID = Object.fromEntries(DATA.drugs.map(d=>[d.id,d]));
 function minRatio(r){ return r < 4 ? 3 : r < 10 ? 2 : r < 20 ? 1.5 : 1.25; }
+// A chain of drugs: each round compares the current drug (left) with the next one (right, hidden).
+// answer "lt" = left costs less than right, "gt" = left costs more.
 function buildRun(key){
-  const R = rng(hash("copay-noway:" + key));
+  const R = rng(hash("copay-noway-v2:" + key));
   const pool = DATA.drugs.slice();
   for (let i = pool.length-1; i > 0; i--){ const j = Math.floor(R()*(i+1)); [pool[i],pool[j]] = [pool[j],pool[i]]; }
-  let ai = pool.findIndex(d => d.perDay >= 0.3 && d.perDay <= 30);
-  let anchor = pool.splice(ai, 1)[0];
+  let anchor = pool.splice(pool.findIndex(d => d.perDay >= 0.3 && d.perDay <= 30), 1)[0];
   const rounds = [];
-  let held = 0; // rounds the current anchor has survived
   for (let r = 0; pool.length; r++){
-    const prompt = r % 2 === 0 ? "more" : "less";
-    const want = held >= 2 ? "challenger" : (R() < 0.35 ? "anchor" : "challenger");
-    const flip = want === "anchor" ? "challenger" : "anchor";
-    const tries = [[want, minRatio(r)], [flip, minRatio(r)], [want, 1.25], [flip, 1.25]];
-    let pick = null, winner = null;
-    for (const [w, ratio] of tries){
-      const challengerHigher = (prompt === "more") === (w === "challenger");
-      const list = pool.filter(c => challengerHigher ? c.perDay >= anchor.perDay * ratio : c.perDay <= anchor.perDay / ratio);
+    const up = R() < 0.5;
+    let pick = null;
+    for (const [higher, ratio] of [[up, minRatio(r)], [!up, minRatio(r)], [up, 1.25], [!up, 1.25]]){
+      const list = pool.filter(c => higher ? c.perDay >= anchor.perDay * ratio : c.perDay <= anchor.perDay / ratio);
       if (!list.length) continue;
       if (r < 6) pick = list[Math.floor(R()*list.length)];
       else {
@@ -250,14 +254,12 @@ function buildRun(key){
         const top = list.slice(0, Math.min(5, list.length));
         pick = top[Math.floor(R()*top.length)];
       }
-      winner = w; break;
+      break;
     }
     if (!pick) break;
     pool.splice(pool.indexOf(pick), 1);
-    const win = winner === "anchor" ? anchor : pick;
-    rounds.push({ a: anchor.id, c: pick.id, prompt, answer: win.id });
-    held = win === anchor ? held + 1 : 0;
-    anchor = win;
+    rounds.push({ a: anchor.id, c: pick.id, answer: anchor.perDay < pick.perDay ? "lt" : "gt" });
+    anchor = pick;
   }
   return rounds;
 }
@@ -276,7 +278,7 @@ function calcLine(d){
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 /* ---------- sound ---------- */
-let AC = null, muted = store.get("cp:muted", false);
+let AC = null, muted = store.get("cp2:muted", false);
 function tone(freq, dur, type="sine", when=0, vol=.12){
   if (muted) return;
   try{
@@ -297,10 +299,10 @@ const sfx = {
 const KEY = dayKey();
 const RUN = buildRun(KEY);
 const PZL = puzzleNo(KEY);
-let S = store.get("cp:day:" + KEY, null) || { key: KEY, r: 0, picks: [], started: null, ended: null, done: false };
-const stats = store.get("cp:stats", { played: 0, best: 0, last: null });
-const deviceId = store.get("cp:device", null) || (() => { const id = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)); store.set("cp:device", id); return id; })();
-const save = () => store.set("cp:day:" + KEY, S);
+let S = store.get("cp2:day:" + KEY, null) || { key: KEY, r: 0, picks: [], started: null, ended: null, done: false };
+const stats = store.get("cp2:stats", { played: 0, best: 0, last: null });
+const deviceId = store.get("cp2:device", null) || (() => { const id = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)); store.set("cp2:device", id); return id; })();
+const save = () => store.set("cp2:day:" + KEY, S);
 const streakNow = () => S.picks.filter(p => p.ok).length;
 
 const $ = s => document.querySelector(s);
@@ -308,7 +310,7 @@ const app = $("#app");
 $("#pzl").textContent = "#" + PZL;
 $("#asof").textContent = new Date(DATA.meta.asOf + "T12:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
 function hud(){ $("#streak").textContent = streakNow(); $("#mute").textContent = muted ? "×" : "♪"; $("#mute").setAttribute("aria-label", muted ? "Turn sound on" : "Mute sounds"); }
-$("#mute").onclick = () => { muted = !muted; store.set("cp:muted", muted); hud(); };
+$("#mute").onclick = () => { muted = !muted; store.set("cp2:muted", muted); hud(); };
 function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(()=>t.classList.remove("on"), 1800); }
 
 /* ---------- screens ---------- */
@@ -318,8 +320,8 @@ function intro(){
     <h2>Which drug costs more per day?</h2>
     <ol class="rules">
       <li>Every drug is priced per day at a standard adult dose, using what U.S. pharmacies pay for it (NADAC), before insurance.</li>
-      <li>Each round asks you to pick the one that costs <b>more</b> or <b>less</b>. The question switches every round.</li>
-      <li>Get it right and the drug you picked stays on the board. A new challenger takes the other spot.</li>
+      <li>You see one drug’s price. The next drug’s price is hidden. Tap <b>&lt;</b> if the first drug costs less, or <b>&gt;</b> if it costs more.</li>
+      <li>Get it right and the new drug becomes the next one to compare against.</li>
       <li>One wrong pick ends your run. Everyone gets the same drugs today, and a new run starts at midnight Pacific.</li>
     </ol>
     <div class="row"><button class="btn" id="go">Start today’s run</button><span class="fine">${DATA.meta.count} drugs in the pool</span></div>
@@ -333,7 +335,7 @@ function cardHTML(d, opts){
     ? `<span class="sticker" data-v="${d.perDay}">${money(d.perDay)}</span>`
     : `<span class="sticker hidden">$ ? ? ?</span>`;
   return `
-    <button class="card ${opts.cls||""}" data-id="${d.id}" ${opts.disabled ? 'disabled aria-disabled="true"' : ""} aria-label="${esc(d.name)}${opts.show ? ", " + money(d.perDay) + " per day" : ", price hidden"}">
+    <div class="card ${opts.cls||""}" data-id="${d.id}">
       ${opts.stamp || ""}
       <div class="tags">${tags}</div>
       <div class="dname">${esc(d.name)}</div>
@@ -341,23 +343,28 @@ function cardHTML(d, opts){
       <div class="price">${sticker}<span class="perday">per day</span></div>
       ${opts.show ? `<div class="calc">${calcLine(d)}</div>` : ""}
       ${opts.show && opts.note && d.note ? `<div class="note">${esc(d.note)}</div>` : ""}
-    </button>`;
+    </div>`;
 }
 
+function signsHTML(A){
+  return `<div class="signs" role="group" aria-label="Compare the prices">
+      <button class="sign" type="button" data-s="lt" aria-label="${esc(A.name)} costs less than the new drug"><b>&lt;</b><small>costs less than</small></button>
+      <button class="sign" type="button" data-s="gt" aria-label="${esc(A.name)} costs more than the new drug"><b>&gt;</b><small>costs more than</small></button>
+    </div>`;
+}
 function play(){
   hud();
   if (S.r >= RUN.length){ finish(true); return; }
   const rd = RUN[S.r], A = BY_ID[rd.a], C = BY_ID[rd.c];
-  const isMore = rd.prompt === "more";
   app.innerHTML = `
-    <div class="prompt ${rd.prompt}">Pick the one that costs <span class="word">${isMore ? "MORE ▲" : "LESS ▼"}</span></div>
-    <div class="board live ${rd.prompt}" id="board">
+    <div class="prompt">Is it <span class="word">&lt;</span> or <span class="word">&gt;</span> ?<small>Compare the price per day. The new drug’s price is hidden.</small></div>
+    <div class="board live" id="board">
       ${cardHTML(A, {show:true})}
-      <div class="vs">VS</div>
+      ${signsHTML(A)}
       ${cardHTML(C, {show:false, cls:"enter"})}
     </div>
-    <div class="verdict" id="verdict"><span class="fine" style="color:#9fb0d0">Round ${S.r + 1} · tap a card</span></div>`;
-  app.querySelectorAll(".card").forEach(el => el.onclick = () => choose(+el.dataset.id));
+    <div class="verdict" id="verdict"><span class="fine" style="color:#9fb0d0">Round ${S.r + 1}</span></div>`;
+  app.querySelectorAll(".sign").forEach(el => el.onclick = () => choose(el.dataset.s));
 }
 
 function countUp(el, v){
@@ -367,19 +374,19 @@ function countUp(el, v){
   (function step(t){ const k = Math.min(1, (t - t0)/dur), e = 1 - Math.pow(1-k, 3); el.textContent = money(v * e); if (k < 1) requestAnimationFrame(step); else el.textContent = money(v); })(t0);
 }
 
-function choose(id){
+function choose(sign){
   if (S.done || S.picks.length > S.r) return;
-  const rd = RUN[S.r], ok = id === rd.answer;
-  S.picks.push({ r: S.r, pick: id, ok });
+  const rd = RUN[S.r], ok = sign === rd.answer;
+  S.picks.push({ r: S.r, s: sign, ok });
   if (!ok){ S.done = true; S.ended = Date.now(); }
   save();
   const A = BY_ID[rd.a], C = BY_ID[rd.c];
-  const stampFor = d => d.id === rd.answer ? '<span class="stamp ok">CORRECT</span>' : "";
-  const clsFor = d => d.id === id ? (ok ? "ok" : "bad shake") : (d.id === rd.answer ? "ok" : "dim");
   const board = $("#board");
   board.classList.remove("live");
-  board.innerHTML = cardHTML(A, {show:true, cls:clsFor(A), stamp:stampFor(A), disabled:true, note:true}) +
-    `<div class="vs">VS</div>` + cardHTML(C, {show:true, cls:clsFor(C), stamp:stampFor(C), disabled:true, note:true});
+  const truth = rd.answer === "lt" ? "&lt;" : "&gt;";
+  board.innerHTML = cardHTML(A, {show:true, note:true}) +
+    `<div class="signs"><div class="sign result ${ok ? "ok" : "bad"}"><b>${truth}</b><small>${ok ? "Correct" : "You picked " + (sign === "lt" ? "&lt;" : "&gt;")}</small></div></div>` +
+    cardHTML(C, {show:true, cls: ok ? "ok" : "bad shake", note:true});
   const cs = board.querySelectorAll(".sticker")[1]; countUp(cs, C.perDay);
   hud();
   const ratio = Math.max(A.perDay, C.perDay) / Math.min(A.perDay, C.perDay);
@@ -387,13 +394,13 @@ function choose(id){
   const v = $("#verdict");
   if (ok){
     sfx.ok();
-    v.innerHTML = `<span><b style="color:#7ee2b0">Correct.</b> ${gap} difference. Your pick stays on the board.</span><button class="btn" id="next">Next round</button>`;
+    v.innerHTML = `<span><b style="color:#7ee2b0">Correct.</b> ${gap} difference. ${esc(C.name)} is the next one to beat.</span><button class="btn" id="next">Next round</button>`;
     S.r += 1; save();
     const nx = $("#next"); nx.focus({preventScroll:true});
     nx.onclick = () => { sfx.tick(); play(); };
   } else {
     sfx.bad();
-    stats.played += 1; stats.best = Math.max(stats.best, streakNow()); stats.last = KEY; store.set("cp:stats", stats);
+    stats.played += 1; stats.best = Math.max(stats.best, streakNow()); stats.last = KEY; store.set("cp2:stats", stats);
     v.innerHTML = `<span><b style="color:#ff8a8c">Run over.</b> ${gap} difference.</span><button class="btn" id="res">See results</button>`;
     const rb = $("#res"); rb.focus({preventScroll:true}); rb.onclick = () => finish(false);
   }
@@ -407,13 +414,13 @@ function shareText(perfect){
 
 function finish(perfect){
   if (!S.done){ S.done = true; S.ended = S.ended || Date.now(); save();
-    if (perfect){ stats.played += 1; stats.best = Math.max(stats.best, streakNow()); stats.last = KEY; store.set("cp:stats", stats); } }
+    if (perfect){ stats.played += 1; stats.best = Math.max(stats.best, streakNow()); stats.last = KEY; store.set("cp2:stats", stats); } }
   hud();
   const n = streakNow(), t = S.started && S.ended ? S.ended - S.started : 0;
   const rows = S.picks.map(p => {
     const rd = RUN[p.r], A = BY_ID[rd.a], C = BY_ID[rd.c];
-    return `<div class="rv"><span class="m ${p.ok ? "ok" : "bad"}">${p.ok ? "✓" : "✗"}</span><span class="q ${rd.prompt}">${rd.prompt === "more" ? "MORE" : "LESS"}</span>
-      <span>${esc(A.name)} <span class="mono">${money(A.perDay)}</span> vs ${esc(C.name)} <span class="mono">${money(C.perDay)}</span></span></div>`;
+    return `<div class="rv"><span class="m ${p.ok ? "ok" : "bad"}">${p.ok ? "✓" : "✗"}</span><span class="q">${p.s === "lt" ? "&lt;" : "&gt;"}</span>
+      <span>${esc(A.name)} <span class="mono">${money(A.perDay)}</span> ${rd.answer === "lt" ? "&lt;" : "&gt;"} ${esc(C.name)} <span class="mono">${money(C.perDay)}</span></span></div>`;
   }).join("");
   app.innerHTML = `
   <section class="panel">
@@ -443,7 +450,7 @@ function finish(perfect){
   clearInterval(finish.iv); finish.iv = setInterval(() => { const el = $("#cd"); if (!el) return clearInterval(finish.iv); const ms = msToNext(); el.textContent = hms(ms); if (dayKey() !== KEY) location.reload(); }, 1000);
   const pb = $("#lbsubmit");
   if (!hasLB()) { $("#postRow").hidden = true; }
-  else if (store.get("cp:posted:" + KEY, false)) { pb.outerHTML = '<span class="posted fine">Posted</span>'; }
+  else if (store.get("cp2:posted:" + KEY, false)) { pb.outerHTML = '<span class="posted fine">Posted</span>'; }
   else pb.onclick = () => postStreak(n);
   if (window.BoardsideMore) BoardsideMore.mount($("#more"), GAME);
   loadLB();
@@ -458,7 +465,7 @@ async function postStreak(n){
     const name = await BLB.dialog({ title: "Post your streak", intro: "We'll email you a 6-digit code to verify it's you. No password needed." });
     if (!name){ b.disabled = false; b.textContent = "Post my streak"; return; }
     await BLB.submit(GAME, KEY, n, Math.max(1, n));
-    store.set("cp:posted:" + KEY, true);
+    store.set("cp2:posted:" + KEY, true);
     b.outerHTML = '<span class="posted fine">Posted as ' + esc(name) + '</span>';
     loadLB();
   }catch(e){
