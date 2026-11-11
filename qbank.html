@@ -540,6 +540,12 @@ body.dark .qrail button.cur{outline-color:#9fc3ea}
 .fc-rate .rep{background:#b3412f}
 .fc-rate .good{background:var(--navy)}
 .fc-rate .great{background:var(--teal)}
+.fc-cloze{font-size:calc(19px * var(--tz,1));line-height:1.65;color:var(--ink);margin:4px 0 2px}
+.cz-blank{display:inline-block;min-width:5.5em;border-bottom:2px solid var(--teal);background:var(--teal-soft);border-radius:4px 4px 0 0;color:var(--teal);font-weight:700;text-align:center;padding:0 6px;margin:0 2px}
+.cz-ans{background:var(--teal-soft);color:#085454;font-weight:700;border-radius:4px;padding:0 4px}
+.fc-refs{font-size:13px;margin:0 0 4px}
+body.dark .cz-blank{background:#123a3a;color:#7fd8d0;border-bottom-color:#5fcbbd}
+body.dark .cz-ans{background:#123a3a;color:#8fe0d6}
 .fc-keys{font-size:12.5px;color:var(--muted);text-align:center;margin:0}
 .fc-face .fc-tag{display:inline-block;font-size:12.5px;line-height:1.4;font-weight:600;color:#0d7070;background:var(--teal-soft);border-radius:999px;padding:3px 10px;margin:0 0 10px}
 .fc-tag.warn{color:#9a3412;background:#fff1e6}
@@ -903,6 +909,21 @@ function h(tag, props, kids) {
 function $(sel, root) { return (root || document).querySelector(sel); }
 function paras(text) {
   return String(text || "").split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean);
+}
+// Teaching pearl cloze: the pearl marks its flashcard blank as [[...]]. Under the question it reads as normal
+// text with the key phrase in bold; on a flashcard the phrase is hidden until the learner shows the answer.
+var CLOZE_RE = /\[\[([\s\S]+?)\]\]/;
+function pearlCloze(text) {
+  var t = String(text || ""), m = t.match(CLOZE_RE);
+  return m ? { before: t.slice(0, m.index), answer: m[1], after: t.slice(m.index + m[0].length) } : null;
+}
+function pearlPlain(text) { return String(text || "").replace(/\[\[([\s\S]+?)\]\]/g, "$1"); }
+function pearlNodes(text, mode) {
+  var c = pearlCloze(text);
+  if (!c) return [pearlPlain(text)];
+  var mid = mode === "blank" ? h("span", { class: "cz-blank", "aria-label": "blank" }, "\u2003?\u2003")
+    : mode === "reveal" ? h("mark", { class: "cz-ans" }, c.answer) : h("b", null, c.answer);
+  return [c.before, mid, pearlPlain(c.after)];
 }
 function fmtTime(sec) {
   sec = Math.max(0, Math.round(sec));
@@ -1617,7 +1638,7 @@ function fcCard(fc) {
         h("i", { style: "width:" + Math.min(100, Math.round(100 * fc.pool / need)) + "%" })));
     return box;
   }
-  box.append(h("p", { class: "muted", style: "margin:0" }, (fc.deck || fc.pool) + " cards from your missed and flagged questions" + (fc.deck > fc.pool ? ", plus correct answers you only guessed" : "") + ". If you use confidence ratings, questions you were sure about but missed come first. Repeat brings a card back sooner, Good keeps its pace, Great pushes it further out."),
+  box.append(h("p", { class: "muted", style: "margin:0" }, (fc.deck || fc.pool) + " cards from your missed and flagged questions" + (fc.deck > fc.pool ? ", plus correct answers you only guessed" : "") + ". Each card is the question's teaching pearl with its key point blanked out. If you use confidence ratings, questions you were sure about but missed come first. Again brings a card back sooner, Good keeps its pace, Great pushes it further out."),
     h("div", { class: "fc-due" }, [h("b", null, String(fc.due_count)), h("span", null, fc.due_count === 1 ? "card due now" : "cards due now")]),
     fc.due_count ? h("button", { class: "btn teal", onclick: startFlashcards }, "Review flashcards")
       : h("p", { class: "muted", style: "margin:0" }, "All caught up." + (fc.next_due ? " Next card is due " + fcWhen(fc.next_due) + "." : "")));
@@ -1637,31 +1658,47 @@ function fcRender() {
     var fin = FC; FC = null;
     return screen([header(), h("main", { class: "wrap page" }, h("div", { class: "fc-wrap" }, h("div", { class: "card" }, [
       h("h2", null, "Session done"),
-      h("p", { class: "muted" }, "You reviewed " + fin.done + " card" + (fin.done === 1 ? "" : "s") + ". Cards you marked Repeat come back in about 10 minutes."),
+      h("p", { class: "muted" }, "You reviewed " + fin.done + " card" + (fin.done === 1 ? "" : "s") + ". Cards you marked Again come back in about 10 minutes."),
       h("div", { class: "row" }, [h("button", { class: "btn teal", onclick: startFlashcards }, "Check for more"), h("button", { class: "btn ghost", onclick: showHome }, "Back to the question bank")])
     ])))]);
   }
   var tag = c.sure_wrong ? "You were sure, but missed this one" : c.lucky_guess ? "You guessed this one right" : c.conf === "unsure" ? "You were unsure about this one" : null;
-  var face = [h("div", { class: "subjtag" }, "Question ID " + c.num + " · " + c.subject)]
-    .concat(tag ? [h("p", { class: "fc-tag" + (c.sure_wrong ? " warn" : "") }, tag)] : [])
-    .concat(paras(c.stem || "").map(function (t) { return h("p", null, t); }))
-    .concat(resultsEl(c))
-    .concat([h("p", { class: "fc-ask" }, c.ask || "")]);
-  var back = FC.back ? [
-    h("div", { class: "fc-ans" }, [h("b", null, "Answer: " + c.answer + ". "), c.answer_text || ""]),
-    c.why ? h("p", { style: "margin:0 0 8px" }, c.why) : null,
-    c.pearl ? h("div", { class: "pearl" }, [h("strong", null, "Teaching pearl"), c.pearl]) : null,
-    c.detail ? h("p", { class: "fc-detail" }, c.detail) : null,
+  var cz = pearlCloze(c.pearl), face, back;
+  var rate = [
     h("div", { class: "fc-rate", role: "group", "aria-label": "How well did you know it?" }, [
-      h("button", { class: "btn rep", onclick: function () { fcRate("repeat"); } }, [h("span", null, "Repeat"), h("small", null, fcNext(c, "repeat"))]),
+      h("button", { class: "btn rep", onclick: function () { fcRate("repeat"); } }, [h("span", null, "Again"), h("small", null, fcNext(c, "repeat"))]),
       h("button", { class: "btn good", onclick: function () { fcRate("good"); } }, [h("span", null, "Good"), h("small", null, fcNext(c, "good"))]),
       h("button", { class: "btn great", onclick: function () { fcRate("great"); } }, [h("span", null, "Great"), h("small", null, fcNext(c, "great"))])
     ]),
-    h("p", { class: "fc-keys" }, "Keys: 1 Repeat · 2 Good · 3 Great")
-  ] : [
+    h("p", { class: "fc-keys" }, "Keys: 1 Again \u00b7 2 Good \u00b7 3 Great")
+  ];
+  var showBtn = [
     h("button", { class: "btn teal", style: "width:100%", onclick: function () { FC.back = true; fcRender(); } }, "Show answer"),
     h("p", { class: "fc-keys" }, "Key: Space shows the answer")
   ];
+  var head = [h("div", { class: "subjtag" }, "Question ID " + c.num + " \u00b7 " + c.subject)]
+    .concat(tag ? [h("p", { class: "fc-tag" + (c.sure_wrong ? " warn" : "") }, tag)] : []);
+  if (cz) {
+    // Cloze card: the teaching pearl alone, its key phrase blanked; the answer and the question's references on reveal.
+    face = head.concat([h("p", { class: "fc-cloze" }, pearlNodes(c.pearl, FC.back ? "reveal" : "blank"))]);
+    back = FC.back ? [
+      h("div", { class: "fc-ans" }, [h("b", null, "Answer: "), cz.answer]),
+      c.refs ? h("div", { class: "refs fc-refs" }, [h("b", null, "Reference: ")].concat(linkRefs(c.refs, c.ref_links))) : null
+    ].concat(rate) : showBtn;
+  } else {
+    // Older card without a [[blank]] in its pearl: fall back to the question-style card.
+    face = head
+      .concat(paras(c.stem || "").map(function (t) { return h("p", null, t); }))
+      .concat(resultsEl(c))
+      .concat([h("p", { class: "fc-ask" }, c.ask || "")]);
+    back = FC.back ? [
+      h("div", { class: "fc-ans" }, [h("b", null, "Answer: " + c.answer + ". "), c.answer_text || ""]),
+      c.why ? h("p", { style: "margin:0 0 8px" }, c.why) : null,
+      c.pearl ? h("div", { class: "pearl" }, [h("strong", null, "Teaching pearl")].concat(pearlNodes(c.pearl, "full"))) : null,
+      c.detail ? h("p", { class: "fc-detail" }, c.detail) : null,
+      c.refs ? h("div", { class: "refs fc-refs" }, [h("b", null, "Reference: ")].concat(linkRefs(c.refs, c.ref_links))) : null
+    ].concat(rate) : showBtn;
+  }
   screen([header(), h("main", { class: "wrap page" }, h("div", { class: "fc-wrap" }, [
     h("div", { class: "fc-top" }, [
       h("div", null, [h("div", { class: "subjtag", style: "margin:0" }, "Flashcards"), h("small", { class: "muted" }, FC.queue.length + " left in this session")]),
@@ -2461,7 +2498,7 @@ function explanationEl(q) {
     h("h3", null, "Why each choice is right or wrong"),
     (ex.details && Object.keys(ex.details).length) ? h("p", { class: "reasons-hint" }, SET.expand ? "In-depth explanations are expanded (change this in Settings). Tap a choice to collapse it." : "Tap any choice to see the in-depth explanation, or turn on \u201cExpand in-depth explanations\u201d in Settings.") : null,
     reasons,
-    ex.pearl ? h("div", { class: "pearl" }, [h("strong", null, "Teaching pearl"), ex.pearl]) : null
+    ex.pearl ? h("div", { class: "pearl" }, [h("strong", null, "Teaching pearl")].concat(pearlNodes(ex.pearl, "full"))) : null
   ].concat((ex.summaries || []).map(function (sm) { return summaryEl(sm, ex.ref_links); })).concat([
     ex.references ? h("div", { class: "refs" }, [h("b", null, "References: ")].concat(linkRefs(ex.references, ex.ref_links))) : null,
     concernEl(q)

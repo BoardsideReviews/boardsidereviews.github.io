@@ -102,6 +102,7 @@ figure.img figcaption{font-size:12px;color:var(--muted)}
 .why{margin:0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:3px}
 details.dd summary{cursor:pointer;color:var(--teal);font-weight:600;font-size:14px}
 details.dd p{margin:6px 0 0;font-size:14px}
+.pearl b.cz{background:#d6efec;border-radius:3px;padding:0 3px}
 .pearl{background:var(--sky2);border-left:3px solid var(--teal);padding:8px 12px;border-radius:6px;font-size:14.5px}
 .refs{font-size:13.5px;color:var(--ink2);white-space:pre-line}
 .refs a{color:var(--teal)}
@@ -237,7 +238,7 @@ function viewCard(r){
   const right=`<h4>Explanation</h4>${paras(e.explanation).map(p=>`<p>${esc(p)}</p>`).join("")}
     <ul class="why">${L5.map(k=>`<li><b>${k}.</b> ${esc((e.reasons||{})[k]||"")}</li>`).join("")}</ul>
     <details class="dd"><summary>In depth: each answer choice</summary>${L5.map(k=>`<p><b>${k}. ${esc(ch[k]||"")}</b>: ${esc((e.details||{})[k]||"")}</p>`).join("")}</details>
-    ${e.pearl?`<h4>Teaching pearl</h4><div class="pearl">${esc(e.pearl)}</div>`:""}
+    ${e.pearl?`<h4>Teaching pearl</h4><div class="pearl">${esc(e.pearl).replace(/\[\[([\s\S]+?)\]\]/g,'<b class="cz">$1</b>')}</div>`:""}
     ${(e.summaries||[]).length?`<h4>Summary</h4>${e.summaries.map(s=>summ(s,e.ref_links)).join("")}`:""}
     <h4>References</h4><div class="refs">${linkRefs(e.references,e.ref_links)}</div>`;
   const notes=(tags.includes("decide")||(r.fixes||[]).length)?`<details class="dd"${tags.includes("decide")&&r.status!=="ok"?" open":""}><summary>Notes from the layout update</summary><div class="box">${(r.fixes||[]).length?`<ul>${r.fixes.map(x=>`<li>${x.action==="flag"?"<b>Your call:</b> ":""}${esc(x.test||"")}${x.old?": "+esc(x.old)+" → "+esc(x.new||""):""}. ${esc(x.reason||"")}</li>`).join("")}</ul>`:""}${r.flags?`<p style="margin:6px 0 0">${esc(r.flags)}</p>`:""}</div></details>`:"";
@@ -296,7 +297,7 @@ function editCard(E){
    <label>Explanation${ta("explanation",e.explanation,"tall")}</label>
    <label>Why each choice is right or wrong (one line each)</label>${L5.map(k=>`<div class="chrow"><b>${k}</b><input type="text" data-r="${k}" value="${esc(e.reasons[k]||"")}"></div>`).join("")}
    <label>In depth: each answer choice</label>${L5.map(k=>`<div class="chrow"><b>${k}</b><textarea data-d="${k}">${esc(e.details[k]||"")}</textarea></div>`).join("")}
-   <label>Teaching pearl (also the flashcard)${ta("pearl",e.pearl)}</label>
+   <label>Teaching pearl (also the flashcard: put [[ ]] around the one key word or phrase to blank out)${ta("pearl",e.pearl)}</label>
    <label>References (one per line)${ta("references",e.references)}</label>
    <label>Reference links (one per line: exact reference text | link)${ta("ref_links",(e.ref_links||[]).map(l=>l.t+" | "+l.u).join("\n"),"","Jones DW, et al. … 2025;86:1567. | https://pubmed.ncbi.nlm.nih.gov/…")}</label>
    ${e.summaries.length?`<label>Summary</label>${summEditor(e.summaries)}`:""}`;
@@ -329,6 +330,10 @@ function problems(){
   if(!e.explanation)p.push("The explanation is empty.");
   b.tests.forEach((s,i)=>{if(!s.h)p.push(`Table section ${i+1} has no heading.`);s.rows.forEach(r=>{if(!r[0]||!r[1])p.push(`A table row in “${s.h||"section "+(i+1)}” is missing its test or result.`)})});
   if(b.tests.some(s=>s.rows.some(r=>/\b(normal|unremarkable|wnl)\b/i.test(r[1]))))p.push("A table result says “normal”: give the real value instead.");
+  {const n=((e.pearl||"").match(/\[\[[\s\S]+?\]\]/g)||[]).length;
+   if(!e.pearl)p.push("The teaching pearl is empty: it is also the flashcard.");
+   else if(n!==1)p.push(n?"The teaching pearl has "+n+" blanks: the flashcard needs exactly one [[…]].":"The teaching pearl needs one flashcard blank: put [[ ]] around the key word or phrase.");
+   else if(/\[|\]/.test(e.pearl.replace(/\[\[[\s\S]+?\]\]/,"")))p.push("The teaching pearl has a stray [ or ] outside the blank.");}
   const allRefs=e.references+" "+(e.summaries||[]).map(x=>x.refs||"").join(" ");(e.ref_links||[]).forEach(l=>{if(!allRefs.includes(l.t))p.push("A reference link's text doesn't match a reference exactly: “"+l.t.slice(0,60)+"…”.")});
   return p;
 }
