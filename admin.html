@@ -79,7 +79,7 @@ label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink
 <body>
 <header><div class="wrap">
 <a class="brand" href="/" aria-label="Boardside Reviews home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Boardside Reviews mark"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg><span>Boardside Reviews<sup style="font-size:.5em;font-weight:600;vertical-align:super;line-height:0;margin-left:1px">&trade;</sup></span></a>
-<nav><a href="leaderboard.html">Leaderboard</a></nav>
+<nav><a href="admin-questions.html">Question editor</a><a href="leaderboard.html">Leaderboard</a></nav>
 </div></header>
 <main><div class="wrap" id="app"><div class="card"><b>Loading…</b></div></div></main>
 <script>
@@ -98,6 +98,7 @@ async function boot(){
   let ok=false;try{ok=await BLB.rpc("is_admin")}catch(e){}
   if(!ok){app.innerHTML=`<h1>Admin</h1><div class="card"><span>${esc(u.email)} doesn't have admin access.</span><div><button class="btn ghost" data-a="out">Sign out</button></div></div>`;return}
   app.innerHTML=`<div class="row"><h1>Admin</h1><span class="muted">${esc(u.email)} · <button class="linkbtn" data-a="out">Sign out</button></span></div>
+  <section class="card"><div class="row"><h2>Question bank</h2><a class="btn" href="admin-questions.html">Open the question editor</a></div><p class="muted" style="margin:0">Edit any question, its explanation, teaching pearl, references or image; add new questions; remove or restore questions. Changes go live when you confirm.</p></section>
   <section class="card" id="mailing"><div class="row"><h2>Mailing list</h2><span class="row" style="gap:8px;justify-content:flex-end"><input type="search" id="mq" placeholder="Search name or email" aria-label="Search the mailing list" style="max-width:240px"><button class="btn ghost" data-csv="mailing">Download (CSV)</button></span></div><div id="mlsum" class="muted"></div><div class="tablebox" id="mltable"></div><div id="mlgone"></div></section>
   <section class="card"><div class="row"><h2>Website traffic</h2><a class="btn ghost" href="${GA_LINK}" target="_blank" rel="noopener">Open Google Analytics ↗</a></div><p class="muted" style="margin:0">Visitors, top pages and where traffic comes from are in Google Analytics (sign in as boardsidereviews@gmail.com).</p></section>
   <section class="card"><div class="row"><h2>How people heard about us</h2></div><div id="heard"></div></section>

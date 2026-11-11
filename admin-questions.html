@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%20role%3D%22img%22%20aria-label%3D%22Boardside%20Reviews%20mark%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<title>Question editor | Boardside Reviews</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+:root{--navy:#0b2545;--teal:#0d7070;--teal-bright:#3cc4b4;--teal-soft:#e2f3f1;--coral:#b9432c;--coral-soft:#fdece7;--ink2:#33465f;--muted:#52627a;--line:#dce3ea;--sky:#eef5fc;--sky2:#f5f9fd;--amber:#f0b54a}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--navy);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.wrap{max-width:960px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+header{border-bottom:1px solid #e3ebf3;background:#fff}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px}
+.brand svg{width:40px;height:40px;display:block}
+header nav{display:flex;gap:18px;font-size:15px;font-weight:500}
+header nav a{text-decoration:none;color:var(--ink2)}
+header nav a:hover{color:var(--teal)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--teal)}
+h1{margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(40px,7vw,64px);line-height:1;letter-spacing:-.03em}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;padding:11px 16px;font-weight:600;font-size:15px;background:var(--navy);color:#fff;text-decoration:none}
+.btn.ghost{background:#fff;color:var(--teal);border:1px solid #b9d9d6}
+.btn.danger{background:#fff;color:var(--coral);border:1px solid #efc2b7}
+.btn:disabled{opacity:.5;cursor:default}
+.linkbtn{background:none;border:0;padding:0;color:var(--teal);font-weight:600}
+footer{border-top:1px solid #e3ebf3;margin-top:64px}
+footer .wrap{padding-block:24px;font-size:13px;color:var(--muted)}
+@media (max-width:560px){header nav{gap:12px;font-size:14px}.brand span{display:none}}
+
+main .wrap{padding-block:36px;display:flex;flex-direction:column;gap:28px}
+h1{font-size:clamp(32px,5vw,44px)}
+h2{margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:22px}
+.card{border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+input[type=search],input[type=text]{font:inherit;font-size:15px;padding:10px 12px;border:1px solid #c9d5e2;border-radius:10px;min-width:0;flex:1 1 220px}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--muted);padding:10px 12px;background:var(--sky2);border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #eef2f6;vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.acts{white-space:nowrap}
+td.acts .btn{padding:7px 10px;font-size:13px;margin:2px 4px 2px 0}
+.pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;padding:3px 8px;border-radius:999px}
+.p-ban{background:var(--coral-soft);color:var(--coral)}.p-noname{background:#fff4dc;color:#7a5200}
+.muted{color:var(--muted)}
+.words{display:flex;flex-wrap:wrap;gap:6px}
+.word{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px;font-size:13px}
+.word.any{border-color:#efc2b7;background:var(--coral-soft)}
+.word button{border:0;background:none;color:var(--muted);font-size:16px;line-height:1;padding:0 4px}
+.word button:hover{color:var(--coral)}
+.confirm{background:var(--coral-soft);border:1px solid #efc2b7;border-radius:12px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:50}
+label.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2)}
+.fld{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:var(--ink2)}
+.fld input,.fld textarea{font:inherit;font-weight:400;font-size:15px;padding:10px 12px;border:1px solid #c9d5e2;border-radius:10px;color:var(--navy);width:100%;box-sizing:border-box}
+.fld textarea{resize:vertical;line-height:1.55;min-height:180px}
+.mlframe{width:100%;height:640px;border:1px solid var(--line);border-radius:12px;background:#eef5fc}
+.warn{background:#fff4dc;border:1px solid #f0d9a6;border-radius:10px;padding:10px 12px;font-size:14px;color:var(--ink2)}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.live i{width:8px;height:8px;border-radius:50%;background:#1f9a8f;display:inline-block}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:minmax(120px,210px) 1fr 44px;gap:10px;align-items:center;font-size:14px}
+.bar .track{height:12px;background:var(--sky);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--teal);border-radius:6px}
+.bar b{text-align:right;font-variant-numeric:tabular-nums}
+.others{font-size:13px;color:var(--muted);margin:4px 0 0}
+
+/* question editor */
+main .wrap{max-width:1240px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filters select,.filters input{font:inherit;font-size:14px;padding:8px 10px;border:1px solid #c9d5e2;border-radius:10px;background:#fff;color:var(--navy);min-width:0}
+.filters input{flex:1 1 200px}
+.stats{display:flex;flex-wrap:wrap;gap:8px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:8px 14px}
+.stat b{font-size:20px;font-family:'Plus Jakarta Sans',sans-serif;margin-right:6px}
+.stat span{font-size:13px;color:var(--muted)}
+.q{border:1px solid var(--line);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.qh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.qh h3{margin:0;font-size:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+.qh h3 small{font-weight:400;color:var(--muted);font-size:13px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}.cols>div{min-width:0;display:flex;flex-direction:column;gap:8px}
+.cols h4{margin:0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--teal)}
+.cols p{margin:0;line-height:1.6;font-size:15px}
+.ask{font-weight:700}
+.ch{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ch li{border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-size:14.5px}
+.ch li.key{border-color:#7cc7bf;background:var(--teal-soft)}
+.ch b{color:var(--muted);margin-right:6px}
+.qres{overflow-x:auto}.qres table{max-width:520px;font-size:14.5px}
+.qres th{background:none;letter-spacing:0;font-size:12.5px;color:var(--navy);padding:10px 0 4px;white-space:normal;border-bottom:1px solid var(--line)}
+.qres tr:first-child th{padding-top:0}
+.qres td{padding:5px 0;border-bottom:1px solid #e6edf4}.qres td.v{text-align:right;padding-left:18px}.qres .nt{color:var(--muted);font-size:.92em}
+figure.img{margin:0}figure.img img{max-width:100%;max-height:340px;border-radius:10px;border:1px solid var(--line)}
+figure.img figcaption{font-size:12px;color:var(--muted)}
+.why{margin:0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:3px}
+details.dd summary{cursor:pointer;color:var(--teal);font-weight:600;font-size:14px}
+details.dd p{margin:6px 0 0;font-size:14px}
+.pearl{background:var(--sky2);border-left:3px solid var(--teal);padding:8px 12px;border-radius:6px;font-size:14.5px}
+.refs{font-size:13.5px;color:var(--ink2);white-space:pre-line}
+.refs a{color:var(--teal)}
+.summ{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px}
+.summ h5{margin:0 0 6px;font-size:14px}.summ table{font-size:13px}.summ th{white-space:normal;padding:6px 8px}.summ td{padding:6px 8px}
+.blk{border-top:1px solid #eef2f6;padding:5px 0}.blk .tk{color:var(--teal);font-weight:600}
+.box{background:#fff4dc;color:#6b4a0c;border-radius:10px;padding:8px 12px;font-size:13.5px}.box ul{margin:4px 0 0;padding-left:18px}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 8px;background:var(--sky);color:var(--ink2)}
+.tag.decide,.tag.change{background:var(--coral-soft);color:var(--coral)}.tag.ok{background:var(--teal-soft);color:var(--teal)}
+.acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btn.sm{padding:7px 12px;font-size:13px}.btn.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+/* edit form */
+.ef{display:flex;flex-direction:column;gap:10px}
+.ef label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--ink2)}
+.ef textarea,.ef input[type=text],.ef select{font:inherit;font-weight:400;font-size:14.5px;padding:8px 10px;border:1px solid #c9d5e2;border-radius:8px;color:var(--navy);width:100%;box-sizing:border-box;background:#fff}
+.ef input[type=text]{flex:none}
+.ef textarea{resize:vertical;line-height:1.5;min-height:70px}
+.ef .tall{min-height:150px}
+.grid{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:10px;padding:8px}
+.gsec{display:flex;flex-direction:column;gap:5px;border-bottom:1px dashed var(--line);padding-bottom:8px}
+.gsec:last-of-type{border-bottom:0}
+.grow{display:grid;grid-template-columns:1fr 1fr 28px;gap:6px;align-items:center}
+.grow.c3{grid-template-columns:1fr 1fr 1fr 28px}
+.x{border:0;background:none;color:var(--muted);font-size:18px;line-height:1;padding:0}.x:hover{color:var(--coral)}
+.add{background:none;border:0;color:var(--teal);font-weight:600;font-size:13px;padding:2px 0;text-align:left}
+.chrow{display:grid;grid-template-columns:22px 1fr;gap:6px;align-items:start}.chrow b{padding-top:9px;color:var(--muted)}
+.save{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;z-index:3}
+.imgedit{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
+.imgedit img{max-width:180px;max-height:140px;border-radius:8px;border:1px solid var(--line)}
+.more{align-self:center}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+</style>
+<script src="lb-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="lb.js"></script>
+</head>
+<body>
+<header><div class="wrap">
+<a class="brand" href="/" aria-label="Boardside Reviews home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Boardside Reviews mark"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg><span>Boardside Reviews<sup style="font-size:.5em;font-weight:600;vertical-align:super;line-height:0;margin-left:1px">&trade;</sup></span></a>
+<nav><a href="admin.html">Admin</a></nav>
+</div></header>
+<main><div class="wrap" id="app"><div class="card"><b>Loading…</b></div></div></main>
+<script>
+// Question editor (admin only). Question on the left, explanation on the right. Edit → Save → confirm writes
+// straight to the live question bank; every save keeps the previous version in qb_question_edits.
+// No question text lives in this file: everything is read and written through admin-only database functions.
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const L5=["A","B","C","D","E"];
+const STATUS={todo:"To review",ok:"Looks good",change:"Needs a change"};
+const SECTIONS=["Laboratory studies","Urinalysis","Arterial blood gas","Venous blood gas","Pulmonary function testing","Cerebrospinal fluid","Pleural fluid","Synovial fluid","Ascitic fluid","Hemodynamic measurements","Ventilator settings","24-hour urine collection","Microbiology","Study results"];
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2800)}
+let index=[],rows=[],shown=20,F={tag:"",subject:"",status:"",q:""},editing=null,imgCache={};
+try{const s=JSON.parse(localStorage.getItem("bsr-qed-f")||"null");if(s)F=Object.assign(F,s)}catch(e){}
+const saveF=()=>{try{localStorage.setItem("bsr-qed-f",JSON.stringify(F))}catch(e){}};
+
+async function boot(){
+  const app=$("#app");
+  if(!BLB.enabled){app.innerHTML=`<h1>Question editor</h1><div class="card">Not connected.</div>`;return}
+  const u=await BLB.user();
+  if(!u){app.innerHTML=`<h1>Question editor</h1><div class="card"><span>Sign in with your admin email.</span><div><button class="btn" data-a="in">Sign in</button></div></div>`;return}
+  let ok=false;try{ok=await BLB.rpc("is_admin")}catch(e){}
+  if(!ok){app.innerHTML=`<h1>Question editor</h1><div class="card"><span>${esc(u.email)} doesn't have admin access.</span></div>`;return}
+  try{index=await BLB.rpc("admin_q_index")||[]}catch(x){app.innerHTML=`<h1>Question editor</h1><div class="card">${esc(BLB.friendly(x))}</div>`;return}
+  const subs=[...new Set(index.map(r=>r.subject))].sort();
+  app.innerHTML=`<div class="row"><h1>Question editor</h1><span class="acts"><button class="btn" data-new>+ New question</button><a class="linkbtn" href="admin.html">← Admin</a></span></div>
+  <p class="muted" style="margin:0;max-width:78ch">The question is on the left and its explanation on the right, as learners see them. Press <b>Edit</b> to change any part, then <b>Save</b> and confirm: the change goes straight to the live question bank. The previous version is always kept.</p>
+  <div class="stats" id="stats"></div>
+  <div class="filters">
+    <select id="ft" aria-label="Show"><option value="">All questions</option><option value="decide">Needs your decision</option><option value="change">Marked “Needs a change”</option><option value="todo">Not reviewed yet</option><option value="ok">Marked “Looks good”</option><option value="edited">Edited here</option><option value="removed">Removed from the bank</option></select>
+    <select id="fs" aria-label="Subject"><option value="">All subjects</option>${subs.map(s=>`<option>${esc(s)}</option>`).join("")}</select>
+    <input type="search" id="fq" placeholder="Find an ID (Pulm-1-09) or QID (849)" aria-label="Find a question">
+    <span class="muted" id="cnt"></span>
+  </div>
+  <div id="list" style="display:flex;flex-direction:column;gap:16px"></div>`;
+  $("#ft").value=F.tag;$("#fs").value=F.subject;$("#fq").value=F.q;
+  $("#ft").onchange=e=>{F.tag=e.target.value;go()};$("#fs").onchange=e=>{F.subject=e.target.value;go()};
+  let tm;$("#fq").oninput=e=>{clearTimeout(tm);tm=setTimeout(()=>{F.q=e.target.value.trim();go()},250)};
+  stats();go();
+}
+function stats(){
+  const n=f=>index.filter(f).length;
+  $("#stats").innerHTML=[[n(r=>r.active!==false),"questions live"],[n(r=>(r.tags||[]).includes("decide")&&r.status!=="ok"),"need your decision"],[n(r=>r.status==="ok"),"looks good"],[n(r=>r.status==="change"),"need a change"],[n(r=>r.edits>0),"edited here"]]
+    .map(([v,l])=>`<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+}
+function match(r){
+  const t=F.tag;
+  if(t==="removed")return r.active===false;
+  if(r.active===false)return false;
+  if(t==="decide"&&!(r.tags||[]).includes("decide"))return false;
+  if(["ok","change","todo"].includes(t)&&r.status!==t)return false;
+  if(t==="edited"&&!(r.edits>0))return false;
+  if(F.subject&&r.subject!==F.subject)return false;
+  if(F.q){const q=F.q.toLowerCase();if(!(r.id.toLowerCase().includes(q)||String(r.num)===q))return false}
+  return true;
+}
+async function go(){
+  if(editing&&!confirmLeave())return;
+  saveF();shown=20;editing=null;
+  const ids=index.filter(match).map(r=>r.id);
+  $("#cnt").textContent=ids.length+" shown";
+  rows=ids.map(id=>({id,_stub:true}));
+  await loadMore();
+}
+async function loadMore(){
+  const need=rows.slice(0,shown).filter(r=>r._stub).map(r=>r.id);
+  if(need.length){
+    $("#list").innerHTML=rows.length?`<div class="card muted">Loading…</div>`:`<div class="card muted">Nothing matches.</div>`;
+    try{const got=await BLB.rpc("admin_q_rows",{p_ids:need})||[];const m=new Map(got.map(g=>[g.id,g]));rows=rows.map(r=>m.get(r.id)||r)}
+    catch(x){$("#list").innerHTML=`<div class="card">${esc(BLB.friendly(x))}</div>`;return}
+  }
+  draw();
+}
+const paras=t=>String(t||"").split("\n").filter(s=>s.trim());
+function tbl(tests){if(!tests||!tests.length)return"";let h="";for(const s of tests){if(s.h)h+=`<tr><th colspan="2">${esc(s.h)}</th></tr>`;for(const r of s.rows||[]){const v=String(r[1]??"");const m=/^(.*?\S)(\s+)(\(.*\))$/.exec(v);h+=`<tr><td>${esc(r[0])}</td><td class="v">${m?esc(m[1])+' <span class="nt">'+esc(m[3])+"</span>":esc(v)}</td></tr>`}}return`<div class="qres"><table>${h}</table></div>`}
+function linkRefs(text,links){let h=esc(text);for(const l of links||[]){if(!l||!l.t||!l.u)continue;const t=esc(l.t);h=h.split(t).join(`<a href="${esc(l.u)}" target="_blank" rel="noopener noreferrer">${t}</a>`)}return h}
+function summ(s,links){let h=s.title?`<h5>${esc(s.title)}</h5>`:"";
+  if(s.table){h+=`<div class="tablebox"><table>${(s.table.headers||[]).length?`<tr>${s.table.headers.map(x=>`<th>${esc(x)}</th>`).join("")}</tr>`:""}${(s.table.rows||[]).map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</table></div>`}
+  if(s.blocks)h+=s.blocks.map(b=>`<div class="blk"><b>${esc(b.head||"")}</b> ${esc(b.body||"")} ${b.takeaway?`<div class="tk">${esc(b.takeaway)}</div>`:""}</div>`).join("");
+  if(s.bottom)h+=`<p>${esc(s.bottom)}</p>`;if(s.refs)h+=`<div class="refs">${linkRefs(s.refs,links)}</div>`;return`<div class="summ">${h}</div>`}
+function imgHTML(r){
+  if(!r.has_image)return"";
+  const c=r.body.image_credit?`<figcaption>Image: ${esc(r.body.image_credit)}</figcaption>`:"";
+  const src=imgCache[r.id];
+  if(!src){BLB.rpc("admin_q_image",{p_id:r.id}).then(d=>{if(!d)return;imgCache[r.id]="data:"+d.mime+";base64,"+d.data;const f=document.querySelector(`[data-img="${CSS.escape(r.id)}"]`);if(f)f.outerHTML=imgHTML(r)}).catch(()=>{});
+    return`<figure class="img" data-img="${esc(r.id)}"><div class="muted" style="font-size:13px">Loading image…</div>${c}</figure>`}
+  return`<figure class="img" data-img="${esc(r.id)}"><img src="${src}" alt="Exhibit for ${esc(r.id)}">${c}</figure>`;
+}
+function viewCard(r){
+  const b=r.body||{},e=r.explain||{},tags=r.tags||[],ch=b.choices||{};
+  const left=`<h4>Question</h4>${paras(b.stem).map(p=>`<p>${esc(p)}</p>`).join("")}${b.exam?`<p>${esc(b.exam)}</p>`:""}${tbl(b.tests)}${(b.notes||[]).map(t=>`<p>${esc(t)}</p>`).join("")}${(!b.tests&&b.data&&b.data.length)?`<ul>${b.data.map(d=>`<li>${esc(d)}</li>`).join("")}</ul>`:""}${imgHTML(r)}<p class="ask">${esc(b.ask)}</p>
+    <ul class="ch">${L5.map(k=>`<li class="${k===r.answer?"key":""}"><b>${k}.</b>${esc(ch[k]||"")}${k===r.answer?" ✓":""}</li>`).join("")}</ul>`;
+  const right=`<h4>Explanation</h4>${paras(e.explanation).map(p=>`<p>${esc(p)}</p>`).join("")}
+    <ul class="why">${L5.map(k=>`<li><b>${k}.</b> ${esc((e.reasons||{})[k]||"")}</li>`).join("")}</ul>
+    <details class="dd"><summary>In depth: each answer choice</summary>${L5.map(k=>`<p><b>${k}. ${esc(ch[k]||"")}</b>: ${esc((e.details||{})[k]||"")}</p>`).join("")}</details>
+    ${e.pearl?`<h4>Teaching pearl</h4><div class="pearl">${esc(e.pearl)}</div>`:""}
+    ${(e.summaries||[]).length?`<h4>Summary</h4>${e.summaries.map(s=>summ(s,e.ref_links)).join("")}`:""}
+    <h4>References</h4><div class="refs">${linkRefs(e.references,e.ref_links)}</div>`;
+  const notes=(tags.includes("decide")||(r.fixes||[]).length)?`<details class="dd"${tags.includes("decide")&&r.status!=="ok"?" open":""}><summary>Notes from the layout update</summary><div class="box">${(r.fixes||[]).length?`<ul>${r.fixes.map(x=>`<li>${x.action==="flag"?"<b>Your call:</b> ":""}${esc(x.test||"")}${x.old?": "+esc(x.old)+" → "+esc(x.new||""):""}. ${esc(x.reason||"")}</li>`).join("")}</ul>`:""}${r.flags?`<p style="margin:6px 0 0">${esc(r.flags)}</p>`:""}</div></details>`:"";
+  return `<section class="q" data-id="${esc(r.id)}"><div class="qh"><h3>${esc(r.id)} <small>QID ${r.num} · ${esc(r.subject)}${r.edits?` · edited ${r.edits}×`:""}</small> ${r.active===false?'<span class="tag change">Removed from the bank</span>':(tags.includes("decide")&&r.status!=="ok"?'<span class="tag decide">Needs your decision</span>':"")}${r.active===false?"":`<span class="tag ${esc(r.status)}">${esc(STATUS[r.status]||STATUS.todo)}</span>`}</h3>
+  <div class="acts">${r.active===false?`<button class="btn sm" data-restore>Put back in the bank</button>`:`<button class="btn sm" data-edit>Edit</button><button class="btn sm ghost ${r.status==="ok"?"on":""}" data-mark="ok">Looks good</button><button class="btn sm ghost ${r.status==="change"?"on":""}" data-mark="change">Needs a change</button><button class="btn sm danger" data-remove>Remove</button>`}</div></div><div data-rmconfirm></div>
+  <div class="cols"><div>${left}</div><div>${right}</div></div>${notes}</section>`;
+}
+function draw(){
+  const L=$("#list");
+  const top=editing&&editing.isNew?editCard(editing):"";if($("#cnt"))$("#cnt").textContent=rows.length+" shown";
+  if(!rows.length){L.innerHTML=top||`<div class="card muted">Nothing matches.</div>`;if(editing)wireEdit();return}
+  L.innerHTML=top+rows.slice(0,shown).map(r=>r._stub?"":(editing&&editing.id===r.id?editCard(editing):viewCard(r))).join("")+(rows.length>shown?`<button class="btn ghost more" data-more>Show ${Math.min(20,rows.length-shown)} more (${rows.length-shown} left)</button>`:"");
+  if(editing)wireEdit();
+}
+
+/* ---------- edit ---------- */
+const clone=o=>JSON.parse(JSON.stringify(o));
+const enc=x=>String(x??"").replace(/\n/g," // "),dec=x=>String(x).split(" // ").join("\n");
+function startEdit(r){
+  editing={id:r.id,orig:r,body:clone(r.body||{}),explain:clone(r.explain||{}),answer:r.answer,updated_at:r.updated_at,img:null,imgRemove:false};
+  const b=editing.body,e=editing.explain;
+  if(!Array.isArray(b.tests)){b.tests=[];if(b.data&&b.data.length)b.notes=(b.notes||[]).concat(b.data)}
+  b.notes=b.notes||[];e.reasons=e.reasons||{};e.details=e.details||{};e.summaries=e.summaries||[];e.ref_links=e.ref_links||[];
+  draw();const s=document.querySelector(`[data-id="${CSS.escape(r.id)}"]`);if(s)s.scrollIntoView({behavior:"smooth",block:"start"});
+}
+const ta=(k,v,cls="",ph="")=>`<textarea data-f="${k}" class="${cls}" placeholder="${esc(ph)}">${esc(v||"")}</textarea>`;
+function testsEditor(tests){
+  return `<div class="grid" data-grid="tests">${tests.map((s,si)=>`<div class="gsec"><div class="grow"><input type="text" list="secs" data-sh="${si}" value="${esc(s.h)}" placeholder="Section heading"><span></span><button type="button" class="x" data-delsec="${si}" title="Remove section" aria-label="Remove section">×</button></div>
+  ${(s.rows||[]).map((r,ri)=>`<div class="grow"><input type="text" data-tn="${si}:${ri}" value="${esc(r[0])}" placeholder="Test"><input type="text" data-tv="${si}:${ri}" value="${esc(r[1])}" placeholder="Result"><button type="button" class="x" data-delrow="${si}:${ri}" title="Remove row" aria-label="Remove row">×</button></div>`).join("")}
+  <button type="button" class="add" data-addrow="${si}">+ Row</button></div>`).join("")}<button type="button" class="add" data-addsec>+ Section</button></div>
+  <datalist id="secs">${SECTIONS.map(s=>`<option value="${esc(s)}">`).join("")}</datalist>`;
+}
+function summEditor(S){
+  return S.map((s,i)=>`<div class="grid"><div class="grow"><input type="text" data-st="${i}" value="${esc(s.title||"")}" placeholder="Summary title"><span></span><button type="button" class="x" data-delsum="${i}" aria-label="Remove summary">×</button></div>
+   ${s.table?`<label>Table (one row per line, cells separated by | ; first line is the header; // is a line break)<textarea data-stab="${i}" class="tall">${esc([(s.table.headers||[]).map(enc).join(" | "),...(s.table.rows||[]).map(r=>r.map(enc).join(" | "))].join("\n"))}</textarea></label>`:""}
+   ${s.blocks?`<label>Boxes (one per line: heading | text | takeaway; // is a line break)<textarea data-sblk="${i}" class="tall">${esc(s.blocks.map(b=>[enc(b.head),enc(b.body),enc(b.takeaway)].join(" | ").replace(/ \| $/,"")).join("\n"))}</textarea></label>`:""}
+   <label>Bottom line<input type="text" data-sbot="${i}" value="${esc(s.bottom||"")}"></label>
+   <label>References under the summary<input type="text" data-sref="${i}" value="${esc(s.refs||"")}"></label></div>`).join("");
+}
+function editCard(E){
+  const b=E.body,e=E.explain,ch=b.choices||{};
+  const imgSrc=E.imgRemove?null:(E.img?E.img.src:(E.orig.has_image?imgCache[E.id]:null));
+  const left=`<h4>Question</h4>
+   <label>Stem (history; each line is a paragraph)${ta("stem",b.stem,"tall")}</label>
+   <label>Physical examination (vital signs first)${ta("exam",b.exam,"","On physical examination, temperature is …")}</label>
+   <label>Results table</label>${testsEditor(b.tests)}
+   <label>ECG / imaging / other sentences after the table (one per line)${ta("notes",(b.notes||[]).join("\n"))}</label>
+   <label>Image</label><div class="imgedit">${imgSrc?`<img src="${imgSrc}" alt="">`:`<span class="muted" style="font-size:13px">No image</span>`}
+     <div style="display:flex;flex-direction:column;gap:6px"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-imgfile aria-label="Add or replace image">
+     ${imgSrc?`<button type="button" class="btn sm danger" data-imgdel>Remove image</button>`:""}</div></div>
+   <label>Image credit (shown under the image)<input type="text" data-f="image_credit" value="${esc(b.image_credit||"")}"></label>
+   <label>Question asked${ta("ask",b.ask)}</label>
+   <label>Answer choices</label>${L5.map(k=>`<div class="chrow"><b>${k}</b><input type="text" data-c="${k}" value="${esc(ch[k]||"")}"></div>`).join("")}
+   <label>Correct answer<select data-f="answer">${L5.map(k=>`<option ${k===E.answer?"selected":""}>${k}</option>`).join("")}</select></label>`;
+  const right=`<h4>Explanation</h4>
+   <label>Explanation${ta("explanation",e.explanation,"tall")}</label>
+   <label>Why each choice is right or wrong (one line each)</label>${L5.map(k=>`<div class="chrow"><b>${k}</b><input type="text" data-r="${k}" value="${esc(e.reasons[k]||"")}"></div>`).join("")}
+   <label>In depth: each answer choice</label>${L5.map(k=>`<div class="chrow"><b>${k}</b><textarea data-d="${k}">${esc(e.details[k]||"")}</textarea></div>`).join("")}
+   <label>Teaching pearl (also the flashcard)${ta("pearl",e.pearl)}</label>
+   <label>References (one per line)${ta("references",e.references)}</label>
+   <label>Reference links (one per line: exact reference text | link)${ta("ref_links",(e.ref_links||[]).map(l=>l.t+" | "+l.u).join("\n"),"","Jones DW, et al. … 2025;86:1567. | https://pubmed.ncbi.nlm.nih.gov/…")}</label>
+   ${e.summaries.length?`<label>Summary</label>${summEditor(e.summaries)}`:""}`;
+  return `<section class="q" data-id="${esc(E.id)}"><div class="qh"><h3>${E.isNew?"New question":"Editing "+esc(E.id)} <small>${E.isNew?"":"QID "+E.orig.num+" · "}${esc(E.orig.subject)}</small></h3>${E.isNew?newSubjectPicker(E):""}</div>
+   <div class="cols"><div class="ef">${left}</div><div class="ef">${right}</div></div>
+   <div class="save"><span class="muted" id="emsg" style="margin-right:auto;font-size:13px"></span><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="button" class="btn" data-save>Save</button><div id="econfirm" style="width:100%"></div></div></section>`;
+}
+function collect(){
+  // read every field of the open form back into editing.body / editing.explain
+  const E=editing,b=E.body,e=E.explain,sec=document.querySelector(`[data-id="${CSS.escape(E.id)}"]`);if(!sec)return;
+  const v=s=>{const el=sec.querySelector(s);return el?el.value:""};
+  b.stem=v('[data-f="stem"]').replace(/\n{2,}/g,"\n").trim();b.exam=v('[data-f="exam"]').trim();b.ask=v('[data-f="ask"]').trim();
+  b.notes=v('[data-f="notes"]').split("\n").map(s=>s.trim()).filter(Boolean);
+  const cr=v('[data-f="image_credit"]').trim();if(cr||"image_credit" in (E.orig.body||{}))b.image_credit=cr;else delete b.image_credit;
+  b.choices=b.choices||{};L5.forEach(k=>{b.choices[k]=v(`[data-c="${k}"]`).trim();e.reasons[k]=v(`[data-r="${k}"]`).trim();e.details[k]=v(`[data-d="${k}"]`).trim()});
+  E.answer=v('[data-f="answer"]');
+  b.tests=b.tests.map((s,si)=>({h:v(`[data-sh="${si}"]`).trim(),rows:(s.rows||[]).map((r,ri)=>[v(`[data-tn="${si}:${ri}"]`).trim(),v(`[data-tv="${si}:${ri}"]`).trim()])}));
+  e.explanation=v('[data-f="explanation"]').trim();e.pearl=v('[data-f="pearl"]').trim();e.references=v('[data-f="references"]').trim();
+  e.ref_links=v('[data-f="ref_links"]').split("\n").map(l=>{const i=l.lastIndexOf("|");return i<0?null:{t:l.slice(0,i).trim(),u:l.slice(i+1).trim()}}).filter(x=>x&&x.t&&/^https?:\/\//.test(x.u));
+  e.summaries=e.summaries.map((s,i)=>{const o=Object.assign({},s);o.title=v(`[data-st="${i}"]`).trim();
+    if(s.table){const L=v(`[data-stab="${i}"]`).split("\n").filter(x=>x.trim()).map(x=>x.split("|").map(c=>dec(c.trim())));o.table={headers:L[0]||[],rows:L.slice(1)}}
+    if(s.blocks)o.blocks=v(`[data-sblk="${i}"]`).split("\n").filter(x=>x.trim()).map(x=>{const p=x.split("|").map(c=>dec(c.trim()));const bl={head:p[0]||"",body:p[1]||""};if(p[2])bl.takeaway=p[2];return bl});
+    const bot=v(`[data-sbot="${i}"]`).trim(),ref=v(`[data-sref="${i}"]`).trim();if(bot)o.bottom=bot;else delete o.bottom;if(ref)o.refs=ref;else delete o.refs;return o});
+}
+function problems(){
+  const E=editing,b=E.body,e=E.explain,p=[];
+  if(!b.stem)p.push("The stem is empty.");if(!b.ask)p.push("The question asked is empty.");
+  L5.forEach(k=>{if(!b.choices[k])p.push(`Choice ${k} is empty.`)});
+  if(new Set(L5.map(k=>b.choices[k].toLowerCase())).size<5)p.push("Two answer choices are the same.");
+  if(!e.explanation)p.push("The explanation is empty.");
+  b.tests.forEach((s,i)=>{if(!s.h)p.push(`Table section ${i+1} has no heading.`);s.rows.forEach(r=>{if(!r[0]||!r[1])p.push(`A table row in “${s.h||"section "+(i+1)}” is missing its test or result.`)})});
+  if(b.tests.some(s=>s.rows.some(r=>/\b(normal|unremarkable|wnl)\b/i.test(r[1]))))p.push("A table result says “normal”: give the real value instead.");
+  const allRefs=e.references+" "+(e.summaries||[]).map(x=>x.refs||"").join(" ");(e.ref_links||[]).forEach(l=>{if(!allRefs.includes(l.t))p.push("A reference link's text doesn't match a reference exactly: “"+l.t.slice(0,60)+"…”.")});
+  return p;
+}
+function changedParts(){
+  const E=editing,o=E.orig,b=E.body,e=E.explain,c=[],ob=o.body||{},oe=o.explain||{};
+  const canon=x=>{if(x===undefined||x===null||x===""||(Array.isArray(x)&&!x.length))return null;if(Array.isArray(x))return x.map(canon);if(typeof x==="object"){const o={};Object.keys(x).sort().forEach(k=>{const c=canon(x[k]);if(c!==null)o[k]=c});return Object.keys(o).length?o:null}return x};
+  const ne=(a,b2)=>JSON.stringify(canon(a))!==JSON.stringify(canon(b2));
+  [["stem","stem"],["exam","physical examination"],["tests","results table"],["notes","sentences after the table"],["ask","question asked"],["choices","answer choices"],["image_credit","image credit"]].forEach(([k,l])=>{if(ne(b[k],ob[k]))c.push(l)});
+  if(E.answer!==o.answer)c.push(`correct answer (${o.answer} → ${E.answer})`);
+  if(E.img)c.push(E.orig.has_image?"image replaced":"image added");if(E.imgRemove)c.push("image removed");
+  [["explanation","explanation"],["reasons","one-line reasons"],["details","in-depth choices"],["pearl","teaching pearl"],["references","references"],["ref_links","reference links"],["summaries","summary"]].forEach(([k,l])=>{if(ne(e[k],oe[k]))c.push(l)});
+  return c;
+}
+function wireEdit(){
+  const sec=document.querySelector(`[data-id="${CSS.escape(editing.id)}"]`);if(!sec)return;
+  const fit=t=>{t.style.height="auto";t.style.height=Math.min(t.scrollHeight+4,520)+"px"};sec.querySelectorAll("textarea").forEach(t=>{fit(t);t.addEventListener("input",()=>fit(t))});
+  const f=sec.querySelector("[data-imgfile]");
+  if(f)f.onchange=async ev=>{const file=ev.target.files[0];if(!file)return;
+    try{editing.img=await shrink(file);editing.imgRemove=false;collect();draw();toast("Image ready. It is saved when you press Save.")}catch(x){toast("That image couldn't be read.")}};
+}
+function shrink(file){
+  // resize to at most 1600 px on the long side and re-encode, so images stay small for learners
+  return new Promise((res,rej)=>{const rd=new FileReader();rd.onerror=rej;rd.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{
+    const s=Math.min(1,1600/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=Math.round(im.width*s);cv.height=Math.round(im.height*s);
+    cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);const png=file.type==="image/png"&&file.size<600000;
+    const src=png?rd.result:cv.toDataURL("image/jpeg",0.88);res({src,mime:png?"image/png":"image/jpeg",data:src.split(",")[1]})};im.src=rd.result};rd.readAsDataURL(file)});
+}
+let PREFIXES=null;
+async function startNew(){
+  if(!PREFIXES){try{PREFIXES=await BLB.rpc("admin_q_prefixes")||[]}catch(x){toast(BLB.friendly(x));return}}
+  const first=PREFIXES.find(p=>p.subject===F.subject)||PREFIXES[0];
+  editing={id:"__new",isNew:true,subject:first.subject,prefix:first.prefix,answer:"A",updated_at:null,img:null,imgRemove:false,
+    orig:{num:"",subject:first.subject,has_image:false,body:{},explain:{}},
+    body:{stem:"",exam:"",tests:[],notes:[],ask:"Which of the following is the most appropriate next step in management?",choices:{A:"",B:"",C:"",D:"",E:""}},
+    explain:{explanation:"",reasons:{},details:{},pearl:"",references:"",summaries:[],ref_links:[]}};
+  draw();window.scrollTo({top:$("#list").offsetTop-20,behavior:"smooth"});
+}
+function newSubjectPicker(E){
+  return `<label style="font-size:13px;font-weight:600;color:var(--ink2)">Subject <select data-newsubj style="font:inherit;padding:6px 8px;border:1px solid #c9d5e2;border-radius:8px">${PREFIXES.map(p=>{const multi=PREFIXES.filter(x=>x.subject===p.subject).length>1;return`<option value="${esc(p.subject+"||"+p.prefix)}" ${p.subject===E.subject&&p.prefix===E.prefix?"selected":""}>${esc(p.subject)}${multi?" ("+esc(p.prefix)+")":""}</option>`}).join("")}</select></label><span class="muted" style="font-size:13px">It gets the next ID and QID in that subject when you save.</span>`;
+}
+function confirmLeave(){return confirmLeave.ok||(toast("Save or cancel the question you're editing first."),false)}
+async function doSave(){
+  const E=editing;$("#econfirm").innerHTML=`<span class="muted">Saving…</span>`;
+  try{
+    const body=Object.assign({},E.body);delete body.data;const ex=Object.assign({},E.explain);if(!(ex.ref_links||[]).length&&!(E.orig.explain||{}).ref_links)delete ex.ref_links;
+    if(E.isNew){
+      const c=await BLB.rpc("admin_q_create",{p_subject:E.subject,p_prefix:E.prefix,p_body:body,p_answer:E.answer,p_explain:ex});
+      if(E.img)await BLB.rpc("admin_q_set_image",{p_id:c.id,p_mime:E.img.mime,p_data:E.img.data});
+      if(E.img)imgCache[c.id]=E.img.src;
+      editing=null;index=await BLB.rpc("admin_q_index")||[];F.q=c.id;F.tag="";F.subject="";saveF();
+      $("#fq").value=c.id;$("#ft").value="";$("#fs").value="";stats();await go();toast(c.id+" (QID "+c.num+") added. It's live now.");return}
+    const r=await BLB.rpc("admin_q_save",{p_id:E.id,p_body:body,p_answer:E.answer,p_explain:ex,p_expected:E.updated_at});
+    if(E.img)await BLB.rpc("admin_q_set_image",{p_id:E.id,p_mime:E.img.mime,p_data:E.img.data});
+    if(E.imgRemove)await BLB.rpc("admin_q_set_image",{p_id:E.id,p_mime:null,p_data:null});
+    if(E.img)imgCache[E.id]=E.img.src;if(E.imgRemove)delete imgCache[E.id];
+    const fresh=(await BLB.rpc("admin_q_rows",{p_ids:[E.id]}))[0];
+    rows=rows.map(x=>x.id===E.id?fresh:x);const ix=index.find(x=>x.id===E.id);if(ix){ix.edits=fresh.edits;ix.has_image=fresh.has_image}
+    editing=null;draw();stats();toast(E.id+" saved. It's live now.");
+  }catch(x){
+    const m=String(x&&x.message||x);
+    $("#econfirm").innerHTML=`<div class="warn">${m.includes("changed_elsewhere")?"This question was changed somewhere else since you opened it. Cancel, reopen it and make your change again.":esc(BLB.friendly(x))}</div>`;
+  }
+}
+document.addEventListener("click",async ev=>{
+  const b=ev.target.closest("button");if(!b)return;
+  if(b.dataset.a==="in"){await BLB.dialog({title:"Admin sign-in",intro:"Enter your admin email. We'll send a 6-digit code."});boot();return}
+  if(b.hasAttribute("data-more")){shown+=20;await loadMore();return}
+  const sec=b.closest(".q"),id=sec&&sec.dataset.id,r=id&&rows.find(x=>x.id===id);
+  if(b.hasAttribute("data-new")){if(editing){toast("Save or cancel the question you're editing first.");return}await startNew();return}
+  if(b.hasAttribute("data-remove")){const c=sec.querySelector("[data-rmconfirm]");
+    c.innerHTML=r.in_free?`<div class="warn">This question is one of the free sample questions, so it can't be removed. Swap it out of the free set first.</div>`:
+    `<div class="warn" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><span>Remove <b>${esc(id)}</b> from the bank? Learners stop seeing it right away. It isn't deleted: you can put it back from “Removed from the bank”.</span><span><button class="btn sm danger" data-rmgo>Remove</button> <button class="btn sm ghost" data-rmno>Keep it</button></span></div>`;return}
+  if(b.hasAttribute("data-rmno")){sec.querySelector("[data-rmconfirm]").innerHTML="";return}
+  if(b.hasAttribute("data-rmgo")||b.hasAttribute("data-restore")){const on=b.hasAttribute("data-restore");
+    try{await BLB.rpc("admin_q_set_active",{p_id:id,p_active:on});const ix=index.find(x=>x.id===id);if(ix)ix.active=on;r.active=on;
+      rows=rows.filter(x=>x.id!==id||match(x));draw();stats();toast(on?id+" is back in the bank.":id+" removed. Find it under “Removed from the bank”.")}
+    catch(x){toast(String(x&&x.message||x).includes("in_free_set")?"It's a free sample question, so it can't be removed.":BLB.friendly(x))}return}
+  if(b.hasAttribute("data-edit")){if(editing&&editing.id!==id){toast("Save or cancel the question you're editing first.");return}startEdit(r);return}
+  if(b.dataset.mark){
+    try{await BLB.rpc("admin_q_mark",{p_id:id,p_status:b.dataset.mark});r.status=b.dataset.mark;const ix=index.find(x=>x.id===id);if(ix)ix.status=r.status;draw();stats();toast(id+": "+STATUS[r.status])}catch(x){toast(BLB.friendly(x))}return}
+  if(!editing)return;
+  if(b.hasAttribute("data-cancel")){editing=null;draw();return}
+  if(editing.isNew){const ss=document.querySelector("[data-newsubj]");if(ss){const [sj,px]=ss.value.split("||");editing.subject=sj;editing.prefix=px}}
+  collect();
+  const E=editing;
+  if(b.hasAttribute("data-addsec")){E.body.tests.push({h:"Laboratory studies",rows:[["",""]]});draw();return}
+  if(b.dataset.addrow!==undefined){E.body.tests[+b.dataset.addrow].rows.push(["",""]);draw();return}
+  if(b.dataset.delsec!==undefined){E.body.tests.splice(+b.dataset.delsec,1);draw();return}
+  if(b.dataset.delrow){const [s,i]=b.dataset.delrow.split(":").map(Number);E.body.tests[s].rows.splice(i,1);draw();return}
+  if(b.dataset.delsum!==undefined){E.explain.summaries.splice(+b.dataset.delsum,1);draw();return}
+  if(b.hasAttribute("data-imgdel")){E.img=null;E.imgRemove=!!E.orig.has_image;draw();return}
+  if(b.hasAttribute("data-save")){
+    const p=problems(),c=changedParts();
+    if(p.length){$("#econfirm").innerHTML=`<div class="warn"><b>Fix before saving:</b><ul style="margin:4px 0 0">${p.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;return}
+    if(!c.length&&!editing.isNew){$("#econfirm").innerHTML=`<div class="warn">Nothing has changed.</div>`;return}
+    if(editing.isNew){$("#econfirm").innerHTML=`<div class="warn" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><span>Add this question to the live bank under <b>${esc(editing.subject)}</b>? Learners can get it right away.</span><span><button type="button" class="btn sm" data-go>Confirm and add</button> <button type="button" class="btn sm ghost" data-nogo>Keep editing</button></span></div>`;return}
+    $("#econfirm").innerHTML=`<div class="warn" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between"><span>Save to the live question bank? Changed: <b>${esc(c.join(", "))}</b>. The previous version is kept.</span><span><button type="button" class="btn sm" data-go>Confirm and save</button> <button type="button" class="btn sm ghost" data-nogo>Keep editing</button></span></div>`;return}
+  if(b.hasAttribute("data-nogo")){$("#econfirm").innerHTML="";return}
+  if(b.hasAttribute("data-go")){await doSave();return}
+});
+window.addEventListener("beforeunload",e=>{if(editing){e.preventDefault();e.returnValue=""}});
+boot();
+</script>
+</body>
+</html>
