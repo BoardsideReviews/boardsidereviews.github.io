@@ -169,6 +169,7 @@ details.dd p{margin:6px 0 0;font-size:14px}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const L5=["A","B","C","D","E"];
+const LS=ch=>L5.filter(k=>k!=="E"||(ch&&ch.E));   // choice E is optional (4-choice questions)
 const STATUS={todo:"Not marked",ok:"Good",change:"Bad"};
 const SECTIONS=["Laboratory studies","Urinalysis","Arterial blood gas","Venous blood gas","Pulmonary function testing","Cerebrospinal fluid","Pleural fluid","Synovial fluid","Ascitic fluid","Hemodynamic measurements","Ventilator settings","24-hour urine collection","Microbiology","Study results"];
 function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2800)}
@@ -278,10 +279,10 @@ function rcHTML(r){
 function viewCard(r){
   const b=r.body||{},e=r.explain||{},tags=r.tags||[],ch=b.choices||{};
   const left=`<h4>Question</h4>${paras(b.stem).map(p=>`<p>${esc(p)}</p>`).join("")}${b.exam?`<p>${esc(b.exam)}</p>`:""}${tbl(b.tests)}${(b.notes||[]).map(t=>`<p>${esc(t)}</p>`).join("")}${(!b.tests&&b.data&&b.data.length)?`<ul>${b.data.map(d=>`<li>${esc(d)}</li>`).join("")}</ul>`:""}${imgHTML(r)}<p class="ask">${esc(b.ask)}</p>
-    <ul class="ch">${L5.map(k=>`<li class="${k===r.answer?"key":""}"><b>${k}.</b>${esc(ch[k]||"")}${k===r.answer?" ✓":""}</li>`).join("")}</ul>`;
+    <ul class="ch">${LS(ch).map(k=>`<li class="${k===r.answer?"key":""}"><b>${k}.</b>${esc(ch[k]||"")}${k===r.answer?" ✓":""}</li>`).join("")}</ul>`;
   const right=`<h4>Explanation</h4>${paras(e.explanation).map(p=>`<p>${esc(p)}</p>`).join("")}
-    <ul class="why">${L5.map(k=>`<li><b>${k}.</b> ${esc((e.reasons||{})[k]||"")}</li>`).join("")}</ul>
-    <details class="dd"><summary>In depth: each answer choice</summary>${L5.map(k=>`<p><b>${k}. ${esc(ch[k]||"")}</b>: ${esc((e.details||{})[k]||"")}</p>`).join("")}</details>
+    <ul class="why">${LS(ch).map(k=>`<li><b>${k}.</b> ${esc((e.reasons||{})[k]||"")}</li>`).join("")}</ul>
+    <details class="dd"><summary>In depth: each answer choice</summary>${LS(ch).map(k=>`<p><b>${k}. ${esc(ch[k]||"")}</b>: ${esc((e.details||{})[k]||"")}</p>`).join("")}</details>
     ${e.pearl?`<h4>Teaching pearl</h4><div class="pearl">${esc(e.pearl).replace(/\[\[([\s\S]+?)\]\]/g,'<b class="cz">$1</b>')}</div>`:""}
     ${(e.summaries||[]).length?`<h4>Summary</h4>${e.summaries.map(s=>summ(s,e.ref_links)).join("")}`:""}
     <h4>References</h4><div class="refs">${linkRefs(e.references,e.ref_links)}</div>`;
@@ -335,7 +336,7 @@ function editCard(E){
      ${imgSrc?`<button type="button" class="btn sm danger" data-imgdel>Remove image</button>`:""}</div></div>
    <label>Image credit (shown under the image)<input type="text" data-f="image_credit" value="${esc(b.image_credit||"")}"></label>
    <label>Question asked${ta("ask",b.ask)}</label>
-   <label>Answer choices</label>${L5.map(k=>`<div class="chrow"><b>${k}</b><input type="text" data-c="${k}" value="${esc(ch[k]||"")}"></div>`).join("")}
+   <label>Answer choices (E is optional: leave it and its lines empty for a 4-choice question)</label>${L5.map(k=>`<div class="chrow"><b>${k}</b><input type="text" data-c="${k}" value="${esc(ch[k]||"")}"></div>`).join("")}
    <label>Correct answer<select data-f="answer">${L5.map(k=>`<option ${k===E.answer?"selected":""}>${k}</option>`).join("")}</select></label>`;
   const right=`<h4>Explanation</h4>
    <label>Explanation${ta("explanation",e.explanation,"tall")}</label>
@@ -357,6 +358,7 @@ function collect(){
   b.notes=v('[data-f="notes"]').split("\n").map(s=>s.trim()).filter(Boolean);
   const cr=v('[data-f="image_credit"]').trim();if(cr||"image_credit" in (E.orig.body||{}))b.image_credit=cr;else delete b.image_credit;
   b.choices=b.choices||{};L5.forEach(k=>{b.choices[k]=v(`[data-c="${k}"]`).trim();e.reasons[k]=v(`[data-r="${k}"]`).trim();e.details[k]=v(`[data-d="${k}"]`).trim()});
+  if(!b.choices.E&&!e.reasons.E&&!e.details.E){delete b.choices.E;delete e.reasons.E;delete e.details.E}
   E.answer=v('[data-f="answer"]');
   b.tests=b.tests.map((s,si)=>({h:v(`[data-sh="${si}"]`).trim(),rows:(s.rows||[]).map((r,ri)=>[v(`[data-tn="${si}:${ri}"]`).trim(),v(`[data-tv="${si}:${ri}"]`).trim()])}));
   e.explanation=v('[data-f="explanation"]').trim();e.pearl=v('[data-f="pearl"]').trim();e.references=v('[data-f="references"]').trim();
@@ -369,8 +371,10 @@ function collect(){
 function problems(){
   const E=editing,b=E.body,e=E.explain,p=[];
   if(!b.stem)p.push("The stem is empty.");if(!b.ask)p.push("The question asked is empty.");
-  L5.forEach(k=>{if(!b.choices[k])p.push(`Choice ${k} is empty.`)});
-  if(new Set(L5.map(k=>b.choices[k].toLowerCase())).size<5)p.push("Two answer choices are the same.");
+  ["A","B","C","D"].forEach(k=>{if(!b.choices[k])p.push(`Choice ${k} is empty.`)});
+  if(!b.choices.E&&(e.reasons.E||e.details.E))p.push("Choice E is empty but has a reason or in-depth text: fill in E or clear its lines.");
+  if(!b.choices[E.answer])p.push(`The correct answer is ${E.answer}, but that choice is empty.`);
+  {const cs=L5.map(k=>b.choices[k]).filter(Boolean).map(x=>x.toLowerCase());if(new Set(cs).size<cs.length)p.push("Two answer choices are the same.");}
   if(!e.explanation)p.push("The explanation is empty.");
   b.tests.forEach((s,i)=>{if(!s.h)p.push(`Table section ${i+1} has no heading.`);s.rows.forEach(r=>{if(!r[0]||!r[1])p.push(`A table row in “${s.h||"section "+(i+1)}” is missing its test or result.`)})});
   if(b.tests.some(s=>s.rows.some(r=>/\b(normal|unremarkable|wnl)\b/i.test(r[1]))))p.push("A table result says “normal”: give the real value instead.");

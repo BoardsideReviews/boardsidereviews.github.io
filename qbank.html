@@ -2736,7 +2736,7 @@ document.addEventListener("keydown", function (e) {
     if (/^[0-9]$/.test(k) || map[k]) { e.preventDefault(); calcKey(map[k] || k); return; }
   }
   var q = cur(), locked = done() || (P.b.mode === "learning" && q.response.submitted);
-  if (/^[a-eA-E]$/.test(k) && !locked) { e.preventDefault(); select(q, k.toUpperCase()); }
+  if (/^[a-eA-E]$/.test(k) && !locked && q.body.choices[k.toUpperCase()] != null) { e.preventDefault(); select(q, k.toUpperCase()); }
   else if (k === "ArrowRight") go(P.i + 1);
   else if (k === "ArrowLeft") go(P.i - 1);
 });
