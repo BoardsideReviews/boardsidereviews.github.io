@@ -75,7 +75,13 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;fl
 main{display:flex;flex-direction:column;gap:16px}
 /* board */
 .board{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch}
-.vs{align-self:center;font-family:var(--display);font-weight:800;color:#9fb0d0;font-size:18px}
+.vs{align-self:center;display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--aisle-2);border:2px solid rgba(255,255,255,.18);font-family:var(--display);font-weight:800;color:#ffd23f;font-size:17px;letter-spacing:.02em}
+button.card{font:inherit;cursor:pointer;width:100%}
+button.card:hover{transform:translateY(-4px);border-color:var(--more)}
+button.card:active{transform:translateY(1px);box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.tapme{margin-top:4px;text-align:center;font-family:var(--display);font-weight:800;font-size:14px;color:#fff;background:var(--more);border-radius:8px;padding:8px 6px;letter-spacing:.01em}
+.card.picked{outline:3px solid #ffd23f;outline-offset:3px}
+.morestamp{position:absolute;top:12px;right:12px;font-family:var(--display);font-weight:800;font-size:13px;color:#fff;background:var(--more);padding:3px 9px;border-radius:6px;transform:rotate(4deg)}
 .card{
   position:relative;background:var(--label);color:var(--ink);border-radius:14px;padding:18px 18px 16px;
   border:3px solid transparent;text-align:left;display:flex;flex-direction:column;gap:10px;min-height:260px;
@@ -150,7 +156,7 @@ input[type=text]{font:inherit;padding:11px 12px;border-radius:10px;border:1px so
 .lb th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
 .lb td.num{font-family:var(--mono);text-align:right}
 .review{display:grid;gap:6px;max-height:340px;overflow:auto;padding-right:4px}
-.rv{display:grid;grid-template-columns:22px 52px 1fr;gap:8px;align-items:center;font-size:13.5px;border-bottom:1px solid var(--line);padding:6px 0}
+.rv{display:grid;grid-template-columns:22px 30px 1fr;gap:8px;align-items:center;font-size:13.5px;border-bottom:1px solid var(--line);padding:6px 0}
 .rv .m{font-weight:700}
 .rv .m.ok{color:var(--ok)}.rv .m.bad{color:var(--bad)}
 .rv .q{font-family:var(--mono);font-size:11px;font-weight:700;text-align:center;border-radius:4px;color:#fff;padding:2px 0}
@@ -163,9 +169,7 @@ footer a{color:#c8d4ec}
 
 @media (max-width:640px){
   .board{grid-template-columns:1fr;gap:10px}
-  .signs{flex-direction:row;justify-content:center}
-  .sign{flex:1;max-width:170px;padding:8px 10px 10px}
-  .sign b{font-size:34px}
+  .vs{justify-self:center;width:42px;height:42px;font-size:14px;margin:-6px 0}
   .card{min-height:0}
 }
 @media (prefers-reduced-motion:reduce){
@@ -320,8 +324,8 @@ function intro(){
     <h2>Which drug costs more per day?</h2>
     <ol class="rules">
       <li>Every drug is priced per day at a standard adult dose, using what U.S. pharmacies pay for it (NADAC), before insurance.</li>
-      <li>You see one drug’s price. The next drug’s price is hidden. Tap <b>&lt;</b> if the first drug costs less, or <b>&gt;</b> if it costs more.</li>
-      <li>Get it right and the new drug becomes the next one to compare against.</li>
+      <li>You see one drug’s price. The new drug’s price is hidden. <b>Tap the one that costs more.</b></li>
+      <li>Get it right and the new drug always becomes the next one to compare against, even if it was the cheaper one.</li>
       <li>One wrong pick ends your run. Everyone gets the same drugs today, and a new run starts at midnight Pacific.</li>
     </ol>
     <div class="row"><button class="btn" id="go">Start today’s run</button><span class="fine">${DATA.meta.count} drugs in the pool</span></div>
@@ -334,8 +338,9 @@ function cardHTML(d, opts){
   const sticker = opts.show
     ? `<span class="sticker" data-v="${d.perDay}">${money(d.perDay)}</span>`
     : `<span class="sticker hidden">$ ? ? ?</span>`;
+  const tag = opts.pick ? "button" : "div";
   return `
-    <div class="card ${opts.cls||""}" data-id="${d.id}">
+    <${tag} class="card ${opts.cls||""}" data-id="${d.id}"${opts.pick ? ` type="button" data-s="${opts.pick}" aria-label="${esc(d.name)} costs more"` : ""}>
       ${opts.stamp || ""}
       <div class="tags">${tags}</div>
       <div class="dname">${esc(d.name)}</div>
@@ -343,28 +348,23 @@ function cardHTML(d, opts){
       <div class="price">${sticker}<span class="perday">per day</span></div>
       ${opts.show ? `<div class="calc">${calcLine(d)}</div>` : ""}
       ${opts.show && opts.note && d.note ? `<div class="note">${esc(d.note)}</div>` : ""}
-    </div>`;
+      ${opts.pick ? `<div class="tapme">This costs more</div>` : ""}
+    </${tag}>`;
 }
 
-function signsHTML(A){
-  return `<div class="signs" role="group" aria-label="Compare the prices">
-      <button class="sign" type="button" data-s="lt" aria-label="${esc(A.name)} costs less than the new drug"><b>&lt;</b><small>costs less than</small></button>
-      <button class="sign" type="button" data-s="gt" aria-label="${esc(A.name)} costs more than the new drug"><b>&gt;</b><small>costs more than</small></button>
-    </div>`;
-}
 function play(){
   hud();
   if (S.r >= RUN.length){ finish(true); return; }
   const rd = RUN[S.r], A = BY_ID[rd.a], C = BY_ID[rd.c];
   app.innerHTML = `
-    <div class="prompt">Is it <span class="word">&lt;</span> or <span class="word">&gt;</span> ?<small>Compare the price per day. The new drug’s price is hidden.</small></div>
+    <div class="prompt">Which costs <span class="word">more</span> per day?<small>Tap the drug that costs more. The new drug’s price is hidden.</small></div>
     <div class="board live" id="board">
-      ${cardHTML(A, {show:true})}
-      ${signsHTML(A)}
-      ${cardHTML(C, {show:false, cls:"enter"})}
+      ${cardHTML(A, {show:true, pick:"gt"})}
+      <div class="vs" aria-hidden="true">VS</div>
+      ${cardHTML(C, {show:false, cls:"enter", pick:"lt"})}
     </div>
     <div class="verdict" id="verdict"><span class="fine" style="color:#9fb0d0">Round ${S.r + 1}</span></div>`;
-  app.querySelectorAll(".sign").forEach(el => el.onclick = () => choose(el.dataset.s));
+  app.querySelectorAll("button.card").forEach(el => el.onclick = () => choose(el.dataset.s));
 }
 
 function countUp(el, v){
@@ -383,10 +383,11 @@ function choose(sign){
   const A = BY_ID[rd.a], C = BY_ID[rd.c];
   const board = $("#board");
   board.classList.remove("live");
-  const truth = rd.answer === "lt" ? "&lt;" : "&gt;";
-  board.innerHTML = cardHTML(A, {show:true, note:true}) +
-    `<div class="signs"><div class="sign result ${ok ? "ok" : "bad"}"><b>${truth}</b><small>${ok ? "Correct" : "You picked " + (sign === "lt" ? "&lt;" : "&gt;")}</small></div></div>` +
-    cardHTML(C, {show:true, cls: ok ? "ok" : "bad shake", note:true});
+  const more = '<span class="morestamp">COSTS MORE</span>';
+  const aPicked = sign === "gt";
+  board.innerHTML = cardHTML(A, {show:true, note:true, stamp: rd.answer === "gt" ? more : "", cls: (aPicked ? "picked " : "") + (aPicked ? (ok ? "ok" : "bad shake") : "dim")}) +
+    `<div class="vs" aria-hidden="true">VS</div>` +
+    cardHTML(C, {show:true, note:true, stamp: rd.answer === "lt" ? more : "", cls: (!aPicked ? "picked " : "") + (!aPicked ? (ok ? "ok" : "bad shake") : "")});
   const cs = board.querySelectorAll(".sticker")[1]; countUp(cs, C.perDay);
   hud();
   const ratio = Math.max(A.perDay, C.perDay) / Math.min(A.perDay, C.perDay);
@@ -419,8 +420,8 @@ function finish(perfect){
   const n = streakNow(), t = S.started && S.ended ? S.ended - S.started : 0;
   const rows = S.picks.map(p => {
     const rd = RUN[p.r], A = BY_ID[rd.a], C = BY_ID[rd.c];
-    return `<div class="rv"><span class="m ${p.ok ? "ok" : "bad"}">${p.ok ? "✓" : "✗"}</span><span class="q">${p.s === "lt" ? "&lt;" : "&gt;"}</span>
-      <span>${esc(A.name)} <span class="mono">${money(A.perDay)}</span> ${rd.answer === "lt" ? "&lt;" : "&gt;"} ${esc(C.name)} <span class="mono">${money(C.perDay)}</span></span></div>`;
+    return `<div class="rv"><span class="m ${p.ok ? "ok" : "bad"}">${p.ok ? "✓" : "✗"}</span><span class="q">${p.r + 1}</span>
+      <span>${(() => { const hi = rd.answer === "gt" ? A : C, lo = rd.answer === "gt" ? C : A; return `<b>${esc(hi.name)}</b> <span class="mono">${money(hi.perDay)}</span> costs more than ${esc(lo.name)} <span class="mono">${money(lo.perDay)}</span>`; })()}</span></div>`;
   }).join("");
   app.innerHTML = `
   <section class="panel">
