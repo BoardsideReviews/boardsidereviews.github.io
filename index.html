@@ -260,6 +260,26 @@ nav .links a.dd-all.dd-top{margin:0 0 4px;border-top:0;border-bottom:1px solid v
 nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px solid var(--line);font-size:14px;font-weight:600;color:var(--teal)}
 @media (max-width:640px){.dd-menu{position:fixed;left:16px;right:16px;top:auto;width:auto;max-width:none}}
 @media (max-width:640px){nav .logo svg{height:40px;width:40px}nav .links{gap:6px 16px;font-size:14px}.hero .wrap{padding-top:48px}}
+
+/* Phones: logo + login/account + ☰. The links open as a panel under the bar. */
+.nav-toggle{display:none;width:42px;height:42px;border:1px solid var(--line);border-radius:12px;background:#fff;align-content:center;justify-items:center;gap:5px;cursor:pointer;flex:0 0 42px}
+.nav-toggle span{display:block;width:18px;height:2px;border-radius:2px;background:var(--navy);transition:transform .2s,opacity .2s}
+nav.open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+nav.open .nav-toggle span:nth-child(2){opacity:0}
+nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media (max-width:640px){
+  nav{flex-wrap:nowrap;position:relative;gap:10px;padding:10px 16px}
+  nav .logo-word{font-size:18px}
+  .nav-toggle{display:grid}
+  nav .links{margin-left:auto;flex-wrap:nowrap}
+  nav:not(.open) .links > :not(#login-btn):not(.acct){display:none}
+  nav.open .links{position:absolute;top:100%;left:0;right:0;margin:0;background:#fff;flex-direction:column;align-items:stretch;gap:0;padding:6px 20px 16px;border-bottom:1px solid var(--line);box-shadow:0 18px 30px rgba(11,37,69,.12)}
+  nav.open .links > a:not(.btn),nav.open .links .dd-btn{display:block;padding:12px 0;font-size:16.5px;border-bottom:1px solid var(--line)}
+  nav.open .links > a.btn,nav.open .links .acct{margin-top:12px;align-self:flex-start}
+  nav .links a.btn{padding:10px 16px}
+  .acct-w{display:none}
+  .acct-btn{padding:8px 12px 8px 14px;font-size:14.5px}
+}
 </style>
 </head>
 <body>
@@ -295,6 +315,7 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <a href="#about">About</a>
 <a class="btn" id="login-btn" href="qbank.html?login">Login</a>
 </div>
+<button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
 </nav>
 </header>
 
@@ -315,62 +336,86 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 .h-ctas{display:flex;gap:12px;flex-wrap:wrap}
 .h-small{margin:0;font-size:14px;color:var(--muted)}
 
-/* animated product stage */
-.h-stage{position:relative;height:520px}
-.h-q{position:absolute;right:0;top:0;width:min(410px,80%);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 70px rgba(11,37,69,.16);padding:22px;display:flex;flex-direction:column;gap:12px;z-index:2}
+/* ── the stage: question → book → game, one 12-second loop ── */
+.h-stage{position:relative;height:600px}
+.h-q{position:absolute;right:0;top:0;width:min(392px,72%);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 70px rgba(11,37,69,.16);padding:22px;display:flex;flex-direction:column;gap:11px;z-index:2}
 .h-q .tp{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--teal)}
 .h-q .tp span:last-child{color:var(--muted);font-family:'JetBrains Mono',ui-monospace,monospace;letter-spacing:0;font-weight:600}
 .h-q .stem{margin:0;font-size:15px;line-height:22px;color:var(--navy)}
 .h-q .stem b{font-weight:700}
-.h-opt{display:flex;align-items:center;gap:10px;border:1.5px solid #dce3ea;border-radius:11px;padding:9px 12px;font-size:14px;color:var(--ink2);position:relative;transition:all .3s}
-.h-opt b{width:24px;height:24px;border-radius:7px;background:#eef2f6;display:grid;place-items:center;font-size:12.5px;color:var(--navy);flex:0 0 24px}
-.h-opt .why{margin-left:auto;font-size:12px;font-weight:700;opacity:0}
-.h-pearl{background:var(--teal-soft);border-left:4px solid var(--teal);border-radius:0 10px 10px 0;padding:10px 12px;font-size:13.5px;line-height:19px;color:var(--navy);opacity:0;transform:translateY(6px)}
+.h-opt{display:flex;align-items:center;gap:10px;border:1.5px solid #dce3ea;background:#fff;border-radius:11px;padding:9px 12px;font-size:14px;color:var(--ink2);transition:background .45s,border-color .45s,color .45s}
+.h-opt b{width:24px;height:24px;border-radius:7px;background:#eef2f6;display:grid;place-items:center;font-size:12.5px;color:var(--navy);flex:0 0 24px;transition:background .45s,color .45s}
+.h-opt .why{margin-left:auto;font-size:12px;font-weight:700;opacity:0;transform:translateX(6px);transition:opacity .4s,transform .4s}
+.s-c .h-opt.c{border-color:var(--teal);background:var(--teal-soft);color:var(--teal);font-weight:600}
+.s-c .h-opt.c b{background:var(--teal);color:#fff}
+.s-c .h-opt.c .why{opacity:1;transform:none;color:var(--teal)}
+.s-b .h-opt.bx{border-color:#f0c3b7;background:var(--coral-soft)}
+.s-b .h-opt.bx .why{opacity:1;transform:none;color:var(--coral)}
+.h-pearl{background:var(--teal-soft);border-left:4px solid var(--teal);border-radius:0 10px 10px 0;padding:10px 12px;font-size:13.5px;line-height:19px;color:var(--navy);opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s,box-shadow .5s}
 .h-pearl strong{color:var(--teal)}
-.h-cursor{position:absolute;width:22px;height:22px;z-index:5;left:70%;top:60%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3))}
-/* 9s loop: cursor glides to C, clicks, C turns green, B shows why-not, pearl slides in */
-.h2026.h-anim .h-cursor{animation:cur 9s ease-in-out infinite}
-.h2026.h-anim .h-opt.c{animation:optC 9s infinite}
-.h2026.h-anim .h-opt.c .why{animation:show 9s infinite}
-.h2026.h-anim .h-opt.bx{animation:optB 9s infinite}
-.h2026.h-anim .h-opt.bx .why{animation:show2 9s infinite}
-.h2026.h-anim .h-pearl{animation:pearl 9s infinite}
-@keyframes cur{0%,8%{left:78%;top:88%;transform:scale(1)}26%{left:40%;top:63.5%;transform:scale(1)}29%{transform:scale(.8)}32%,62%{left:40%;top:63.5%;transform:scale(1)}80%,100%{left:78%;top:88%}}
-@keyframes optC{0%,28%{border-color:#dce3ea;background:#fff}31%,92%{border-color:var(--teal);background:var(--teal-soft);color:var(--teal);font-weight:600}100%{border-color:#dce3ea;background:#fff}}
-@keyframes show{0%,30%{opacity:0}34%,92%{opacity:1;color:var(--teal)}100%{opacity:0}}
-@keyframes optB{0%,40%{border-color:#dce3ea;background:#fff}44%,92%{border-color:#f0c3b7;background:var(--coral-soft)}100%{border-color:#dce3ea;background:#fff}}
-@keyframes show2{0%,42%{opacity:0}46%,92%{opacity:1;color:var(--coral)}100%{opacity:0}}
-@keyframes pearl{0%,52%{opacity:0;transform:translateY(6px)}58%,92%{opacity:1;transform:none}100%{opacity:0}}
-.h-book{position:absolute;left:-6px;bottom:-4px;width:158px;aspect-ratio:7/10;border-radius:4px 10px 10px 4px;box-shadow:0 26px 50px rgba(11,37,69,.32),inset 6px 0 0 rgba(255,255,255,.08);transform:rotate(-7deg);z-index:3;animation:float 6s ease-in-out infinite}
-.h-book.bookcover{background-size:cover;background-position:center}
-@keyframes float{50%{transform:rotate(-7deg) translateY(-8px)}}
-.h-booktag{position:absolute;left:118px;bottom:14px;z-index:4;background:var(--coral);color:#fff;font-size:12px;font-weight:700;border-radius:8px;padding:6px 10px;transform:rotate(4deg);box-shadow:0 8px 18px rgba(185,67,44,.35)}
-.h-game{position:absolute;right:-6px;bottom:-4px;z-index:4;width:236px;background:#0f1a2e;color:#e8f0f8;border-radius:14px;padding:11px 13px;box-shadow:0 18px 36px rgba(11,37,69,.3);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px}
-.h-game small{display:flex;justify-content:space-between;color:#f2a516;font-weight:700;letter-spacing:.06em;font-size:10.5px;margin-bottom:6px;font-family:Inter,sans-serif}
-.h-game small span{color:#8fa4b4;font-weight:600}
-.h-game .gs{height:34px;position:relative}
-.h-game .gs div{position:absolute;inset:0;opacity:0;transition:opacity .5s}
-.h-game .gs div.on{opacity:1}
-.h-game .gs .hi{color:#3cc4b4;font-weight:700}
+.s-pearl .h-pearl{opacity:1;transform:none}
+.s-hl .h-pearl{box-shadow:0 0 0 3px rgba(13,112,112,.22)}
 
-/* what you get */
-.wyg .wrap{padding-top:96px;padding-bottom:32px;display:flex;flex-direction:column;gap:36px}
-.wyg-grid{display:grid;grid-template-columns:1fr 1fr .78fr;gap:22px}
-.wyg-card{border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:12px;border:1px solid #e3ebf3;background:#fff;box-shadow:0 10px 30px rgba(11,37,69,.06)}
-.wyg-card .lbl{font-size:12px;font-weight:700;letter-spacing:.08em}
-.wyg-card h3{margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;letter-spacing:-.01em}
-.wyg-card p{margin:0;color:var(--muted);font-size:16px;line-height:24px;flex:1}
-.wyg-card ul{margin:0;padding:0;list-style:none;display:grid;gap:7px;font-size:14.5px;color:var(--ink2)}
-.wyg-card ul li::before{content:"✓";color:var(--teal);font-weight:800;margin-right:8px}
-.wyg-card a{color:var(--teal);font-weight:600;text-decoration:none;font-size:15px}
-.wyg-card.main{border:1.5px solid #bfdcd8}
-.wyg-card.games{background:#0f1a2e;border-color:#0f1a2e;color:#e8f0f8}
-.wyg-card.games p{color:#b5c3d3}
-.wyg-card.games a{color:#f2a516}
-.wyg-card.games .lbl{color:#f2a516}
-@media (max-width:980px){.h2026 .wrap{grid-template-columns:1fr;gap:36px}.h-stage{height:470px;max-width:520px;width:100%;margin:0 auto}.wyg-grid{grid-template-columns:1fr}}
-@media (max-width:520px){.h2026 .wrap{padding-top:36px}.h-stage{height:640px}.h-q{width:100%;padding:18px}.h-book{width:112px;bottom:0}.h-booktag{left:78px;bottom:6px}.h-game{width:205px;bottom:20px}.h-copy .lede{font-size:17px;line-height:26px}}
-@media (prefers-reduced-motion:reduce){.h2026 *{animation:none!important}}
+.h-cursor{position:absolute;width:22px;height:22px;z-index:6;left:84%;top:96%;opacity:0;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));transition:left 1.1s cubic-bezier(.45,0,.2,1),top 1.1s cubic-bezier(.45,0,.2,1),opacity .4s}
+.c-move .h-cursor{left:52%;top:39.5%;opacity:1}
+.s-cur-off .h-cursor{opacity:0}
+.s-click .h-cursor{animation:tap .32s ease}
+@keyframes tap{50%{transform:scale(.78)}}
+
+/* the book: the cover swings open to a page of colored blocks, then closes */
+.h-bookw{position:absolute;left:14px;bottom:34px;width:150px;aspect-ratio:7/10;perspective:900px;z-index:3;transform:rotate(-5deg);transition:transform 1.1s cubic-bezier(.3,0,.2,1)}
+.s-open .h-bookw{transform:rotate(-2deg) translateY(-10px) scale(1.06)}
+.h-page,.h-cover,.h-cover i{position:absolute;inset:0;border-radius:3px 9px 9px 3px}
+.h-page{background:#fbfaf6;box-shadow:0 24px 46px rgba(11,37,69,.28);padding:14px 12px 12px 14px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.h-page::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:linear-gradient(90deg,rgba(11,37,69,.14),transparent)}
+.blk{display:block;border-radius:3px;filter:blur(.6px)}
+.blk.hd{height:7px;width:58%;background:var(--navy)}
+.blk.sh{height:6px;width:40%;background:var(--teal);margin-top:2px}
+.blk.ln{height:4px;background:#ccd5df}
+.blk.tb{height:30px;background:linear-gradient(var(--navy) 0 7px,transparent 7px),repeating-linear-gradient(transparent 0 7px,#e4eaf1 7px 8px),#f1f5f9;border:1px solid #dce3ea}
+.blk.pr{height:22px;background:var(--teal-soft);border-left:3px solid var(--teal);transition:box-shadow .5s,background .5s}
+.s-hl .blk.pr{background:#c7ebe6;box-shadow:0 0 0 3px rgba(13,112,112,.25)}
+.blk.tg{height:6px;width:30%;background:var(--coral);opacity:.75}
+.h-cover{transform-origin:left center;transform-style:preserve-3d;transition:transform 1.1s cubic-bezier(.3,0,.2,1);z-index:2}
+.s-open .h-cover{transform:rotateY(-128deg)}
+.h-cover i{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.h-cover i.front{background-size:cover;background-position:center;box-shadow:0 24px 46px rgba(11,37,69,.32),inset 5px 0 0 rgba(255,255,255,.07)}
+.h-cover i.back{transform:rotateY(180deg);background:#f3f1ea;padding:14px 12px;display:flex;flex-direction:column;gap:6px}
+.h-booktag{position:absolute;left:128px;bottom:42px;z-index:4;background:var(--coral);color:#fff;font-size:12px;font-weight:700;border-radius:8px;padding:6px 10px;transform:rotate(4deg);box-shadow:0 8px 18px rgba(185,67,44,.35);transition:opacity .4s}
+.s-open .h-booktag{opacity:0}
+
+/* the games box: thumbnails morph from one game to the next */
+.h-game{position:absolute;right:-4px;bottom:0;z-index:4;width:236px;background:#0f1a2e;color:#e8f0f8;border-radius:16px;padding:11px 12px 12px;box-shadow:0 18px 36px rgba(11,37,69,.3);transition:box-shadow .6s,transform .6s}
+.s-game .h-game{box-shadow:0 18px 36px rgba(11,37,69,.3),0 0 0 3px rgba(242,165,22,.55);transform:translateY(-4px)}
+.h-game small{display:flex;justify-content:space-between;color:#f2a516;font-weight:700;letter-spacing:.06em;font-size:10.5px;margin-bottom:8px}
+.h-game small span{color:#8fa4b4;font-weight:600}
+.gt-wrap{position:relative;height:96px;border-radius:10px;overflow:hidden}
+.gt{position:absolute;inset:0;border-radius:10px;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.86);filter:blur(8px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1),filter .8s ease}
+.gt.on{opacity:1;transform:none;filter:none}
+.gt-name{margin-top:8px;font-size:12.5px;font-weight:700;height:16px;position:relative}
+.gt-name span{position:absolute;left:0;opacity:0;transition:opacity .5s}
+.gt-name span.on{opacity:1}
+.gt.cc{background:#f6f0e4}
+.gt.cc .g{display:grid;grid-template-columns:repeat(5,15px);grid-template-rows:repeat(5,15px);border:2px solid #14233a;background:#14233a;gap:1px}
+.gt.cc .g i{background:#fffdf8;font:700 9px/15px 'Libre Franklin',Inter,sans-serif;font-style:normal;color:#14233a;text-align:center}
+.gt.cc .g i.k{background:#14233a}.gt.cc .g i.a{background:#ffe08a}
+.gt.cp{background:#101a33;gap:8px}
+.gt.cp .c{width:62px;height:66px;border-radius:7px;background:#eef2f6;display:flex;flex-direction:column;justify-content:flex-end;padding:6px}
+.gt.cp .c b{display:block;background:#ffd23f;color:#121a2e;font:700 11px/1 'JetBrains Mono',monospace;border-radius:4px;padding:4px 3px;transform:rotate(-4deg);text-align:center}
+.gt.cp .c.h b{background:#121a2e;color:#ffd23f}
+.gt.cp em{font:800 11px Inter,sans-serif;font-style:normal;color:#ffd23f}
+.gt.te{background:#e9e3d6}
+.gt.te .p{width:128px;background:#fbf8f1;border-radius:4px;padding:8px 9px;box-shadow:0 6px 14px rgba(29,36,51,.18);position:relative}
+.gt.te .p i{display:block;height:4px;border-radius:2px;background:#cfc8b8;margin-top:5px}
+.gt.te .p i.t{height:7px;width:70%;background:#1d2433;margin-top:0}
+.gt.te .p b{position:absolute;right:-8px;top:14px;font:700 10px 'JetBrains Mono',monospace;color:#b4312a;border:2px solid #b4312a;border-radius:4px;padding:2px 5px;transform:rotate(-10deg);background:rgba(251,248,241,.9)}
+.gt.en{background:#0e2b3d}
+.gt.rr{background:#fff6f6;background-image:linear-gradient(rgba(214,64,64,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(214,64,64,.18) 1px,transparent 1px);background-size:9px 9px}
+.gt.abg{background:#0c1f1a;font:700 22px 'JetBrains Mono',monospace;color:#7ef2c9;letter-spacing:.02em}
+.gt.abg small{display:block;font-size:10px;color:#3cc4b4;letter-spacing:.08em;margin:0 0 2px}
+
+@media (max-width:980px){.h2026 .wrap{grid-template-columns:1fr;gap:36px}.h-stage{max-width:540px;width:100%;margin:0 auto}}
+@media (max-width:520px){.h2026 .wrap{padding-top:32px}.h-copy .lede{font-size:17px;line-height:26px}.h-stage{height:690px}.c-move .h-cursor{left:40%;top:41%}.h-q{width:100%;padding:18px}.h-bookw{width:118px;left:18px;bottom:30px}.h-booktag{left:74px;bottom:14px;z-index:5}.h-game{width:196px;right:0}.gt-wrap{height:84px}}
 </style>
 <section class="h2026" id="hero">
 <div class="wrap">
@@ -385,7 +430,7 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 </div>
 <p class="h-small">Founders price for the first 100 buyers. Waitlist members hear 48 hours before launch.</p>
 </div>
-<div class="h-stage" aria-hidden="true">
+<div class="h-stage s-c s-b s-pearl" id="hstage" aria-hidden="true">
 <div class="h-q">
 <div class="tp"><span>PULMONARY &amp; CRITICAL CARE</span><span>Q 7 / 20</span></div>
 <p class="stem">A 64-year-old man with COPD has pH 7.28, PaCO₂ 62, and is drowsy but protecting his airway. <b>Next step?</b></p>
@@ -396,70 +441,116 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 <div class="h-pearl"><strong>Pearl: </strong>hypercapnic COPD exacerbation with pH 7.25–7.35 → BiPAP first.</div>
 </div>
 <svg class="h-cursor" viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L16 20l-3 1.4-3.4-7.3L4 18z" fill="#fff" stroke="#0b2545" stroke-width="1.6" stroke-linejoin="round"/></svg>
-<span class="h-book bookcover"></span>
+<div class="h-bookw">
+<div class="h-page"><span class="blk hd"></span><span class="blk sh"></span><span class="blk ln" style="width:92%"></span><span class="blk ln" style="width:84%"></span><span class="blk ln" style="width:88%"></span><span class="blk tb"></span><span class="blk pr"></span><span class="blk ln" style="width:76%"></span><span class="blk tg"></span><span class="blk ln" style="width:86%"></span></div>
+<div class="h-cover"><i class="front bookcover"></i><i class="back"><span class="blk sh" style="width:50%"></span><span class="blk ln" style="width:90%"></span><span class="blk ln" style="width:80%"></span><span class="blk ln" style="width:86%"></span><span class="blk ln" style="width:70%"></span><span class="blk hd" style="width:44%;margin-top:6px"></span><span class="blk ln" style="width:88%"></span><span class="blk ln" style="width:78%"></span></i></div>
+</div>
 <span class="h-booktag">In print</span>
-<div class="h-game"><small>FREE GAMES <span>while you wait</span></small><div class="gs" id="hgs">
-<div class="on">ABG BLITZ · pH <span class="hi">7.24</span> · AG 12<br>→ NON-GAP ACIDOSIS</div>
-<div>CROSS-COVER · SHAKING CHILLS (6)<br>→ <span class="hi">RIGORS</span></div>
-<div>ENDEMIC · COCCIDIOIDES<br>→ 📍 <span class="hi">5,000 / 5,000</span></div>
-<div>TRIAL &amp; ERROR · NICE-SUGAR<br>→ <span class="hi">NEGATIVE</span></div>
-</div></div>
+<div class="h-game"><small>FREE GAMES <span>while you wait</span></small>
+<div class="gt-wrap">
+<div class="gt cc on"><div class="g"><i>R</i><i>I</i><i>G</i><i>O</i><i>R</i><i>A</i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i><i>L</i><i>U</i><i>N</i><i>G</i><i>S</i><i>E</i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i><i>S</i><i class="k"></i><i class="k"></i><i class="k"></i><i class="k"></i></div></div>
+<div class="gt cp"><div class="c"><b>$11.19</b></div><em>VS</em><div class="c h"><b>$ ? ?</b></div></div>
+<div class="gt te"><div class="p"><i class="t"></i><i style="width:90%"></i><i style="width:76%"></i><i style="width:84%"></i><b>NEGATIVE</b></div></div>
+<div class="gt en"><svg viewBox="0 0 200 84" width="196" height="84"><path d="M20 26c8-9 26-12 38-9 10 2 13 9 22 9 8 0 11-6 19-4 7 1 5 9 1 13-5 6-13 5-16 11-3 7 6 13 3 20-3 7-12 7-16 3-5-5-4-12-10-15-7-3-15 1-22-1-9-4-12-10-15-16-2-5-7-6-4-11z" fill="#efe5cf"/><path d="M128 18c12-5 29-3 41 3 8 4 17 5 18 12 2 7-6 11-14 12-9 2-12 9-21 11-8 1-12-5-17-9-5-5-12-5-14-12-1-7 0-14 7-17z" fill="#efe5cf"/><circle cx="50" cy="32" r="12" fill="#f2a516" fill-opacity=".75" stroke="#b36f00"/><g transform="translate(57 38)"><path d="M0 0C-5-6-8-10-8-14A8 8 0 1 1 8-14C8-10 5-6 0 0Z" fill="#e0362c"/><circle cx="0" cy="-14" r="3" fill="#fff"/></g></svg></div>
+<div class="gt rr"><svg viewBox="0 0 200 60" width="196" height="60"><path d="M0 34h22l5-6 5 6h10l6-26 8 44 6-18h18l5-6 5 6h10l6-26 8 44 6-18h18l5-6 5 6h10l6-26 8 44 6-18h12" fill="none" stroke="#1d1d1d" stroke-width="2.2" stroke-linejoin="round"/></svg></div>
+<div class="gt abg"><div><small>ABG BLITZ · 1:42</small>pH 7.24</div></div>
+</div>
+<div class="gt-name"><span class="on">Cross-Cover</span><span>Co-Pay or No Way</span><span>Trial and Error</span><span>Endemic</span><span>Rhythm Rush</span><span>ABG Blitz</span></div>
 </div>
 </div>
-</section>
-<script>(function(){var h=document.getElementById("hero");if(!matchMedia("(prefers-reduced-motion: reduce)").matches)h.classList.add("h-anim");var g=document.querySelectorAll("#hgs div"),i=0;setInterval(function(){g[i].classList.remove("on");i=(i+1)%g.length;g[i].classList.add("on")},2600)})();</script>
-<section id="subjects" class="subjects" aria-label="Subjects">
-<div class="wrap">
-<span class="eyebrow" style="color:var(--muted)">EVERY INTERNAL MEDICINE SUBJECT</span>
-<div class="chips"><span>Cardiology</span><span>Pulmonary, Critical Care &amp; Sleep</span><span>Gastroenterology</span><span>Nephrology</span><span>Infectious Disease</span><span>Hematology</span><span>Oncology</span><span>Endocrinology</span><span>Rheumatology</span><span>Neurology</span><span>Psychiatry</span><span>Dermatology</span><span>Allergy &amp; Immunology</span><span>Ophthalmology &amp; ENT</span><span>General Internal Medicine</span><span>Biostatistics</span><span>EKG Review</span><span>Image Review</span></div>
 </div>
 </section>
+<script>
+(function(){
+  var st=document.getElementById("hstage"); if(!st) return;
+  var th=st.querySelectorAll(".gt"), nm=st.querySelectorAll(".gt-name span"), gi=0;
+  function nextGame(){th[gi].classList.remove("on");nm[gi].classList.remove("on");gi=(gi+1)%th.length;th[gi].classList.add("on");nm[gi].classList.add("on")}
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches){ setInterval(nextGame,4000); return; }
+  var C=st.classList, on=function(){for(var i=0;i<arguments.length;i++)C.add(arguments[i])}, off=function(){for(var i=0;i<arguments.length;i++)C.remove(arguments[i])};
+  // One 12-second loop: answer the question → the book opens to the pearl → the book closes → the next game morphs in.
+  var steps=[
+    [0,    function(){off("s-c","s-b","s-pearl","s-open","s-hl","s-game","c-move","s-cur-off","s-click")}],
+    [700,  function(){on("c-move")}],
+    [1900, function(){on("s-click","s-c")}],
+    [2500, function(){off("s-click");on("s-b")}],
+    [3100, function(){on("s-pearl")}],
+    [4000, function(){on("s-cur-off","s-open")}],
+    [5000, function(){on("s-hl")}],
+    [7000, function(){off("s-hl","s-open")}],
+    [8100, function(){on("s-game");nextGame()}],
+    [9300, function(){off("s-game")}],
+    [10500,function(){off("s-pearl","s-b","s-c")}]
+  ];
+  var t0=null, idx=0, raf;
+  function tick(now){
+    if(t0===null){t0=now;idx=0}
+    var t=now-t0;
+    while(idx<steps.length&&t>=steps[idx][0]){steps[idx][1]();idx++}
+    if(t>=12000){t0=now;idx=0}
+    raf=requestAnimationFrame(tick);
+  }
+  // Pause while the stage is off screen (saves battery) and restart cleanly when it returns.
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){cancelAnimationFrame(raf);if(e.isIntersecting){t0=null;raf=requestAnimationFrame(tick)}})},{threshold:.15});
+  io.observe(st);
+})();
+</script>
 
+<style>
+.wyg .wrap{padding-top:96px;padding-bottom:40px;display:flex;flex-direction:column;gap:36px}
+.wyg-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.wy{border:1.5px solid #cfe3e0;background:#fff;border-radius:22px;padding:30px;display:flex;flex-direction:column;gap:18px;box-shadow:0 10px 30px rgba(11,37,69,.06)}
+.wy.book{border-color:#efd3cb}
+.wy-top{display:flex;gap:20px;align-items:flex-start;justify-content:space-between}
+.wy .lbl{font-size:12px;font-weight:700;letter-spacing:.08em}
+.wy h3{margin:6px 0 6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;letter-spacing:-.015em;line-height:1.15}
+.wy p{margin:0;color:var(--muted);font-size:16px;line-height:24px}
+.wy-mini{flex:0 0 132px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px;display:flex;flex-direction:column;gap:6px;box-shadow:0 10px 24px rgba(11,37,69,.10);transform:rotate(2deg)}
+.wy-mini i{display:block;height:6px;border-radius:3px;background:#dfe6ee}
+.wy-mini .o{height:15px;border:1.5px solid #dce3ea;border-radius:6px;display:flex;align-items:center;padding:0 5px;gap:4px;font:700 8px Inter,sans-serif;color:var(--navy)}
+.wy-mini .o::after{content:"";height:3px;flex:1;border-radius:2px;background:#e3e9f0}
+.wy-mini .o.r{border-color:var(--teal);background:var(--teal-soft)}
+.wy-mini .o.w{border-color:#f0c3b7;background:var(--coral-soft)}
+.wy-cover{flex:0 0 108px;aspect-ratio:7/10;border-radius:3px 8px 8px 3px;box-shadow:0 16px 30px rgba(11,37,69,.28);transform:rotate(-3deg);background-size:cover;background-position:center}
+.wy-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0;padding:0;list-style:none}
+.wy-steps li{background:var(--sky2);border:1px solid #e3ebf3;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:13.5px;line-height:18px;color:var(--ink2)}
+.wy-steps li b{display:block;color:var(--navy);font-size:14px}
+.wy-steps .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center}
+.wy-steps .ic svg{width:18px;height:18px}
+.wy-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-top:auto}
+.wy-chips{display:flex;flex-wrap:wrap;gap:6px}
+.wy-chips span{font-size:12.5px;font-weight:600;color:var(--ink2);background:var(--sky);border-radius:999px;padding:5px 10px}
+.wy a.go{color:var(--teal);font-weight:700;text-decoration:none;font-size:15px}
+.wy.book a.go{color:var(--coral)}
+@media (max-width:980px){.wyg-grid{grid-template-columns:1fr}}
+@media (max-width:520px){.wy{padding:22px}.wy-top{gap:14px}.wy-mini{flex-basis:104px}.wy-cover{flex-basis:84px}.wy h3{font-size:22px}.wy-steps{grid-template-columns:1fr}.wy-steps li{flex-direction:row;align-items:center;gap:12px}.wy-steps .ic{flex:0 0 34px}}
+</style>
 <section class="wyg" id="coming">
 <div class="wrap">
 <div style="display:flex;flex-direction:column;gap:12px;max-width:680px">
 <span class="eyebrow">WHAT YOU GET</span>
-<h2 class="sec">Two ways to learn internal medicine. Plus a few games.</h2>
+<h2 class="sec">Two ways to learn internal medicine.</h2>
 </div>
 <div class="wyg-grid">
-<div class="wyg-card main"><span class="lbl" style="color:var(--teal)">QUESTION BANK</span><h3>~1,600 board-style questions</h3><p>Written and reviewed by a board-certified internist.</p>
-<ul><li>Why every choice is right or wrong</li><li>A teaching pearl on every question</li><li>Learning or exam mode, timed or untimed</li><li>Flashcards from what you miss</li></ul><a href="qbank.html?sample">Try 10 questions free →</a></div>
-<div class="wyg-card main"><span class="lbl" style="color:var(--coral)">BOARDSIDE NOTES · PRINT</span><h3>The review book</h3><p>Every IM subject in the same plain, high-yield style, printed and shipped to you.</p>
-<ul><li>Matches the question bank, subject by subject</li><li>Built for the wards and the boards</li><li>Free 15-page cardiology sample</li></ul><a href="#together">How it pairs with the questions →</a></div>
-<div class="wyg-card games"><span class="lbl">FREE · PLAY NOW</span><h3>Gamified learning</h3><p>Daily crosswords, drug prices, landmark trials, ABGs, shock, and more. Free forever.</p><a href="games.html">Browse the games →</a></div>
+<div class="wy">
+<div class="wy-top"><div><span class="lbl" style="color:var(--teal)">QUESTION BANK</span><h3>~1,600 board-style questions</h3><p>Written and reviewed by a board-certified internist, for the wards and the ABIM exam.</p></div>
+<div class="wy-mini" aria-hidden="true"><i style="width:90%"></i><i style="width:70%"></i><span class="o">A</span><span class="o w">B</span><span class="o r">C</span><span class="o">D</span></div></div>
+<ul class="wy-steps">
+<li><span class="ic" style="background:var(--navy)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/></svg></span><span><b>Commit to an answer</b>A full board-style vignette, read like the exam.</span></li>
+<li><span class="ic" style="background:var(--teal)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg></span><span><b>See the reasoning</b>Explained the way an attending teaches on rounds.</span></li>
+<li><span class="ic" style="background:var(--coral)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg></span><span><b>Learn why not</b>Every wrong choice, explained in a sentence.</span></li>
+</ul>
+<div class="wy-foot"><div class="wy-chips"><span>Learning or exam mode</span><span>Timed or untimed</span><span>Flashcards from misses</span></div><a class="go" href="qbank.html?sample">Try 10 questions free →</a></div>
 </div>
+<div class="wy book">
+<div class="wy-top"><div><span class="lbl" style="color:var(--coral)">BOARDSIDE NOTES · IN PRINT</span><h3>The review book</h3><p>Every internal medicine subject in the same plain, high-yield style, printed and shipped to you.</p></div>
+<span class="wy-cover bookcover" role="img" aria-label="Boardside Notes book cover"></span></div>
+<ul class="wy-steps">
+<li><span class="ic" style="background:var(--navy)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5c3-1 6-1 9 1 3-2 6-2 9-1v14c-3-1-6-1-9 1-3-2-6-2-9-1z"/><path d="M12 6v14"/></svg></span><span><b>Read the chapter</b>Presentation, diagnosis and management at a glance.</span></li>
+<li><span class="ic" style="background:var(--teal)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span><span><b>Do the questions</b>Same subject in the question bank while it's fresh.</span></li>
+<li><span class="ic" style="background:var(--coral)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></span><span><b>Close the loop</b>Back to the book for every miss.</span></li>
+</ul>
+<div class="wy-foot"><div class="wy-chips"><span>Matches the question bank</span><span>Paperback, 7×10</span></div><a class="go" href="qbank.html?sample">Free 15-page sample →</a></div>
 </div>
-</section>
-
-<section id="together" class="together">
-<div class="wrap">
-<span class="bookcover" role="img" aria-label="Boardside Notes, the complete ABIM Internal Medicine companion: book cover"></span>
-<div>
-<div style="display:flex;flex-direction:column;gap:12px;max-width:620px">
-<span class="eyebrow">BETTER TOGETHER</span>
-<h2 class="sec">Read it, test it, close the loop.</h2>
-<p class="sec-lede">The book and the question bank follow the same subjects and the same teaching pearls, so each one sends you back to the other.</p>
-</div>
-<ol class="tsteps">
-<li><div><h3>Read the chapter</h3><p>Start a subject in Boardside Notes: presentation, diagnosis and management for each disease, at a glance.</p></div></li>
-<li><div><h3>Do the questions</h3><p>Then do that subject in the question bank in learning mode, untimed, while the chapter is fresh.</p></div></li>
-<li><div><h3>Go back to the book for every miss</h3><p>Find the disease in the book, reread the pearl the question turned on, and note the trap in the margin.</p></div></li>
-<li><div><h3>Finish in exam mode</h3><p>Near your exam, switch to timed, mixed-subject blocks, and use the book&#39;s rapid-review list the week before.</p></div></li>
-</ol>
-</div>
-</div>
-</section>
-
-<section id="how" class="how">
-<div class="wrap">
-<div style="display:flex;flex-direction:column;gap:12px;max-width:640px">
-<span class="eyebrow">HOW IT WORKS</span>
-<h2 class="sec">Learn from every answer choice, not just the right one.</h2>
-</div>
-<div class="steps">
-<div class="step"><span class="num" style="background:var(--navy)">1</span><h3>Commit to an answer</h3><p>Every question opens on a full board-style vignette. Read it like the exam, and pick one.</p></div>
-<div class="step"><span class="num" style="background:var(--teal)">2</span><h3>See the reasoning</h3><p>The explanation walks through the answer the way an attending teaches it on rounds, with a teaching pearl to remember.</p></div>
-<div class="step"><span class="num" style="background:var(--coral)">3</span><h3>Learn why not</h3><p>Each wrong option gets its own sentence: the clue it ignores, or when it would be right.</p></div>
 </div>
 </div>
 </section>
@@ -596,7 +687,7 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
     login.hidden=true;
     var last=String(md.last_name||'').trim();
     box=document.createElement('div');box.className='acct';
-    box.innerHTML='<button class="acct-btn" type="button" aria-haspopup="menu" aria-expanded="false"><span>'+(last?'Welcome, Dr. '+esc(last):'Welcome')+'</span><span class="acct-caret" aria-hidden="true">&#9662;</span></button>'+
+    box.innerHTML='<button class="acct-btn" type="button" aria-haspopup="menu" aria-expanded="false"><span>'+(last?'<span class="acct-w">Welcome, </span>Dr. '+esc(last):'Welcome')+'</span><span class="acct-caret" aria-hidden="true">&#9662;</span></button>'+
       '<div class="acct-menu" role="menu" hidden><div class="acct-who">'+esc(u.email||'')+'</div>'+
       '<a role="menuitem" class="acct-item" href="qbank.html"><b>Question Bank</b><small>Go to your questions</small></a>'+
       '<a role="menuitem" class="acct-item" href="qbank.html?account=profile"><b>Profile info</b><small>Name, mailing list, delete account</small></a>'+
@@ -614,6 +705,14 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
   BLB.user().then(render);
   BLB.onAuth(function(){BLB.user().then(render)});
 })();
+</script>
+<script>
+(function(){var nav=document.querySelector('header nav'),b=nav&&nav.querySelector('.nav-toggle');if(!b)return;
+function set(o){nav.classList.toggle('open',o);b.setAttribute('aria-expanded',String(o));b.setAttribute('aria-label',o?'Close menu':'Open menu')}
+b.addEventListener('click',function(){set(!nav.classList.contains('open'))});
+nav.querySelectorAll('.links > a').forEach(function(a){a.addEventListener('click',function(){set(false)})});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')set(false)});
+document.addEventListener('mousedown',function(e){if(!nav.contains(e.target))set(false)});})();
 </script>
 </body>
 </html>
