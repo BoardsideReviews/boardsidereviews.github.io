@@ -631,6 +631,61 @@ body.dark .link,body.dark .subjtag{color:var(--teal-bright)}
 body.dark .verdictbar.ok{color:#5fd3a0}
 body.dark .verdictbar.no{color:#f19a88}
 body.dark .switch{background:#3a4d68}
+
+/* group sessions */
+.gcode{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-weight:800;font-size:clamp(48px,9vw,104px);letter-spacing:.06em;color:var(--navy);line-height:1;font-variant-numeric:tabular-nums}
+.globby{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:28px;align-items:center}
+@media (max-width:720px){.globby{grid-template-columns:1fr}.gqr{width:180px;height:180px}}
+.gqr{width:230px;height:230px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
+.gqr svg{width:100%;height:100%;display:block}
+.gdots{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;min-height:16px}
+.gdots i{width:14px;height:14px;border-radius:50%;background:var(--teal-bright);animation:gpop .3s ease}
+@keyframes gpop{from{transform:scale(0)}to{transform:scale(1)}}
+.gtop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.gpill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;background:var(--teal-soft);color:#085454}
+.gpill.gray{background:#eef2f6;color:var(--muted)}
+.gtimer{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-weight:800;font-size:26px;color:var(--navy);font-variant-numeric:tabular-nums}
+.gtimer.low{color:var(--coral)}
+.gstem p{margin:0 0 12px;line-height:1.6}
+.gproj{max-width:1320px}
+.gproj .gstem{font-size:18px}
+@media (min-width:1020px){.gqgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:34px;align-items:start}}
+.gask{font-weight:700;margin:6px 0 16px!important}
+.gch{position:relative;display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 8px;overflow:hidden;background:#fff}
+.gch .gf{position:absolute;left:0;top:0;bottom:0;width:0;background:#e9f0f7;transition:width .45s ease}
+.gch > :not(.gf){position:relative}
+.gl{flex:none;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.gch .gt{flex:1}
+.gch .gp{font-weight:700;min-width:48px;text-align:right;font-variant-numeric:tabular-nums}
+.gproj .gch{font-size:18px;padding:14px 16px}
+.gch.ok{border:2px solid var(--teal);padding:11px 13px}
+.gproj .gch.ok{padding:13px 15px}
+.gch.ok .gf{background:var(--teal-soft)}
+.gch.ok .gl{background:var(--teal);border-color:var(--teal);color:#fff}
+.gpearl{background:var(--teal-soft);border:1px solid #bfe3df;border-radius:12px;padding:14px 16px;margin-top:14px;line-height:1.55}
+.gdet p{margin:10px 0;line-height:1.55}
+.gopt{width:100%;display:flex;gap:10px;align-items:flex-start;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;margin:0 0 8px;font-size:15px;color:var(--navy)}
+.gopt[aria-pressed="true"]{border:2px solid var(--teal);background:var(--teal-soft);padding:11px}
+.gopt[aria-pressed="true"] .gl{background:var(--teal);color:#fff;border-color:var(--teal)}
+.gopt:disabled{cursor:default}
+.gphone{max-width:620px}
+.gbig{text-align:center;padding:20px 8px}
+.gbig h1{font-size:26px;margin:0 0 6px}
+.gic{width:72px;height:72px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800}
+.gic.ok{background:var(--teal-soft);color:var(--teal)}.gic.no{background:var(--coral-soft);color:var(--coral)}.gic.wait{background:#eef2f6;color:var(--muted)}
+.gpin{font-family:'Plus Jakarta Sans',Inter,sans-serif;font-size:32px;font-weight:800;letter-spacing:.18em;text-align:center;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;color:var(--navy);font-variant-numeric:tabular-nums}
+.gpin:focus{outline:2px solid var(--teal);border-color:var(--teal)}
+.gnet{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--amber-soft);border:1px solid #f0d9a6;color:#6b4a00;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600;z-index:90}
+.grow{display:grid;grid-template-columns:minmax(0,1fr) 56px;gap:4px 12px;align-items:center;margin:0 0 12px;font-size:14px}
+.gbar{height:10px;background:#eef2f6;border-radius:6px;overflow:hidden}.gbar i{display:block;height:100%;background:var(--teal);border-radius:6px}
+.gbar.low i{background:#e08a62}
+.gform{display:flex;flex-direction:column;gap:16px}
+.gform .lbl{font-size:13px;font-weight:700;margin:0 0 8px}
+.gform .seg{display:flex;flex-wrap:wrap;gap:8px}
+.gsel{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--navy);min-width:240px;max-width:100%}
+body.dark .gch,body.dark .gopt,body.dark .gsel,body.dark .gpin,body.dark .gl{background:#16253b;color:#e4ecf5;border-color:#2a3d58}
+body.dark .gcode,body.dark .gtimer{color:#e4ecf5}
+body.dark .gch .gf{background:#20324d}
 </style>
 </head>
 <body>
@@ -1585,6 +1640,8 @@ async function showHome() {
   var confRows = await confPullAll();
   var fc = null; try { fc = await rpcQuiet("qb_flashcards", { p_limit: 1 }); } catch (e) { fc = null; }
   var act = await rpcQuiet("qb_activity", { p_tz: userTz() });
+  var canHost = !!(await rpcQuiet("qb_room_can_host"));
+  var hostSubjects = canHost ? await rpcQuiet("qb_room_subjects") : null;
   var ov = S.ov, subs = ov.subjects;
   var used = 0, correct = 0, done = 0;
   subs.forEach(function (s) { used += s.used; correct += s.correct; });
@@ -1603,9 +1660,10 @@ async function showHome() {
     ]),
     stats,
     act ? activityCard(act.days) : null,
-    h("div", { class: "grid2" }, [builder(), h("div", { class: "stack" }, [fcCard(fc), subjectCard(subs), confCard(confRows, "Your confidence"), setsCard(ov.blocks)])]),
+    h("div", { class: "grid2" }, [builder(), h("div", { class: "stack" }, [groupBankCard(canHost, hostSubjects), fcCard(fc), subjectCard(subs), confCard(confRows, "Your confidence"), setsCard(ov.blocks)])]),
     resetCard()
   ]))]);
+  gResumeBanner().then(function (b) { var st = $("main .stack"); if (b && st && !P && !G) st.insertBefore(b, st.firstChild); });
 }
 // ───────────────────────── flashcards (spaced repetition over missed + flagged questions) ─────────────────────────
 var FC = null;
@@ -2741,6 +2799,450 @@ document.addEventListener("keydown", function (e) {
   else if (k === "ArrowLeft") go(P.i - 1);
 });
 
+// ───────────────────────── group sessions (live: projector + phones) ─────────────────────────
+// A host puts questions on a shared screen; everyone answers on their phone at boardsidereviews.com/join.
+// Free sets: any verified free account can host or join. Full question bank: only accounts in
+// qb_room_hosts can host (for now boardsidereviews@gmail.com) and only full-access accounts can join.
+// The server keeps only answer counts per choice, never who picked what (supabase/qbank-group-sessions.sql).
+// Screens ask the server for the room's state about once a second, so it works on Wi-Fi that blocks live sockets.
+var JOIN_URL = "boardsidereviews.com/join";
+var GROUP_JOIN = /[?&]join(=|&|$)/.test(location.search);
+var GROUP_CODE = ((location.search.match(/[?&]join=([0-9]{6})/) || [])[1]) || "";
+var GROUP_HOST = /[?&]host(=|&|$)/.test(location.search);
+var G = null;
+var QR_SRC = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js";
+
+async function gRpc(name, args) { var r = await sb.rpc(name, args || {}); if (r.error) throw r.error; return r.data; }
+function gFriendly(e) {
+  var m = (e && (e.message || String(e))) || "";
+  if (/no_room/.test(m)) return "No open session with that code. Check the code on the screen.";
+  if (/not_verified/.test(m)) return "Verify your email first, then try again.";
+  if (/no_access/.test(m)) return "This session uses the full question bank, so it needs Boardside Reviews access.";
+  if (/not_host/.test(m)) return "This account can't host that session.";
+  if (/empty_room/.test(m)) return "No one has joined yet. Wait for people to enter the code.";
+  if (/not_in_room/.test(m)) return "You're no longer in this session.";
+  if (/closed/.test(m)) return "Time's up for that question.";
+  if (/already/.test(m)) return "Your answer for this question is already in.";
+  if (/no_questions/.test(m)) return "No questions are available for that choice.";
+  if (/not_signed_in|JWT/i.test(m)) return "Sign in to continue.";
+  if (/Could not find the function|does not exist/i.test(m)) return "Group sessions aren't switched on yet. Please try again soon.";
+  return friendly(e);
+}
+function gFmtCode(c) { c = String(c || ""); return c.slice(0, 3) + " " + c.slice(3); }
+function gUrl(q) { try { history.replaceState(null, "", "qbank.html" + (q ? "?" + q : "")); } catch (e) {} }
+function gStop() { if (!G) return; G.dead = true; clearTimeout(G.poll); clearInterval(G.tick); var n = $(".gnet"); if (n) n.remove(); }
+function gHeader(right) {
+  return h("header", { class: "top" }, h("div", { class: "wrap" }, [
+    h("a", { class: "brand", href: "/", html: LOGO + '<span>Boardside Reviews <small>· Group session</small></span>' }),
+    h("div", { class: "who" }, right || [])]));
+}
+function gNet(bad) {
+  var n = $(".gnet");
+  if (bad && !n) document.body.appendChild(h("div", { class: "gnet", role: "status" }, "Reconnecting…"));
+  if (!bad && n) n.remove();
+}
+function gChoices(body) { var c = (body && body.choices) || {}; return ["A", "B", "C", "D", "E"].filter(function (L) { return c[L] != null && c[L] !== ""; }); }
+function gStemEls(body) {
+  var out = paras(body.stem).map(function (t) { return h("p", null, t); }).concat(resultsEl(body));
+  if (body.ask) out.push(h("p", { class: "gask" }, body.ask));
+  return h("div", { class: "gstem" }, out);
+}
+function gLeft() { return G && G.endsAt ? Math.max(0, Math.ceil((G.endsAt - Date.now()) / 1000)) : null; }
+function gTimerText() {
+  var st = G.st;
+  if (!st.timed) return "";
+  if (st.paused) return "Paused";
+  var l = gLeft(); return l == null ? "" : fmtTime(l);
+}
+
+// polling: one request at a time; a hidden tab catches up as soon as it's visible again
+function gLoop() {
+  if (!G || G.dead || G.inflight) return;
+  var me = G; me.inflight = true;
+  gRpc("qb_room_poll", { p_room: me.room })
+    .then(function (st) { if (!me.dead) { me.fails = 0; return gApply(st); } },
+          function (e) {
+            if (me.dead) return;
+            if (/not_in_room|no_room/.test(e.message || "")) { gGone(); return; }
+            me.fails = (me.fails || 0) + 1; if (me.fails >= 2) gNet(true);
+          })
+    .then(function () { me.inflight = false; if (!me.dead) me.poll = setTimeout(gLoop, me.role === "host" ? 1000 : 1500); });
+}
+document.addEventListener("visibilitychange", function () { if (!document.hidden && G && !G.dead && !G.inflight) { clearTimeout(G.poll); gLoop(); } });
+
+async function gQuestion(qi, needAnswer) {
+  var c = G.q[qi];
+  if (c && (!needAnswer || c.answer)) return c;
+  var d = await gRpc("qb_room_question", { p_room: G.room, p_qi: qi });
+  d.body = fParse(d.body); d.details = fParse(d.details);
+  G.q[qi] = d; return d;
+}
+async function gApply(st) {
+  gNet(false);
+  var prev = G.st; G.st = st;
+  G.endsAt = st.ends_in != null ? Date.now() + Number(st.ends_in) * 1000 : null;
+  var big = !prev || prev.ver !== st.ver || prev.status !== st.status || prev.qi !== st.qi || G.redraw;
+  if (big && (st.status === "question" || st.status === "reveal")) {
+    try { await gQuestion(st.qi, st.status === "reveal"); }
+    catch (e) { G.st = prev; if (!/not_yet/.test(e.message || "")) gNet(true); return; }
+  }
+  if (big) { var same = prev && prev.qi === st.qi && prev.status === st.status; G.redraw = false; gDraw(same); }
+  else gLive();
+}
+function gDraw(keep) {
+  if (G.st.status === "ended") { gStop(); return G.role === "host" ? gSummary() : gMemberEnded(); }
+  if (G.role === "host") gHostView(keep); else gMemberView(keep);
+}
+function gStartTick() {
+  clearInterval(G.tick);
+  G.tick = setInterval(function () {
+    if (!G || G.dead) return;
+    var t = $("#g-timer"); if (t) { t.textContent = gTimerText(); t.classList.toggle("low", !G.st.paused && gLeft() != null && gLeft() <= 10); }
+  }, 250);
+}
+function gGone() {
+  gStop();
+  screen([gHeader(), h("main", { class: "wrap page" }, h("div", { class: "auth" }, h("div", { class: "card gbig" }, [
+    h("div", { class: "gic wait" }, "–"), h("h1", null, "This session has closed"),
+    h("p", { class: "muted" }, "The host ended it or it timed out."),
+    h("a", { class: "btn teal", href: "qbank.html" }, "Back to the question bank")])))]);
+}
+
+// ── host ──
+async function gHost(kind, opts, btn) {
+  var t = btn && btn.textContent;
+  if (btn) { btn.disabled = true; btn.textContent = "Creating…"; }
+  try {
+    var st = await gRpc("qb_room_create", { p_kind: kind, p_set: opts.set || null, p_subject: opts.subject || null, p_n: opts.n, p_timed: !!opts.timed });
+    gHostOpen(st);
+  } catch (e) { toast(gFriendly(e)); if (btn) { btn.disabled = false; btn.textContent = t; } }
+}
+function gHostOpen(st) {
+  gStop(); stopClock(); P = null;
+  G = { role: "host", room: st.room, q: {}, bars: true, details: false };
+  gUrl("host" + (SAMPLE ? "&sample" : ""));
+  gStartTick(); gApply(st).then(function () { G.poll = setTimeout(gLoop, 1000); });
+}
+async function gControl(action, btn) {
+  if (btn) btn.disabled = true;
+  try { var st = await gRpc("qb_room_control", { p_room: G.room, p_action: action }); G.redraw = true; await gApply(st); }
+  catch (e) { toast(gFriendly(e)); if (btn) btn.disabled = false; }
+}
+async function gEndPrompt() {
+  var v = await modal("End this session?", "Everyone's phone will show that the session is over. You'll see the class results for the questions you've covered.",
+    [{ label: "Keep going", cls: "ghost", value: null }, { label: "End session", cls: "teal", value: 1 }]);
+  if (v) gControl("end");
+}
+function gHostRight() {
+  return [fsSupported() ? h("button", { class: "link", onclick: toggleFullscreen }, "Full screen") : null,
+    h("button", { class: "link", onclick: gEndPrompt }, "End session")];
+}
+function gLoadQr(cb) {
+  if (window.qrcode) return cb();
+  var s = document.querySelector("script[data-qr]");
+  if (!s) { s = h("script", { src: QR_SRC, "data-qr": "1" }); document.head.appendChild(s); }
+  s.addEventListener("load", cb);
+}
+function gQr(box, code) {
+  gLoadQr(function () {
+    try {
+      var q = qrcode(0, "M"); q.addData("https://" + JOIN_URL + "?code=" + code); q.make();
+      box.innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+    } catch (e) { box.textContent = ""; }
+  });
+}
+function gHostView(keep) {
+  var st = G.st;
+  if (st.status === "lobby") {
+    var qr = h("div", { class: "gqr", "aria-label": "QR code to join" });
+    gQr(qr, st.code);
+    var startBtn = h("button", { class: "btn teal", onclick: function (e) {
+      if (!G.st.joined) { var m = $("#g-msg"); if (m) m.textContent = "No one has joined yet. Wait for people to enter the code."; return; }
+      gControl("start", e.currentTarget); } }, "Start session");
+    screen([gHeader(gHostRight()), h("main", { class: "wrap page gproj" }, h("div", { class: "stack" }, [
+      h("section", { class: "card" }, [
+        h("div", { class: "gtop" }, [h("span", { class: "gpill" }, st.title + " · " + st.n + " questions" + (st.timed ? " · 90 s each" : "")),
+          h("span", { class: "gpill gray" }, "Waiting to start")]),
+        h("div", { class: "globby" }, [
+          h("div", null, [
+            h("p", { class: "muted", style: "margin:0 0 6px;font-size:18px" }, ["Go to ", h("b", { style: "color:var(--navy)" }, JOIN_URL), " and enter"]),
+            h("div", { class: "gcode", "aria-label": "Room code " + st.code }, gFmtCode(st.code)),
+            h("p", { style: "margin:18px 0 0;font-size:20px" }, [h("b", { id: "g-joined" }, String(st.joined)), h("span", { id: "g-joined-t" }, st.joined === 1 ? " person joined" : " people joined")]),
+            h("div", { class: "gdots", id: "g-dots" }, gDots(st.joined))]),
+          qr]),
+        h("p", { class: "small muted", style: "margin:16px 0" }, "Names aren't shown. Each dot is one phone. Answers are anonymous: only class averages are kept."),
+        h("div", { class: "actions" }, [startBtn, h("button", { class: "btn ghost", onclick: gEndPrompt }, "Cancel")]),
+        h("p", { class: "err", id: "g-msg", "aria-live": "polite" })])
+    ]))]);
+    return;
+  }
+  var q = G.q[st.qi], rev = st.status === "reveal", body = q.body;
+  var counts = st.counts || {}, tot = 0; gChoices(body).forEach(function (L) { tot += counts[L] || 0; });
+  var rows = gChoices(body).map(function (L) {
+    var p = pct(counts[L] || 0, tot), show = rev || G.bars;
+    return h("div", { class: "gch" + (rev && L === q.answer ? " ok" : ""), id: "g-ch-" + L }, [
+      h("div", { class: "gf", style: "width:" + (show ? p : 0) + "%" }), h("span", { class: "gl" }, L),
+      h("span", { class: "gt" }, body.choices[L]), h("span", { class: "gp" }, show ? p + "%" : "")]);
+  });
+  var top = h("div", { class: "gtop" }, [
+    h("div", { style: "display:flex;gap:8px;flex-wrap:wrap" }, [h("span", { class: "gpill" }, "Question " + (st.qi + 1) + " of " + st.n),
+      h("span", { class: "gpill gray" }, q.subject), h("span", { class: "gpill gray" }, "Join: " + JOIN_URL + " · " + gFmtCode(st.code))]),
+    h("div", { style: "display:flex;align-items:center;gap:18px" }, [h("span", { class: "muted", id: "g-ans" }, st.answered + " of " + st.joined + " answered"),
+      st.timed && !rev ? h("span", { class: "gtimer", id: "g-timer" }, gTimerText()) : null])]);
+  var side = h("div", { class: "gchs" }, rows);
+  var kids = [top, h("div", { class: "gqgrid" }, [gStemEls(body), side])];
+  if (rev) {
+    side.appendChild(h("div", { class: "gpearl" }, [h("b", null, "Class: " + pct(counts[q.answer] || 0, tot) + "% correct" + (tot ? "" : " (no answers)") + ". "), q.pearl ? h("span", null, pearlNodes(q.pearl)) : null]));
+    if (q.details) {
+      var det = h("div", { class: "gdet", hidden: !G.details }, gChoices(body).map(function (L) {
+        return q.details[L] ? h("p", null, [h("b", null, L + ". "), q.details[L]]) : null; }));
+      kids.push(h("button", { class: "link", style: "margin-top:10px", onclick: function (e) { G.details = !G.details; det.hidden = !G.details; e.currentTarget.textContent = G.details ? "Hide why each choice" : "Show why each choice"; } }, G.details ? "Hide why each choice" : "Show why each choice"), det);
+    }
+    kids.push(h("div", { class: "actions", style: "margin-top:18px" }, [
+      h("button", { class: "btn teal", onclick: function (e) { G.details = false; gControl("next", e.currentTarget); } }, st.qi + 1 < st.n ? "Next question" : "See class results")]));
+  } else {
+    var bars = h("input", { type: "checkbox" }); bars.checked = G.bars;
+    bars.onchange = function () { G.bars = bars.checked; gDraw(true); };
+    kids.push(h("div", { class: "actions", style: "margin-top:18px;align-items:center" }, [
+      h("button", { class: "btn teal", onclick: function (e) { gControl("reveal", e.currentTarget); } }, "Reveal answer"),
+      st.timed ? h("button", { class: "btn ghost", onclick: function (e) { gControl(st.paused ? "resume" : "pause", e.currentTarget); } }, st.paused ? "Resume timer" : "Pause timer") : null,
+      h("label", { class: "optin", style: "margin-left:auto;align-items:center" }, [bars, h("span", null, "Show live answers")])]));
+  }
+  screen([gHeader(gHostRight()), h("main", { class: "wrap page gproj" }, h("section", { class: "card" }, kids))], false, keep);
+}
+function gDots(n) { var a = []; for (var i = 0; i < Math.min(n, 80); i++) a.push(h("i")); return a; }
+function gLive() {
+  var st = G.st;
+  if (G.role !== "host") return;
+  if (st.status === "lobby") {
+    var j = $("#g-joined"), jt = $("#g-joined-t"), d = $("#g-dots");
+    if (j) j.textContent = String(st.joined);
+    if (jt) jt.textContent = st.joined === 1 ? " person joined" : " people joined";
+    if (d && d.children.length !== Math.min(st.joined, 80)) { d.innerHTML = ""; gDots(st.joined).forEach(function (x) { d.appendChild(x); }); }
+    if (st.joined) { var m = $("#g-msg"); if (m) m.textContent = ""; }
+    return;
+  }
+  var a = $("#g-ans"); if (a) a.textContent = st.answered + " of " + st.joined + " answered";
+  var q = G.q[st.qi]; if (!q) return;
+  var counts = st.counts || {}, tot = 0; gChoices(q.body).forEach(function (L) { tot += counts[L] || 0; });
+  if (st.status === "question" && !G.bars) return;
+  gChoices(q.body).forEach(function (L) {
+    var row = $("#g-ch-" + L); if (!row) return;
+    var p = pct(counts[L] || 0, tot);
+    row.querySelector(".gf").style.width = p + "%"; row.querySelector(".gp").textContent = p + "%";
+  });
+}
+async function gSummary() {
+  screen([gHeader(), h("main", { class: "wrap page" }, h("div", { class: "spin" }))]);
+  var s; try { s = await gRpc("qb_room_summary", { p_room: G.room }); } catch (e) { toast(gFriendly(e)); s = null; }
+  gUrl(SAMPLE ? "sample" : "");
+  var qs = (s && s.questions) || [], done = qs.filter(function (x) { return x.answered > 0; });
+  var avg = done.length ? Math.round(done.reduce(function (a, x) { return a + 100 * x.correct / x.answered; }, 0) / done.length) : null;
+  var by = {}; done.forEach(function (x) { (by[x.subject] = by[x.subject] || []).push(100 * x.correct / x.answered); });
+  var subs = Object.keys(by).map(function (k) { return [k, Math.round(by[k].reduce(function (a, b) { return a + b; }, 0) / by[k].length)]; })
+    .sort(function (a, b) { return a[1] - b[1]; });
+  function bar(label, v) {
+    return h("div", { class: "grow" + (v != null && v < 60 ? " low" : "") }, [h("span", null, label), h("b", { style: "text-align:right" }, v == null ? "–" : v + "%"),
+      h("div", { class: "gbar" + (v != null && v < 60 ? " low" : ""), style: "grid-column:1/-1" }, h("i", { style: "width:" + (v || 0) + "%" }))]);
+  }
+  screen([gHeader(), h("main", { class: "wrap page" }, h("div", { class: "stack" }, [
+    h("section", { class: "card" }, [
+      h("div", { class: "gtop" }, [h("span", { class: "gpill" }, (s ? s.title : "Session") + " · " + (s ? s.n : "") + " questions"), h("span", { class: "gpill gray" }, "Session ended")]),
+      h("h1", null, "Class results"),
+      h("div", { class: "stats", style: "margin-top:16px" }, [
+        h("div", { class: "stat" }, [h("b", null, avg == null ? "–" : avg + "%"), h("span", null, "Class average")]),
+        h("div", { class: "stat" }, [h("b", null, s ? String(s.peak) : "–"), h("span", null, "People joined")]),
+        h("div", { class: "stat" }, [h("b", null, String(qs.length)), h("span", null, "Questions covered")])]),
+      h("p", { class: "small muted", style: "margin:14px 0 0" }, "Only these averages are kept. No names, emails or individual answers are saved, and nothing was added to anyone's question bank stats.")]),
+    h("div", { class: "grid2" }, [
+      h("section", { class: "card" }, [h("div", { class: "sec-h" }, h("h2", null, "By subject, lowest first"))].concat(subs.length ? subs.map(function (x) { return bar(x[0], x[1]); }) : [h("p", { class: "muted" }, "No answers yet.")])),
+      h("section", { class: "card" }, [h("div", { class: "sec-h" }, h("h2", null, "By question"))].concat(qs.map(function (x) {
+        return bar("Q" + (x.qi + 1) + " · " + x.subject, x.answered ? Math.round(100 * x.correct / x.answered) : null); })))]),
+    h("div", { class: "actions" }, [h("button", { class: "btn teal", onclick: function () { G = null; showHome(); } }, "Host another session")])
+  ]))]);
+}
+
+// ── member (phone) ──
+function gJoinScreen(code, msg) {
+  gStop(); G = null;
+  gUrl("join" + (code ? "=" + code : ""));
+  if (!S.uid) {
+    screen([gHeader(), h("main", { class: "wrap" }, h("div", { class: "auth" }, h("div", { class: "card gform" }, [
+      h("h1", null, "Join a group session"),
+      h("p", { class: "muted", style: "margin:0" }, "Sign in to join. A free account works for free sets; full question bank sessions need Boardside Reviews access."),
+      h("button", { class: "btn teal", onclick: function () { showLogin(); } }, "Sign in"),
+      h("button", { class: "btn ghost", onclick: function () { showSignup(); } }, "Create a free account")])))]);
+    return;
+  }
+  var err = h("p", { class: "err", "aria-live": "polite" }, msg || "");
+  var pin = h("input", { class: "gpin", inputmode: "numeric", autocomplete: "off", maxlength: "7", placeholder: "000 000", "aria-label": "Room code", value: code ? gFmtCode(code) : "" });
+  var btn = h("button", { class: "btn teal", type: "submit" }, "Join");
+  var form = h("form", { class: "card gform", novalidate: true }, [
+    h("h1", null, "Join a group session"),
+    h("p", { class: "muted", style: "margin:0" }, "Enter the 6-digit code on the screen."),
+    pin, err, btn,
+    h("p", { class: "small muted", style: "margin:0" }, "Your answers are anonymous. The host sees class totals only, and nothing is saved to your account."),
+    h("a", { class: "link", href: "qbank.html" }, "Back to the question bank")]);
+  pin.addEventListener("input", function () { err.textContent = ""; });
+  form.onsubmit = function (e) {
+    e.preventDefault();
+    var v = pin.value.replace(/\D/g, "");
+    if (v.length !== 6) { err.textContent = "Enter the 6-digit code."; return; }
+    gJoin(v, btn);
+  };
+  screen([gHeader(), h("main", { class: "wrap" }, h("div", { class: "auth" }, form))]);
+  if (!code) pin.focus();
+}
+async function gJoin(code, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = "Joining…"; }
+  try {
+    var st = await gRpc("qb_room_join", { p_code: code });
+    gStop(); stopClock(); P = null;
+    G = { role: "member", room: st.room, code: code, q: {}, mine: {}, sel: {} };
+    gUrl("join=" + code);
+    gStartTick(); await gApply(st); G.poll = setTimeout(gLoop, 1500);
+  } catch (e) { gJoinScreen(code, gFriendly(e)); }
+}
+async function gLeave() {
+  var v = await modal("Leave this session?", "You can rejoin with the same code while it's open.",
+    [{ label: "Stay", cls: "ghost", value: null }, { label: "Leave", cls: "teal", value: 1 }]);
+  if (!v) return;
+  var room = G && G.room; gStop(); G = null;
+  if (room) { try { await gRpc("qb_room_leave", { p_room: room }); } catch (e) {} }
+  location.href = "qbank.html";
+}
+function gMemberView(keep) {
+  var st = G.st, right = [h("button", { class: "link", onclick: gLeave }, "Leave")];
+  var wrap = function (kids) { screen([gHeader(right), h("main", { class: "wrap page gphone" }, h("section", { class: "card" }, kids))], false, keep); };
+  if (st.status === "lobby") {
+    return wrap([h("div", { class: "gbig" }, [h("div", { class: "gic ok" }, "✓"), h("h1", null, "You're in"),
+      h("p", { class: "muted" }, [st.title + " · " + st.n + " questions", h("br"), "Waiting for the host to start. Keep this screen open."])])]);
+  }
+  var q = G.q[st.qi], body = q.body, mine = G.mine[st.qi] || null, inAlready = !!(mine || st.me_answered);
+  if (st.status === "reveal") {
+    var res = !inAlready ? "none" : mine ? (mine === q.answer ? "ok" : "no") : "in";
+    return wrap([
+      h("div", { class: "gtop" }, [h("span", { class: "gpill" }, "Question " + (st.qi + 1) + " of " + st.n)]),
+      h("div", { class: "gbig", style: "padding-top:4px" }, [
+        h("div", { class: "gic " + (res === "ok" ? "ok" : res === "no" ? "no" : "wait") }, res === "ok" ? "✓" : res === "no" ? "✕" : "–"),
+        h("h1", null, res === "ok" ? "Correct" : res === "no" ? "Not quite" : res === "in" ? "Answer revealed" : "No answer"),
+        h("p", { class: "muted" }, (res === "ok" ? "" : "The answer is " + q.answer + ": " + body.choices[q.answer] + ". ") + (mine ? "Only you can see this." : ""))]),
+      q.pearl ? h("div", { class: "gpearl" }, pearlNodes(q.pearl)) : null,
+      h("p", { class: "small muted", style: "text-align:center;margin:14px 0 0" }, "Next question coming up.")]);
+  }
+  var sel = G.sel[st.qi] || null;
+  var opts = gChoices(body).map(function (L) {
+    var on = inAlready ? mine === L : sel === L;
+    return h("button", { type: "button", class: "gopt", "aria-pressed": String(on), disabled: inAlready ? true : null,
+      onclick: function () { G.sel[st.qi] = L; gDraw(true); } }, [h("span", { class: "gl" }, L), h("span", null, body.choices[L])]);
+  });
+  var submit = h("button", { class: "btn teal", style: "width:100%", onclick: function (e) { gAnswer(e.currentTarget); } }, "Submit answer");
+  wrap([
+    h("div", { class: "gtop" }, [h("span", { class: "gpill" }, "Question " + (st.qi + 1) + " of " + st.n),
+      st.timed ? h("span", { class: "gtimer", id: "g-timer" }, gTimerText()) : null]),
+    gStemEls(body), h("div", null, opts),
+    inAlready ? h("p", { class: "fnote ok", style: "text-align:center" }, "Your answer is in. Watch the screen.")
+      : h("div", null, [submit, h("p", { class: "err", id: "g-perr", "aria-live": "polite" })])]);
+}
+async function gAnswer(btn) {
+  var st = G.st, L = G.sel[st.qi], err = $("#g-perr");
+  if (!L) { if (err) err.textContent = "Pick an answer first."; return; }
+  btn.disabled = true; btn.textContent = "Sending…";
+  try {
+    var ns = await gRpc("qb_room_answer", { p_room: G.room, p_qi: st.qi, p_choice: L });
+    G.mine[st.qi] = L; G.redraw = true; await gApply(ns);
+  } catch (e) {
+    if (/already/.test(e.message || "")) { G.mine[st.qi] = G.mine[st.qi] || null; G.redraw = true; gDraw(true); return; }
+    btn.disabled = false; btn.textContent = "Submit answer"; if (err) err.textContent = gFriendly(e);
+  }
+}
+function gMemberEnded() {
+  screen([gHeader(), h("main", { class: "wrap page gphone" }, h("section", { class: "card gbig" }, [
+    h("div", { class: "gic ok" }, "✓"), h("h1", null, "Session over"),
+    h("p", { class: "muted" }, "Thanks for joining. Your answers were counted anonymously and weren't saved to your account."),
+    h("a", { class: "btn teal", href: "qbank.html" }, "Back to the question bank")]))]);
+  gUrl("");
+}
+
+// ── entry cards ──
+function gSeg(values, cur, label, onpick) {
+  return h("div", { class: "seg", role: "group", "aria-label": label }, values.map(function (v) {
+    return h("button", { type: "button", "aria-pressed": String(cur === v[0]), onclick: function () { onpick(v[0]); } }, v[1]);
+  }));
+}
+function gTimerBox(key) {
+  var t = h("input", { type: "checkbox" }); t.checked = !!choose[key];
+  t.onchange = function () { choose[key] = t.checked; };
+  return h("label", { class: "optin", style: "align-items:center" }, [t, h("span", null, "Timed: 90 seconds per question")]);
+}
+function groupFreeCard() {
+  var signed = !!S.uid, sets = FREE.sets || [];
+  if (!sets.length) return null;
+  if (!choose.gSet || !sets.some(function (s) { return s.set_key === choose.gSet; })) choose.gSet = sets[0].set_key;
+  choose.gN = choose.gN || 20;
+  function need() {
+    return modal("Create a free account", "Hosting and joining group sessions needs a free account, so we can keep sessions private to the people in the room. We'll send a code to verify your email.",
+      [{ label: "Not now", cls: "ghost", value: null }, { label: "Sign in", cls: "ghost", value: "in" }, { label: "Create free account", cls: "teal", value: "up" }])
+      .then(function (v) { if (v === "up") showSignup(); else if (v === "in") showLogin(); });
+  }
+  var box = h("section", { class: "card gcard" });
+  function draw() {
+    box.innerHTML = "";
+    [h("p", { class: "eyebrow", style: "margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--teal)" }, "NEW · GROUP SESSIONS"),
+     h("h2", { style: "margin:0 0 6px" }, "Learn together"),
+     h("p", { class: "muted", style: "margin:0 0 16px;max-width:720px" }, "Put a free set on the big screen. Everyone answers on their phone at " + JOIN_URL + " and sees the class results live. Answers are anonymous: only class averages are kept."),
+     h("div", { class: "gform" }, [
+       h("div", null, [h("p", { class: "lbl" }, "Set"), gSeg(sets.map(function (s) { return [s.set_key, s.title]; }), choose.gSet, "Set", function (v) { choose.gSet = v; draw(); })]),
+       h("div", null, [h("p", { class: "lbl" }, "Questions"), gSeg([[10, "10 questions"], [20, "20 questions"]], choose.gN, "Number of questions", function (v) { choose.gN = v; draw(); }),
+         h("p", { class: "small muted", style: "margin:6px 0 0" }, choose.gN === 10 ? "A random 10 of the set's 20." : "The whole set, in random order.")]),
+       gTimerBox("gTimed"),
+       h("div", { class: "actions" }, [
+         h("button", { class: "btn teal", onclick: function (e) { if (!signed) return need(); gHost("free", { set: choose.gSet, n: choose.gN, timed: choose.gTimed }, e.currentTarget); } }, "Host a session"),
+         h("button", { class: "btn ghost", onclick: function () { if (!signed) return need(); gJoinScreen(""); } }, "Join a session")]),
+       signed ? null : h("p", { class: "small muted", style: "margin:0" }, "Hosting or joining needs a free account.")])
+    ].forEach(function (n) { if (n) box.appendChild(n); });
+  }
+  draw();
+  return box;
+}
+function groupBankCard(canHost, subjects) {
+  var box = h("section", { class: "card gcard" });
+  choose.gN = choose.gN || 20;
+  function draw() {
+    box.innerHTML = "";
+    var kids = [h("div", { class: "sec-h" }, h("h2", null, "Group session")),
+      h("p", { class: "muted small", style: "margin:0 0 14px" }, canHost
+        ? "Show questions on a big screen; residents answer on their phones at " + JOIN_URL + ". Only class averages are kept."
+        : "Joining a session your program is running? Enter the code on the screen.")];
+    if (canHost) {
+      var sel = h("select", { class: "gsel", "aria-label": "Subject" }, [h("option", { value: "" }, "All subjects")].concat((subjects || []).map(function (s) {
+        var o = h("option", { value: s.subject }, s.subject + " (" + s.n + ")"); if (choose.gSubj === s.subject) o.selected = true; return o; })));
+      sel.onchange = function () { choose.gSubj = sel.value; };
+      kids.push(h("div", { class: "gform" }, [
+        h("div", null, [h("p", { class: "lbl" }, "Subject"), sel]),
+        h("div", null, [h("p", { class: "lbl" }, "Questions"), gSeg([[10, "10"], [20, "20"]], choose.gN, "Number of questions", function (v) { choose.gN = v; draw(); }),
+          h("p", { class: "small muted", style: "margin:6px 0 0" }, "Picked at random from the subject.")]),
+        gTimerBox("gTimedBank")]));
+    }
+    kids.push(h("div", { class: "actions", style: "margin-top:14px" }, [
+      canHost ? h("button", { class: "btn teal", onclick: function (e) { gHost("bank", { subject: choose.gSubj || "", n: choose.gN, timed: choose.gTimedBank }, e.currentTarget); } }, "Host a session") : null,
+      h("button", { class: "btn ghost", onclick: function () { gJoinScreen(""); } }, "Join a session")]));
+    kids.forEach(function (n) { box.appendChild(n); });
+  }
+  draw();
+  return box;
+}
+// a host who refreshed the projector, or left and came back, picks up the open room
+async function gResumeBanner() {
+  if (!S.uid) return null;
+  var st = null; try { st = await gRpc("qb_room_mine"); } catch (e) { st = null; }
+  if (!st) return null;
+  return h("div", { class: "fnote ok", style: "margin-top:0" }, [h("b", null, "Your group session " + gFmtCode(st.code) + " is still open. "),
+    h("div", { class: "actions", style: "margin-top:8px" }, [
+      h("button", { class: "btn teal sm", onclick: function () { gHostOpen(st); } }, "Go back to it"),
+      h("button", { class: "btn ghost sm", onclick: async function (e) { e.currentTarget.disabled = true; try { await gRpc("qb_room_control", { p_room: st.room, p_action: "end" }); } catch (x) {} e.currentTarget.closest(".fnote").remove(); } }, "End it")])]);
+}
+
 // ───────────────────────── start ─────────────────────────
 function showSampleHome() {
   stopClock(); P = null;
@@ -2814,6 +3316,7 @@ function showSampleHome() {
         h("label", { class: "optin", style: "align-items:center" }, [timer, h("span", null, "Timed: 90 seconds per question")])]),
       h("div", { class: "fsets" }, cards)
     ]) : h("section", { class: "card" }, "The free sets aren't available right now. Please try again later."),
+    groupFreeCard(),
     !NOTES_READY ? null : h("section", { class: "card fnotes" }, [
       h("div", null, [
         h("p", { class: "eyebrow", style: "margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--teal)" }, "BOARDSIDE NOTES"),
@@ -2822,6 +3325,7 @@ function showSampleHome() {
       h("button", { class: "btn " + (signed ? "teal" : "ghost"), onclick: function (e) { downloadNotes(e.currentTarget); } }, signed ? "Download the PDF" : "Create an account to download")
     ])
   ]))]);
+  gResumeBanner().then(function (b) { var st = $("main .stack"); if (b && st && !P && !G) st.insertBefore(b, st.firstChild); });
 }
 async function freeBoot() {
   SAMPLE = true;
@@ -2851,6 +3355,12 @@ async function boot() {
   if (user && LOGIN_RETURN) { location.replace("/"); return; }
   if (!user && LOGIN_RETURN) return showLogin();
   if (user) { var m = await sb.rpc("qb_me"); S.me = m.error ? null : m.data; }
+  if (GROUP_JOIN) { if (user && GROUP_CODE) return gJoin(GROUP_CODE); return gJoinScreen(GROUP_CODE); }   // boardsidereviews.com/join
+  if (GROUP_HOST) {                                    // a refreshed projector goes back to its open session
+    GROUP_HOST = false;
+    if (user) { var mine = null; try { mine = await gRpc("qb_room_mine"); } catch (e) {} if (mine) return gHostOpen(mine); }
+    gUrl(SAMPLE ? "sample" : "");
+  }
   if (SAMPLE) return freeBoot().then(openAccountFromLink);
   if (!user) return showLogin();
   if (!allowed(S.email) || !S.me || !S.me.access) return freeBoot().then(openAccountFromLink);   // free accounts (and everyone before launch) get the free sample

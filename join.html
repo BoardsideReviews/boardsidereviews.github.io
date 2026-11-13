@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Join a group session | Boardside Reviews</title>
+<script>
+  // boardsidereviews.com/join?code=123456 (from the QR code) or plain /join → the question bank's join screen
+  (function () {
+    var m = location.search.match(/[?&]code=([0-9]{6})/);
+    location.replace("/qbank.html?join" + (m ? "=" + m[1] : ""));
+  })();
+</script>
+</head>
+<body style="font-family:Inter,system-ui,sans-serif;text-align:center;padding:48px 18px;color:#0b2545">
+<p>Opening the join screen… <a href="/qbank.html?join" style="color:#0d7070;font-weight:600">Continue</a></p>
+</body>
+</html>
