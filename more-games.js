@@ -10,6 +10,12 @@
     { id: 'copay-noway', name: 'Co-Pay or No Way', tag: 'Daily drug price higher-or-lower', href: 'copay.html',
       bg: '#101a33', fg: '#ffd23f', art:
       '<svg viewBox="0 0 96 56" width="96" height="56" aria-hidden="true"><rect x="2" y="6" width="40" height="44" rx="6" fill="#eef2f7"/><rect x="54" y="6" width="40" height="44" rx="6" fill="#eef2f7"/><rect x="6" y="30" width="30" height="13" rx="3" fill="#ffd23f" transform="rotate(-4 21 36)"/><text x="21" y="40" font-family="ui-monospace,Menlo,monospace" font-weight="700" font-size="8.5" text-anchor="middle" fill="#121a2e" transform="rotate(-4 21 36)">$11.04</text><rect x="58" y="30" width="30" height="13" rx="3" fill="#121a2e" transform="rotate(-4 73 36)"/><text x="73" y="40" font-family="ui-monospace,Menlo,monospace" font-weight="700" font-size="8.5" text-anchor="middle" fill="#ffd23f" transform="rotate(-4 73 36)">$ ? ?</text><rect x="7" y="13" width="24" height="4" rx="2" fill="#121a2e"/><rect x="59" y="13" width="26" height="4" rx="2" fill="#121a2e"/><rect x="7" y="20" width="16" height="3" rx="1.5" fill="#9aa6bd"/><rect x="59" y="20" width="18" height="3" rx="1.5" fill="#9aa6bd"/></svg>' },
+    { id: 'trial-and-error', name: 'Trial and Error', tag: 'Daily landmark trial: call the result', href: 'trial-and-error.html',
+      bg: '#e9e3d6', fg: '#1d2433', light: true, art:
+      '<svg viewBox="0 0 96 56" width="96" height="56" aria-hidden="true"><rect x="8" y="4" width="80" height="48" rx="3" fill="#fbf8f1"/><rect x="8" y="4" width="80" height="3" fill="#1d2433"/><rect x="14" y="13" width="40" height="5" rx="1" fill="#1d2433"/><rect x="14" y="22" width="60" height="3" rx="1.5" fill="#c9c0ad"/><rect x="14" y="36" width="20" height="9" rx="2" fill="none" stroke="#1f7a4d" stroke-width="1.6"/><rect x="38" y="36" width="20" height="9" rx="2" fill="none" stroke="#8a6a14" stroke-width="1.6"/><rect x="62" y="36" width="20" height="9" rx="2" fill="#f8e1de" stroke="#b4312a" stroke-width="1.6"/></svg>' },
+    { id: 'endemic', name: 'Endemic', tag: 'Daily one-pin pathogen map', href: 'endemic.html',
+      bg: '#0e2b3d', fg: '#f2a516', art:
+      '<svg viewBox="0 0 96 56" width="96" height="56" aria-hidden="true"><path d="M8 18c6-6 18-8 26-6 7 2 8 6 14 6 6 0 8-4 13-3 5 1 4 6 1 9-3 4-9 3-11 7-2 4 4 9 2 14-2 4-8 4-11 2-4-3-3-8-7-10-5-2-10 1-15-1-6-3-8-7-10-11-2-3-5-4-2-7z" fill="#efe5cf"/><circle cx="26" cy="22" r="8" fill="#f2a516" fill-opacity=".75" stroke="#b36f00"/><g transform="translate(62 40)"><path d="M0 0 C-5 -6 -7 -9 -7 -13 A7 7 0 1 1 7 -13 C7 -9 5 -6 0 0Z" fill="#e0362c"/><circle cx="0" cy="-13" r="2.8" fill="#fff"/></g></svg>' },
     { id: 'rhythm-rush', name: 'Rhythm Rush', tag: '60-second ECG challenge', href: 'rhythm-rush.html',
       bg: '#fff5f3', fg: '#23272b', light: true, art:
       '<svg viewBox="0 0 60 40" width="72" height="48" aria-hidden="true"><rect width="60" height="40" fill="#fff5f3"/><path d="M0 10h60M0 20h60M0 30h60M10 0v40M20 0v40M30 0v40M40 0v40M50 0v40" stroke="rgba(214,72,72,.35)" stroke-width=".8"/><path d="M0 26h10l2-2 2 2h4l2-16 3 20 2-4h6l3-3 3 3h20" fill="none" stroke="#1d1d1d" stroke-width="1.6" stroke-linejoin="round"/></svg>' },
@@ -33,7 +39,7 @@
       '<svg viewBox="0 0 30 20" width="96" height="56" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 14h4v-9h7v9h3" stroke="#ffc94a" stroke-width="1.6"/><path d="M16 14h2l1.5-9 2 9h6.5" stroke="#3fe0d0" stroke-width="1.6"/></svg>' }
   ];
   // Pages name some games differently from their leaderboard ids.
-  var ALIAS = { 'copay': 'copay-noway', 'hemodynamic-roulette': 'hemo-roulette', 'shrug-the-bug': 'bug-drug', 'crossword': 'cross-cover' };
+  var ALIAS = { 'trial': 'trial-and-error', 'copay': 'copay-noway', 'hemodynamic-roulette': 'hemo-roulette', 'shrug-the-bug': 'bug-drug', 'crossword': 'cross-cover' };
 
   var css = '\
 .bmg{margin:22px auto 4px;width:100%;max-width:720px;text-align:center;box-sizing:border-box}\

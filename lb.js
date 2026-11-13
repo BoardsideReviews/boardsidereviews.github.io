@@ -22,13 +22,15 @@
     stale_puzzle: "This puzzle's board is closed. Times post for today's puzzle only.",
     too_quick: "That time is too fast to post.",
     bad_time: "That time couldn't be posted.",
-    copay_once: "You've already posted today's streak. Your first run of the day is the one that counts."
+    copay_once: "You've already posted today's streak. Your first run of the day is the one that counts.",
+    endemic_once: "You've already posted today's score. Your first pin of the day is the one that counts."
   };
   function friendly(err) {
     if (!err) return "";
     var m = err.message || String(err);
     if (/scores_cross_cover_once/.test(m)) return MESSAGES.already_posted;
     if (/scores_copay_once|copay_once/.test(m)) return MESSAGES.copay_once;
+    if (/scores_endemic_once|endemic_once/.test(m)) return MESSAGES.endemic_once;
     if (/profiles_name_key_key|duplicate key/.test(m)) return "Someone already has that name. Try another.";
     if (/Token has expired|invalid|otp/i.test(m) && /token|otp|code/i.test(m)) return "That code didn't work. Check it, or send a new one.";
     if (/rate limit|security purposes|seconds/i.test(m)) return "Too many codes requested. Wait a minute, then try again.";

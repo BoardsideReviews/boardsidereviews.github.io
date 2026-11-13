@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LJQ2NG232B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LJQ2NG232B');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Endemic | Daily medical geography game | Boardside Reviews</title>
+<meta name="description" content="One pathogen a day. Drop a single pin where it's endemic. The closer you land, the more points you score. A free daily game from Boardside Reviews.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
+<script src="lb-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="lb.js"></script>
+<script src="more-games.js"></script>
+<script src="endemic-data.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Narrow:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Field-epidemiology wall map: deep sea, parchment continents, red pushpin, amber outbreak zones. */
+  --sea:#0e2b3d;
+  --sea2:#13384f;
+  --land:#efe5cf;
+  --land-line:#b9a985;
+  --ink:#152230;
+  --muted:#5f6b78;
+  --pin:#e0362c;
+  --zone:#f2a516;
+  --ok:#1f8a5b;
+  --card:#fffaf0;
+  --display:"Archivo",system-ui,sans-serif;
+  --narrow:"Archivo Narrow","Archivo",system-ui,sans-serif;
+  --mono:"Space Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--sea);background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:44px 44px;color:#eef3f6;font-family:var(--display);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--zone);outline-offset:3px}
+.wrap{max-width:1040px;margin:0 auto;padding:18px 16px 40px;display:flex;flex-direction:column;gap:16px}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.home{display:block;width:40px;height:40px;flex:0 0 40px}
+.home svg{width:40px;height:40px;display:block}
+.logo{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(30px,6vw,44px);letter-spacing:.04em;line-height:1;text-transform:uppercase}
+.logo i{font-style:normal;display:inline-block;width:.62em;height:.62em;border-radius:50% 50% 50% 0;background:var(--pin);transform:rotate(-45deg);margin:0 .02em;vertical-align:.02em;box-shadow:inset 0 0 0 .14em var(--pin),inset 0 0 0 .22em #fff}
+.sub{color:#a9bccb;font-size:13px;margin-top:4px;font-family:var(--narrow);letter-spacing:.02em}
+.hud{display:flex;gap:8px;align-items:center}
+.pill{font-family:var(--mono);font-size:13px;background:var(--sea2);border:1px solid rgba(255,255,255,.14);padding:6px 10px;border-radius:999px;white-space:nowrap}
+.pill b{color:var(--zone)}
+.iconbtn{background:var(--sea2);border:1px solid rgba(255,255,255,.14);color:#eef3f6;border-radius:999px;width:34px;height:34px;display:grid;place-items:center;font-weight:800}
+
+/* case card */
+.case{background:var(--card);color:var(--ink);border-radius:4px;padding:18px 20px 18px 22px;position:relative;box-shadow:0 14px 30px rgba(0,0,0,.35)}
+.case::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--pin);border-radius:4px 0 0 4px}
+.tagrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tag{border:1px solid #cdbf9d;border-radius:3px;padding:2px 7px}
+.tag.us{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bug{margin:8px 0 0;font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,36px);line-height:1.05;letter-spacing:-.01em}
+.bug small{display:block;font-family:var(--narrow);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:#8a5a00;margin-top:4px}
+.clue{margin:12px 0 0;font-size:17px;line-height:1.5;max-width:72ch}
+.ask{margin:12px 0 0;font-family:var(--narrow);font-weight:700;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--pin)}
+
+/* map */
+.mapbox{position:relative;border-radius:4px;overflow:hidden;box-shadow:0 14px 30px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12)}
+#map{height:min(62vh,560px);min-height:340px;background:var(--sea2);cursor:crosshair}
+.leaflet-container{font-family:var(--display);background:var(--sea2)}
+.leaflet-control-zoom a{background:var(--card)!important;color:var(--ink)!important}
+.readout{position:absolute;left:10px;bottom:10px;z-index:500;background:rgba(14,43,61,.88);color:#fff;border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:6px 10px;font-family:var(--mono);font-size:12.5px;pointer-events:none;max-width:calc(100% - 20px)}
+.bar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.btn{background:var(--pin);color:#fff;border:0;border-radius:6px;padding:13px 20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:15px;box-shadow:0 4px 0 #8f1d17}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #8f1d17}
+.btn:disabled{background:#5a6b78;box-shadow:0 4px 0 #36434d;cursor:default}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.3);box-shadow:none;color:#eef3f6}
+.hint{color:#a9bccb;font-size:14px}
+
+.pinicon{width:28px;height:28px;border-radius:50% 50% 50% 0;background:var(--pin);transform:rotate(-45deg);box-shadow:inset 0 0 0 7px var(--pin),inset 0 0 0 11px #fff,0 3px 6px rgba(0,0,0,.5)}
+.near-dot{width:12px;height:12px;border-radius:50%;background:var(--zone);border:2px solid #fff;box-shadow:0 0 0 3px rgba(242,165,22,.45)}
+
+/* results */
+.result{background:var(--card);color:var(--ink);border-radius:4px;padding:20px 22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 14px 30px rgba(0,0,0,.35);animation:rise .35s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.score{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.score .n{font-family:var(--display);font-weight:900;letter-spacing:-.01em;font-size:clamp(46px,10vw,64px);line-height:1;font-variant-numeric:tabular-nums}
+.score .of{font-family:var(--mono);color:var(--muted);font-size:18px}
+.score .lbl{font-weight:800;font-size:20px}
+.meter{height:12px;border-radius:999px;background:#e6dcc4;overflow:hidden}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,#e0362c,#f2a516 55%,#1f8a5b);border-radius:999px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.sec h3{margin:0 0 4px;font-family:var(--narrow);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sec p{margin:0;font-size:16.5px;line-height:1.5}
+.sec.pearl{background:#f4ead3;border-left:4px solid var(--zone);padding:12px 14px;border-radius:0 4px 4px 0}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{border:1px solid #ddd0b0;border-radius:4px;padding:9px 11px;background:#fff}
+.stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:var(--narrow);font-weight:700}
+.stat .v{font-family:var(--mono);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.result .btn.ghost{color:var(--ink);border-color:#cdbf9d}
+.fine{font-size:13px;color:var(--muted)}
+.lb{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.lb td,.lb th{padding:7px 6px;border-bottom:1px solid #e3d8bd;text-align:left;font-size:14px}
+.lb th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+.lb td.num{font-family:var(--mono);text-align:right}
+dialog{border:0;border-radius:6px;padding:0;max-width:min(560px,94vw);box-shadow:0 30px 70px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(5,15,22,.65)}
+dialog .result{box-shadow:none;animation:none}
+.rules{margin:0;padding-left:20px;display:grid;gap:8px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;border:1px solid rgba(255,255,255,.2);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:2000}
+.toast.on{opacity:1}
+footer{color:#8fa4b4;font-size:12px;text-align:center;line-height:1.6}
+footer a{color:#c9d8e3}
+.bmg h3{color:#eef3f6}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <a class="home" href="games.html" aria-label="Boardside Reviews games"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg></a>
+      <div>
+        <h1 class="logo">Ende<i aria-hidden="true"></i>mic</h1>
+        <div class="sub">One pathogen. One pin. Every day. · Boardside Reviews</div>
+      </div>
+    </div>
+    <div class="hud">
+      <span class="pill" id="pzl">#1</span>
+      <span class="pill">Best <b id="best">0</b></span>
+      <button class="iconbtn" id="help" aria-label="How to play" title="How to play">?</button>
+    </div>
+  </header>
+
+  <section class="case" id="case" aria-live="polite"></section>
+
+  <div class="mapbox">
+    <div id="map" role="application" aria-label="World map. Tap to drop your pin."></div>
+    <div class="readout" id="readout">Tap the map to drop your pin</div>
+  </div>
+  <div class="bar" id="bar">
+    <span class="hint" id="hint">One guess. You can move the pin until you lock it in.</span>
+    <button class="btn" id="lock" disabled>Lock in my pin</button>
+  </div>
+
+  <div id="out"></div>
+
+  <footer>
+    Endemic areas are simplified for play from public-health sources and change over time. For education only.
+    Map: Natural Earth and US Census boundaries (public domain).<br>
+    © 2026 Boardside Reviews™ · Not affiliated with or endorsed by ABIM. Boardside Reviews™ is a trademark of Khaled M. Abdullah, MD.
+  </footer>
+</div>
+
+<dialog id="rulesDlg"><section class="result">
+  <h2 style="margin:0;font-weight:900;text-transform:uppercase;letter-spacing:.03em">How to play</h2>
+  <ol class="rules">
+    <li>Every day at midnight Pacific there's a new pathogen or disease, the same one for everyone.</li>
+    <li>Read the clue, then tap the map to drop <b>one pin</b> where it's endemic. Zoom in for precision. You can move the pin until you lock it in.</li>
+    <li>Land inside the endemic area for a perfect <b>5,000</b>. Outside, you lose points the farther you are from the nearest endemic zone.</li>
+    <li>Then see the real map, the teaching pearl, and today's leaderboard.</li>
+  </ol>
+  <div class="row"><button class="btn" id="rulesOk">Let's go</button></div>
+</section></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- settings ---------- */
+const GAME = "endemic";
+const CONFIG = { launchDay: "2026-11-12", timeZone: "America/Los_Angeles", max: 5000, scale: 2000 };
+
+/* ---------- storage ---------- */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ---------- dates (California) ---------- */
+function dayKey(d = new Date()){ return new Intl.DateTimeFormat("en-CA",{timeZone:CONFIG.timeZone,year:"numeric",month:"2-digit",day:"2-digit"}).format(d); }
+function dayNum(key){ const [a,b,c] = key.split("-").map(Number), [x,y,z] = CONFIG.launchDay.split("-").map(Number); return Math.round((Date.UTC(a,b-1,c) - Date.UTC(x,y-1,z)) / 864e5); }
+function msToNext(){
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:CONFIG.timeZone,hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"}).formatToParts(new Date()).map(x=>[x.type,x.value]));
+  return (86400 - ((+p.hour % 24) * 3600 + (+p.minute) * 60 + (+p.second))) * 1000;
+}
+function hms(ms){ const s = Math.max(0, Math.floor(ms/1000)); return [Math.floor(s/3600), Math.floor(s%3600/60), s%60].map(n=>String(n).padStart(2,"0")).join(":"); }
+
+const KEY = dayKey();
+const N = Math.max(0, dayNum(KEY));
+const PZL = N + 1;
+const P = ENDEMIC[N % ENDEMIC.length];
+
+let S = store.get("en:day:" + KEY, null) || { key: KEY, id: P.id, pin: null, done: false };
+const stats = store.get("en:stats", { played: 0, total: 0, best: 0, perfect: 0, last: null });
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(()=>t.classList.remove("on"), 1800); }
+$("#pzl").textContent = "#" + PZL;
+$("#best").textContent = stats.best.toLocaleString();
+
+/* ---------- case card ---------- */
+$("#case").innerHTML = `
+  <div class="tagrow"><span>Case #${PZL}</span>${P.us ? '<span class="tag us">United States only</span>' : '<span class="tag">Anywhere in the world</span>'}</div>
+  <h2 class="bug">${esc(P.name)}<small>${esc(P.sub)}</small></h2>
+  <p class="clue">${esc(P.clue)}</p>
+  <p class="ask">Drop one pin where this is endemic.</p>`;
+
+/* ---------- geometry ---------- */
+const R = 6371;
+const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+function hav(a, b){ // [lat, lon]
+  const dl = rad(b[0] - a[0]), dn = rad(b[1] - a[1]);
+  const h = Math.sin(dl/2)**2 + Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dn/2)**2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+const wrapLon = x => ((x + 540) % 360) - 180;
+function inRing(pt, ring){ // pt [lon,lat], ring [[lon,lat],...]
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++){
+    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    if (((yi > pt[1]) !== (yj > pt[1])) && (pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi)) inside = !inside;
+  }
+  return inside;
+}
+function polys(g){ return g.type === "Polygon" ? [g.coordinates] : g.type === "MultiPolygon" ? g.coordinates : []; }
+function inGeom(pt, g){ return polys(g).some(p => inRing(pt, p[0]) && !p.slice(1).some(h => inRing(pt, h))); }
+// nearest point on a geometry's edges, using a local flat projection around the guess
+function nearestOnGeom(lat, lon, g){
+  const k = Math.cos(rad(lat));
+  let best = { d: Infinity, p: null };
+  for (const p of polys(g)) for (const ring of p){
+    for (let i = 1; i < ring.length; i++){
+      const ax = wrapLon(ring[i-1][0] - lon) * k, ay = ring[i-1][1] - lat;
+      const bx = wrapLon(ring[i][0] - lon) * k,   by = ring[i][1] - lat;
+      const dx = bx - ax, dy = by - ay, L = dx*dx + dy*dy;
+      let t = L ? -(ax*dx + ay*dy) / L : 0; t = Math.max(0, Math.min(1, t));
+      const px = ax + t*dx, py = ay + t*dy, d2 = px*px + py*py;
+      if (d2 < best.d){ best = { d: d2, p: [lat + py, wrapLon(lon + px / k)] }; }
+    }
+  }
+  return best.p ? { km: hav([lat, lon], best.p), p: best.p } : { km: Infinity, p: null };
+}
+function scoreFor(km){ return km <= 0 ? CONFIG.max : Math.round(CONFIG.max * Math.exp(-km / CONFIG.scale)); }
+
+/* ---------- map ---------- */
+let MAP = null, FEAT = {}, pinMarker = null, nameLayer = [];
+const map = L.map("map", { worldCopyJump: true, minZoom: 1, maxZoom: 8, zoomSnap: 0.5, attributionControl: false, preferCanvas: true });
+if (P.us) map.fitBounds([[24, -125], [49.5, -66]]); else map.fitBounds([[-50, -165], [72, 180]]);
+const pinIcon = L.divIcon({ className: "", html: '<div class="pinicon"></div>', iconSize: [28, 28], iconAnchor: [14, 28] });
+
+function placeName(lat, lon){
+  if (!MAP) return "";
+  const pt = [lon, lat], hits = [];
+  for (const f of MAP.s) if (inGeom(pt, f.g)) { hits.push(f.n); break; }
+  for (const f of MAP.w) if (inGeom(pt, f.g)) { hits.push(f.n === "United States of America" ? "United States" : f.n); break; }
+  return hits.length ? hits.join(", ") : "Open water";
+}
+
+fetch("endemic-map.json").then(r => r.json()).then(m => {
+  MAP = m;
+  for (const f of [...m.w, ...m.s]) FEAT[f.k] = f;
+  L.geoJSON({ type: "FeatureCollection", features: m.w.map(f => ({ type: "Feature", properties: { k: f.k }, geometry: f.g })) },
+    { style: { color: "#b9a985", weight: 0.7, fillColor: "#efe5cf", fillOpacity: 1 }, interactive: false }).addTo(map);
+  L.geoJSON({ type: "FeatureCollection", features: m.s.map(f => ({ type: "Feature", properties: { k: f.k }, geometry: f.g })) },
+    { style: { color: "#c9b994", weight: 0.6, fill: false }, interactive: false }).addTo(map);
+  if (S.pin) setPin(S.pin[0], S.pin[1], true);
+  if (S.done) reveal(false);
+}).catch(() => { $("#readout").textContent = "Couldn't load the map. Refresh to try again."; });
+
+function setPin(lat, lon, quiet){
+  lon = wrapLon(lon);
+  S.pin = [lat, lon];
+  if (!pinMarker) pinMarker = L.marker([lat, lon], { icon: pinIcon, keyboard: false }).addTo(map);
+  else pinMarker.setLatLng([lat, lon]);
+  $("#readout").textContent = "Your pin: " + placeName(lat, lon);
+  if (!S.done){ $("#lock").disabled = false; store.set("en:day:" + KEY, S); }
+}
+map.on("click", e => { if (S.done) return; const ll = e.latlng.wrap(); setPin(ll.lat, ll.lng); });
+
+/* ---------- lock in ---------- */
+$("#lock").onclick = () => {
+  if (!S.pin || S.done || !MAP) return;
+  const r = evaluate(S.pin[0], S.pin[1]);
+  S.done = true; S.km = r.km; S.score = scoreFor(r.km); S.near = r.p; S.at = Date.now();
+  store.set("en:day:" + KEY, S);
+  if (stats.last !== KEY){
+    stats.played += 1; stats.total += S.score; stats.best = Math.max(stats.best, S.score);
+    if (S.score === CONFIG.max) stats.perfect += 1;
+    stats.last = KEY; store.set("en:stats", stats);
+  }
+  if (window.gtag) gtag("event", "endemic_guess", { puzzle: P.id, score: S.score });
+  reveal(true);
+};
+
+function evaluate(lat, lon){
+  const pt = [lon, lat];
+  let best = { km: Infinity, p: null };
+  for (const k of (P.zones.k || [])){
+    const f = FEAT[k]; if (!f) continue;
+    if (inGeom(pt, f.g)) return { km: 0, p: [lat, lon] };
+    const n = nearestOnGeom(lat, lon, f.g); if (n.km < best.km) best = n;
+  }
+  const onLand = MAP.w.some(f => inGeom(pt, f.g));
+  for (const c of (P.zones.c || [])){
+    const d = hav([lat, lon], [c[0], c[1]]);
+    // circles are a simplification: they only count on land, so a pin in the sea next to the zone is "very close", not inside
+    if (d <= c[2]){ if (onLand) return { km: 0, p: [lat, lon] }; if (25 < best.km) best = { km: 25, p: [lat, lon] }; continue; }
+    const km = d - c[2];
+    if (km < best.km){
+      // point on the circle edge toward the guess
+      const t = c[2] / d, b = bearing([c[0], c[1]], [lat, lon]);
+      best = { km, p: dest([c[0], c[1]], b, c[2]) };
+    }
+  }
+  return best;
+}
+function bearing(a, b){ const y = Math.sin(rad(b[1]-a[1])) * Math.cos(rad(b[0])), x = Math.cos(rad(a[0]))*Math.sin(rad(b[0])) - Math.sin(rad(a[0]))*Math.cos(rad(b[0]))*Math.cos(rad(b[1]-a[1])); return Math.atan2(y, x); }
+function dest(a, brg, km){ const d = km / R, la = rad(a[0]), lo = rad(a[1]); const la2 = Math.asin(Math.sin(la)*Math.cos(d) + Math.cos(la)*Math.sin(d)*Math.cos(brg)); const lo2 = lo + Math.atan2(Math.sin(brg)*Math.sin(d)*Math.cos(la), Math.cos(d) - Math.sin(la)*Math.sin(la2)); return [deg(la2), wrapLon(deg(lo2))]; }
+
+/* ---------- reveal ---------- */
+function drawZones(){
+  const layers = [];
+  const feats = (P.zones.k || []).map(k => FEAT[k]).filter(Boolean).map(f => ({ type: "Feature", properties: {}, geometry: f.g }));
+  if (feats.length) layers.push(L.geoJSON({ type: "FeatureCollection", features: feats }, { style: { color: "#b36f00", weight: 1.4, fillColor: "#f2a516", fillOpacity: .62 }, interactive: false }).addTo(map));
+  for (const c of (P.zones.c || [])) layers.push(L.circle([c[0], c[1]], { radius: c[2] * 1000, color: "#b36f00", weight: 1.4, fillColor: "#f2a516", fillOpacity: .45 }).bindTooltip(c[3], { direction: "top" }).addTo(map));
+  return layers;
+}
+function km2mi(k){ return Math.round(k * 0.621371); }
+function verdictLabel(s){ return s === 5000 ? "Bullseye. You're in the endemic zone." : s >= 4000 ? "So close." : s >= 2500 ? "Right neighborhood, wrong street." : s >= 1000 ? "Wrong region." : "Wrong side of the world."; }
+function shareBar(s){ const n = Math.round(s / 1000); return "🟧".repeat(n) + "⬜".repeat(5 - n); }
+
+function reveal(fresh){
+  $("#lock").hidden = true;
+  $("#hint").textContent = S.score === 5000 ? "Locked in. Your pin landed inside the endemic zone." : "Locked in. Orange shows where it's endemic.";
+  const zl = drawZones();
+  if (pinMarker) pinMarker.setZIndexOffset(1000);
+  if (S.km > 0 && S.near){
+    L.polyline([S.pin, S.near], { color: "#e0362c", weight: 2.5, dashArray: "6 6", interactive: false }).addTo(map);
+    L.marker(S.near, { icon: L.divIcon({ className: "", html: '<div class="near-dot"></div>', iconSize: [12, 12], iconAnchor: [6, 6] }), keyboard: false, interactive: false }).addTo(map);
+  }
+  try{
+    const g = L.featureGroup(zl.concat(pinMarker ? [pinMarker] : []));
+    map.fitBounds(g.getBounds().pad(0.15), { maxZoom: 5, animate: fresh });
+  }catch(e){}
+  const avg = stats.played ? Math.round(stats.total / stats.played) : 0;
+  $("#out").innerHTML = `
+  <section class="result" id="res" tabindex="-1">
+    <div class="score"><span class="n" id="sc">${fresh ? 0 : S.score.toLocaleString()}</span><span class="of">/ 5,000</span><span class="lbl">${verdictLabel(S.score)}</span></div>
+    <div class="meter" aria-hidden="true"><i id="meter" style="width:${fresh ? 0 : S.score / 50}%"></i></div>
+    <p class="fine" style="margin:0">${S.km > 0 ? `Your pin was <b>${km2mi(S.km).toLocaleString()} miles</b> (${Math.round(S.km).toLocaleString()} km) from the nearest endemic zone.` : "Your pin landed inside an endemic zone."}</p>
+    <div class="sec"><h3>Where it's endemic</h3><p>${esc(P.where)}</p></div>
+    <div class="sec pearl"><h3>Teaching pearl</h3><p>${esc(P.pearl)}</p></div>
+    <div class="stats">
+      <div class="stat"><div class="k">Played</div><div class="v">${stats.played}</div></div>
+      <div class="stat"><div class="k">Average</div><div class="v">${avg.toLocaleString()}</div></div>
+      <div class="stat"><div class="k">Bullseyes</div><div class="v">${stats.perfect}</div></div>
+      <div class="stat"><div class="k">Next case in</div><div class="v" id="cd">${hms(msToNext())}</div></div>
+    </div>
+    <div class="row"><button class="btn" id="share">Copy result</button></div>
+  </section>
+  <section class="result" data-lb hidden>
+    <h2 style="margin:0;font-weight:900;text-transform:uppercase;letter-spacing:.03em;font-size:22px">Today's leaderboard</h2>
+    <p class="fine" style="margin:0">Highest score wins. Ties go to whoever posted first. Your first pin of the day is the one that counts.</p>
+    <div class="row" id="postRow"><button class="btn" type="button" id="lbsubmit">Post my score</button><span class="fine" id="postNote"></span></div>
+    <div id="lb" class="fine">Loading…</div>
+    <a class="fine" href="leaderboard.html#endemic">Full leaderboard →</a>
+  </section>
+  <div id="more"></div>`;
+  if (window.BLB && BLB.enabled) document.querySelectorAll("[data-lb]").forEach(el => el.hidden = false);
+  $("#best").textContent = stats.best.toLocaleString();
+  if (fresh) countUp();
+  $("#share").onclick = async () => {
+    const txt = `Endemic #${PZL} 📍 ${P.name}\n${shareBar(S.score)} ${S.score.toLocaleString()}/5,000${S.km > 0 ? ` · ${km2mi(S.km).toLocaleString()} mi off` : " · bullseye"}\nboardsidereviews.com/endemic.html`;
+    try{ await navigator.clipboard.writeText(txt); toast("Result copied"); }catch(e){ toast("Copy blocked here"); }
+  };
+  clearInterval(reveal.iv);
+  reveal.iv = setInterval(() => { const el = $("#cd"); if (!el) return; el.textContent = hms(msToNext()); if (dayKey() !== KEY) location.reload(); }, 1000);
+  const pb = $("#lbsubmit");
+  if (store.get("en:posted:" + KEY, false)) pb.outerHTML = '<span class="fine">Posted</span>';
+  else pb.onclick = postScore;
+  if (window.BoardsideMore) BoardsideMore.mount($("#more"), GAME);
+  loadLB();
+  if (fresh) setTimeout(() => $("#res").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }), 700);
+}
+function countUp(){
+  const el = $("#sc"), m = $("#meter"), v = S.score, t0 = performance.now(), dur = 900;
+  requestAnimationFrame(() => { m.style.width = (v / 50) + "%"; });
+  (function step(t){ const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = Math.round(v * e).toLocaleString(); if (k < 1) requestAnimationFrame(step); })(t0);
+}
+
+/* ---------- leaderboard (shared Boardside board, lb.js) ---------- */
+const hasLB = () => !!(window.BLB && BLB.enabled && BLB.boardPoints);
+async function postScore(){
+  const b = $("#lbsubmit"), note = $("#postNote");
+  b.disabled = true; b.textContent = "Posting…"; note.textContent = "";
+  try{
+    const name = await BLB.dialog({ title: "Post your score", intro: "We'll email you a 6-digit code to verify it's you. No password needed." });
+    if (!name){ b.disabled = false; b.textContent = "Post my score"; return; }
+    await BLB.submit(GAME, KEY, S.score, CONFIG.max);
+    store.set("en:posted:" + KEY, true);
+    b.outerHTML = '<span class="fine">Posted as ' + esc(name) + '</span>';
+    loadLB();
+  }catch(e){ b.disabled = false; b.textContent = "Post my score"; note.textContent = BLB.friendly(e); }
+}
+async function loadLB(){
+  const box = $("#lb"); if (!box) return;
+  if (!hasLB()){ box.textContent = "The leaderboard couldn't load. Refresh to try again."; return; }
+  try{
+    const rows = await BLB.boardPoints(GAME, KEY, null, 10);
+    if (!rows.length){ box.textContent = "No one has posted yet today. Be first."; return; }
+    box.innerHTML = `<table class="lb"><thead><tr><th>#</th><th>Player</th><th style="text-align:right">Score</th></tr></thead><tbody>${
+      rows.map(r => `<tr${r.is_me ? ' style="font-weight:700"' : ""}><td>${r.rank}</td><td>${esc(r.display_name)}${r.is_me ? " (you)" : ""}</td><td class="num">${Number(r.best_score).toLocaleString()}</td></tr>`).join("")}</tbody></table>`;
+  }catch(e){ box.textContent = BLB.friendly(e); }
+}
+
+/* ---------- rules ---------- */
+const dlg = $("#rulesDlg");
+function openRules(){ if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open",""); }
+$("#help").onclick = openRules;
+$("#rulesOk").onclick = () => { dlg.close ? dlg.close() : dlg.removeAttribute("open"); store.set("en:seenRules", true); };
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+if (!store.get("en:seenRules", false) && !S.done) openRules();
+</script>
+</body>
+</html>

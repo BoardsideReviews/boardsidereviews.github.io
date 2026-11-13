@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
 <title>Leaderboard | Boardside Reviews</title>
-<meta name="description" content="Top scores from Boardside Reviews games, including the Cross-Cover daily crossword, Co-Pay or No Way, IM Night Float, ABG Blitz, and Hemodynamic Roulette.">
+<meta name="description" content="Top scores from Boardside Reviews games, including the Cross-Cover daily crossword, Co-Pay or No Way, Endemic, IM Night Float, ABG Blitz, and Hemodynamic Roulette.">
 <style>
 :root{--navy:#0b2545;--teal:#0d7070;--teal-bright:#3cc4b4;--teal-soft:#e2f3f1;--coral:#b9432c;--coral-soft:#fdece7;--ink2:#33465f;--muted:#52627a;--line:#dce3ea;--sky:#eef5fc;--sky2:#f5f9fd;--amber:#f0b54a}
 *{box-sizing:border-box}
@@ -108,6 +108,7 @@ tr.mine td{background:var(--teal-soft)}
 const BOARDS=[
   {id:"cross-cover",group:"CROSS-COVER",label:"Cross-Cover",game:"cross-cover",play:"crossword.html",time:true},
   {id:"copay-noway",group:"CO-PAY OR NO WAY",label:"Co-Pay or No Way",game:"copay-noway",play:"copay.html",daily:true},
+  {id:"endemic",group:"ENDEMIC",label:"Endemic",game:"endemic",play:"endemic.html",daily:true,unit:"Score",noun:"scores",what:"pin",fmt:v=>Number(v).toLocaleString(),rule:"Highest score wins; each player's first pin of the day counts."},
   {id:"rhythm-rush",group:"RHYTHM RUSH",label:"Rhythm Rush",game:"rhythm-rush",variant:"1-min",play:"rhythm-rush.html",points:true},
   {id:"night-float-standard",group:"IM NIGHT FLOAT",label:"Standard night",game:"night-float",variant:"standard",play:"night-float.html"},
   {id:"night-float-black-cloud",group:"IM NIGHT FLOAT",label:"Black cloud",game:"night-float",variant:"black-cloud",play:"night-float.html"},
@@ -163,8 +164,10 @@ async function drawBoard(){
     const v=laDate(ago); let rows;
     try{rows=await BLB.boardPoints(cur.game,v,null,100)}
     catch(e){box.innerHTML=`<div class="empty"><b>Couldn't load the leaderboard.</b><span>${esc(BLB.friendly(e))}</span><button class="btn ghost" data-a="retry">Try again</button></div>`;return}
-    if(!rows.length){box.innerHTML=`<div class="empty"><b>No streaks ${ago?"for yesterday":"yet today"}.</b><span>${ago?"Today's run is waiting.":"Play today's run and take the top spot."}</span><a class="btn" href="${cur.play}">Play today's run</a></div>`;return}
-    box.innerHTML=`<table><thead><tr><th>#</th><th>Player</th><th class="num">Streak</th><th class="num hide-sm">Posted</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.is_me?"mine":""}"><td class="rank">${r.rank<=3?`<span class="medal m${r.rank}">${r.rank}</span>`:r.rank}</td><td class="name">${esc(r.display_name)}${r.is_me?`<span class="you">YOU</span>`:""}</td><td class="num pct">${r.best_score}</td><td class="num hide-sm">${fmtClock(r.achieved_at)}</td></tr>`).join("")}</tbody></table>`;
+    const what=cur.what||"run";
+    if(!rows.length){box.innerHTML=`<div class="empty"><b>No ${cur.noun||"streaks"} ${ago?"for yesterday":"yet today"}.</b><span>${ago?`Today's ${what} is waiting.`:`Play today's ${what} and take the top spot.`}</span><a class="btn" href="${cur.play}">Play today's ${cur.what?"case":"run"}</a></div>`;return}
+    box.innerHTML=`<table><thead><tr><th>#</th><th>Player</th><th class="num">${cur.unit||"Streak"}</th><th class="num hide-sm">Posted</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.is_me?"mine":""}"><td class="rank">${r.rank<=3?`<span class="medal m${r.rank}">${r.rank}</span>`:r.rank}</td><td class="name">${esc(r.display_name)}${r.is_me?`<span class="you">YOU</span>`:""}</td><td class="num pct">${cur.fmt?cur.fmt(r.best_score):r.best_score}</td><td class="num hide-sm">${fmtClock(r.achieved_at)}</td></tr>`).join("")}</tbody></table>`;
+    if(cur.rule){$("#note").textContent=`Board for ${new Date(v+"T12:00:00Z").toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",timeZone:"UTC"})}. ${cur.rule} Ties go to whoever posted first.`;return}
     $("#note").textContent=`Run for ${new Date(v+"T12:00:00Z").toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",timeZone:"UTC"})}. Longest streak wins; each player's first run of the day counts. Ties go to whoever posted first.`;
     return;
   }
