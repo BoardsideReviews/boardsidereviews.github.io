@@ -185,7 +185,7 @@ document.addEventListener("click",async e=>{
   if(b.dataset.days!==undefined){days=b.dataset.days?+b.dataset.days:null;document.querySelectorAll("#period button").forEach(x=>x.setAttribute("aria-pressed",x===b));drawBoard();return}
   const a=b.dataset.a;
   if(a==="retry")drawBoard();
-  if(a==="in"){await BLB.dialog({title:"Sign in"});drawMe();drawBoard()}
+  if(a==="in"){await BLB.dialog({title:"Sign in",start:"signin"});drawMe();drawBoard()}
   if(a==="rename"){await BLB.dialog({rename:true});drawMe();drawBoard()}
   if(a==="out"){await BLB.signOut();drawMe();drawBoard()}
 });
