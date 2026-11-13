@@ -299,37 +299,115 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 </header>
 
 <main id="top">
-<section class="hero">
+<style>
+.h2026{background:radial-gradient(1200px 500px at 85% 10%,#dff1ee 0%,transparent 60%),linear-gradient(180deg,var(--sky) 0%,#fff 100%);border-bottom:1px solid #e3ebf3;overflow:hidden}
+.h2026 .wrap{padding-top:56px;padding-bottom:72px;display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:48px;align-items:center}
+.h-copy{display:flex;flex-direction:column;gap:20px}
+.h-launch{align-self:flex-start;display:flex;align-items:center;gap:10px;background:var(--navy);color:#fff;border-radius:999px;padding:8px 16px 8px 12px;font-size:13px;font-weight:700;letter-spacing:.06em}
+.h-launch .dot{box-shadow:0 0 0 4px rgba(60,196,180,.25)}
+.h-copy h1{margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(38px,4.4vw,56px);line-height:1.02;letter-spacing:-.035em;color:var(--navy)}
+.h-copy h1 em{font-style:normal;color:var(--teal)}
+.h-copy .lede{margin:0;font-size:19px;line-height:29px;color:var(--ink2);max-width:540px}
+.h-facts{display:flex;flex-wrap:wrap;gap:10px}
+.h-facts span{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #d6e3ef;border-radius:10px;padding:9px 13px;font-size:14.5px;font-weight:600;color:var(--navy)}
+.h-facts span i{width:8px;height:8px;border-radius:50%;background:var(--teal)}
+.h-facts span.g i{background:#f2a516}
+.h-ctas{display:flex;gap:12px;flex-wrap:wrap}
+.h-small{margin:0;font-size:14px;color:var(--muted)}
+
+/* animated product stage */
+.h-stage{position:relative;height:520px}
+.h-q{position:absolute;right:0;top:0;width:min(410px,80%);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 70px rgba(11,37,69,.16);padding:22px;display:flex;flex-direction:column;gap:12px;z-index:2}
+.h-q .tp{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--teal)}
+.h-q .tp span:last-child{color:var(--muted);font-family:'JetBrains Mono',ui-monospace,monospace;letter-spacing:0;font-weight:600}
+.h-q .stem{margin:0;font-size:15px;line-height:22px;color:var(--navy)}
+.h-q .stem b{font-weight:700}
+.h-opt{display:flex;align-items:center;gap:10px;border:1.5px solid #dce3ea;border-radius:11px;padding:9px 12px;font-size:14px;color:var(--ink2);position:relative;transition:all .3s}
+.h-opt b{width:24px;height:24px;border-radius:7px;background:#eef2f6;display:grid;place-items:center;font-size:12.5px;color:var(--navy);flex:0 0 24px}
+.h-opt .why{margin-left:auto;font-size:12px;font-weight:700;opacity:0}
+.h-pearl{background:var(--teal-soft);border-left:4px solid var(--teal);border-radius:0 10px 10px 0;padding:10px 12px;font-size:13.5px;line-height:19px;color:var(--navy);opacity:0;transform:translateY(6px)}
+.h-pearl strong{color:var(--teal)}
+.h-cursor{position:absolute;width:22px;height:22px;z-index:5;left:70%;top:60%;filter:drop-shadow(0 2px 3px rgba(0,0,0,.3))}
+/* 9s loop: cursor glides to C, clicks, C turns green, B shows why-not, pearl slides in */
+.h2026.h-anim .h-cursor{animation:cur 9s ease-in-out infinite}
+.h2026.h-anim .h-opt.c{animation:optC 9s infinite}
+.h2026.h-anim .h-opt.c .why{animation:show 9s infinite}
+.h2026.h-anim .h-opt.bx{animation:optB 9s infinite}
+.h2026.h-anim .h-opt.bx .why{animation:show2 9s infinite}
+.h2026.h-anim .h-pearl{animation:pearl 9s infinite}
+@keyframes cur{0%,8%{left:78%;top:88%;transform:scale(1)}26%{left:40%;top:63.5%;transform:scale(1)}29%{transform:scale(.8)}32%,62%{left:40%;top:63.5%;transform:scale(1)}80%,100%{left:78%;top:88%}}
+@keyframes optC{0%,28%{border-color:#dce3ea;background:#fff}31%,92%{border-color:var(--teal);background:var(--teal-soft);color:var(--teal);font-weight:600}100%{border-color:#dce3ea;background:#fff}}
+@keyframes show{0%,30%{opacity:0}34%,92%{opacity:1;color:var(--teal)}100%{opacity:0}}
+@keyframes optB{0%,40%{border-color:#dce3ea;background:#fff}44%,92%{border-color:#f0c3b7;background:var(--coral-soft)}100%{border-color:#dce3ea;background:#fff}}
+@keyframes show2{0%,42%{opacity:0}46%,92%{opacity:1;color:var(--coral)}100%{opacity:0}}
+@keyframes pearl{0%,52%{opacity:0;transform:translateY(6px)}58%,92%{opacity:1;transform:none}100%{opacity:0}}
+.h-book{position:absolute;left:-6px;bottom:-4px;width:158px;aspect-ratio:7/10;border-radius:4px 10px 10px 4px;box-shadow:0 26px 50px rgba(11,37,69,.32),inset 6px 0 0 rgba(255,255,255,.08);transform:rotate(-7deg);z-index:3;animation:float 6s ease-in-out infinite}
+.h-book.bookcover{background-size:cover;background-position:center}
+@keyframes float{50%{transform:rotate(-7deg) translateY(-8px)}}
+.h-booktag{position:absolute;left:118px;bottom:14px;z-index:4;background:var(--coral);color:#fff;font-size:12px;font-weight:700;border-radius:8px;padding:6px 10px;transform:rotate(4deg);box-shadow:0 8px 18px rgba(185,67,44,.35)}
+.h-game{position:absolute;right:-6px;bottom:-4px;z-index:4;width:236px;background:#0f1a2e;color:#e8f0f8;border-radius:14px;padding:11px 13px;box-shadow:0 18px 36px rgba(11,37,69,.3);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px}
+.h-game small{display:flex;justify-content:space-between;color:#f2a516;font-weight:700;letter-spacing:.06em;font-size:10.5px;margin-bottom:6px;font-family:Inter,sans-serif}
+.h-game small span{color:#8fa4b4;font-weight:600}
+.h-game .gs{height:34px;position:relative}
+.h-game .gs div{position:absolute;inset:0;opacity:0;transition:opacity .5s}
+.h-game .gs div.on{opacity:1}
+.h-game .gs .hi{color:#3cc4b4;font-weight:700}
+
+/* what you get */
+.wyg .wrap{padding-top:96px;padding-bottom:32px;display:flex;flex-direction:column;gap:36px}
+.wyg-grid{display:grid;grid-template-columns:1fr 1fr .78fr;gap:22px}
+.wyg-card{border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:12px;border:1px solid #e3ebf3;background:#fff;box-shadow:0 10px 30px rgba(11,37,69,.06)}
+.wyg-card .lbl{font-size:12px;font-weight:700;letter-spacing:.08em}
+.wyg-card h3{margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;letter-spacing:-.01em}
+.wyg-card p{margin:0;color:var(--muted);font-size:16px;line-height:24px;flex:1}
+.wyg-card ul{margin:0;padding:0;list-style:none;display:grid;gap:7px;font-size:14.5px;color:var(--ink2)}
+.wyg-card ul li::before{content:"✓";color:var(--teal);font-weight:800;margin-right:8px}
+.wyg-card a{color:var(--teal);font-weight:600;text-decoration:none;font-size:15px}
+.wyg-card.main{border:1.5px solid #bfdcd8}
+.wyg-card.games{background:#0f1a2e;border-color:#0f1a2e;color:#e8f0f8}
+.wyg-card.games p{color:#b5c3d3}
+.wyg-card.games a{color:#f2a516}
+.wyg-card.games .lbl{color:#f2a516}
+@media (max-width:980px){.h2026 .wrap{grid-template-columns:1fr;gap:36px}.h-stage{height:470px;max-width:520px;width:100%;margin:0 auto}.wyg-grid{grid-template-columns:1fr}}
+@media (max-width:520px){.h2026 .wrap{padding-top:36px}.h-stage{height:640px}.h-q{width:100%;padding:18px}.h-book{width:112px;bottom:0}.h-booktag{left:78px;bottom:6px}.h-game{width:205px;bottom:20px}.h-copy .lede{font-size:17px;line-height:26px}}
+@media (prefers-reduced-motion:reduce){.h2026 *{animation:none!important}}
+</style>
+<section class="h2026" id="hero">
 <div class="wrap">
-<div class="hero-copy">
-<div class="pill"><span class="dot"></span><span>WAITLIST NOW OPEN · LAUNCHING 2027</span></div>
-<h1>Coming<br><span>soon.</span></h1>
-<p class="sub">Internal medicine, taught like rounds.</p>
-<p class="lede">For internal medicine residents, whether you&#39;re learning on the wards or studying for the ABIM exam. A question bank with every answer choice explained, and a printed review book.</p>
-<div class="ctas">
-<a class="btn btn-primary" href="qbank.html?sample&amp;signup">Join the waitlist
-<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
-<a class="btn btn-ghost" href="#free">Try it free<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
+<div class="h-copy">
+<span class="h-launch"><span class="dot"></span>LAUNCHING JANUARY 2027</span>
+<h1>The internal medicine <em>question bank</em> and <em>book</em>.</h1>
+<p class="lede">About 1,600 board-style questions with every answer choice explained, and Boardside Notes, the printed review book. Built for residents on the wards and for the ABIM exam.</p>
+<div class="h-facts"><span><i></i>~1,600 questions</span><span><i></i>Every choice explained</span><span><i></i>Printed book</span><span class="g"><i></i>Free games</span></div>
+<div class="h-ctas">
+<a class="btn btn-primary" href="qbank.html?sample&amp;signup">Join the waitlist<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
+<a class="btn btn-ghost" href="qbank.html?sample">Try 10 questions free</a>
 </div>
-<p class="small">Waitlist members get an email 48 hours before we launch, then a reminder when we&#39;re live. The founders price goes to the first 100 buyers.</p>
+<p class="h-small">Founders price for the first 100 buyers. Waitlist members hear 48 hours before launch.</p>
 </div>
-<div class="qcard">
-<div class="card" role="img" aria-label="Sample Boardside question showing a correct answer and a wrong answer explained">
-<div class="card-top"><span class="tag">PULMONARY &amp; CRITICAL CARE · Q7</span><span class="chip">Sample</span></div>
-<p class="stem">A 64-year-old man with COPD presents with worsening dyspnea. Which is the most appropriate next step?</p>
-<div class="opts">
-<div class="opt"><b>A</b><span class="bar" style="max-width:200px"></span></div>
-<div class="opt wrong"><b>B</b><span class="bar" style="max-width:150px"></span><span class="verdict"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>Why not</span></div>
-<div class="opt right"><b>C</b><span class="bar" style="max-width:210px"></span><span class="verdict"><span class="check"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>Correct</span></div>
-<div class="opt"><b>D</b><span class="bar" style="max-width:180px"></span></div>
-<div class="opt"><b>E</b><span class="bar" style="max-width:140px"></span></div>
+<div class="h-stage" aria-hidden="true">
+<div class="h-q">
+<div class="tp"><span>PULMONARY &amp; CRITICAL CARE</span><span>Q 7 / 20</span></div>
+<p class="stem">A 64-year-old man with COPD has pH 7.28, PaCO₂ 62, and is drowsy but protecting his airway. <b>Next step?</b></p>
+<div class="h-opt"><b>A</b>Intubate now</div>
+<div class="h-opt bx"><b>B</b>High-flow nasal oxygen<span class="why">✕ Why not</span></div>
+<div class="h-opt c"><b>C</b>Noninvasive ventilation (BiPAP)<span class="why">✓ Correct</span></div>
+<div class="h-opt"><b>D</b>Repeat ABG in 2 hours</div>
+<div class="h-pearl"><strong>Pearl: </strong>hypercapnic COPD exacerbation with pH 7.25–7.35 → BiPAP first.</div>
 </div>
-<div class="pearl"><strong>Bedside pearl: </strong>the one thing to remember, in one line.</div>
-</div>
+<svg class="h-cursor" viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L16 20l-3 1.4-3.4-7.3L4 18z" fill="#fff" stroke="#0b2545" stroke-width="1.6" stroke-linejoin="round"/></svg>
+<span class="h-book bookcover"></span>
+<span class="h-booktag">In print</span>
+<div class="h-game"><small>FREE GAMES <span>while you wait</span></small><div class="gs" id="hgs">
+<div class="on">ABG BLITZ · pH <span class="hi">7.24</span> · AG 12<br>→ NON-GAP ACIDOSIS</div>
+<div>CROSS-COVER · SHAKING CHILLS (6)<br>→ <span class="hi">RIGORS</span></div>
+<div>ENDEMIC · COCCIDIOIDES<br>→ 📍 <span class="hi">5,000 / 5,000</span></div>
+<div>TRIAL &amp; ERROR · NICE-SUGAR<br>→ <span class="hi">NEGATIVE</span></div>
+</div></div>
 </div>
 </div>
 </section>
-
+<script>(function(){var h=document.getElementById("hero");if(!matchMedia("(prefers-reduced-motion: reduce)").matches)h.classList.add("h-anim");var g=document.querySelectorAll("#hgs div"),i=0;setInterval(function(){g[i].classList.remove("on");i=(i+1)%g.length;g[i].classList.add("on")},2600)})();</script>
 <section id="subjects" class="subjects" aria-label="Subjects">
 <div class="wrap">
 <span class="eyebrow" style="color:var(--muted)">EVERY INTERNAL MEDICINE SUBJECT</span>
@@ -337,16 +415,18 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 </div>
 </section>
 
-<section id="coming" class="coming">
+<section class="wyg" id="coming">
 <div class="wrap">
 <div style="display:flex;flex-direction:column;gap:12px;max-width:680px">
-<span class="eyebrow">COMING SOON</span>
-<h2 class="sec">Two ways to learn internal medicine.</h2>
-<p class="sec-lede">Built for residents: use it to learn on the wards, and to study for the ABIM exam.</p>
+<span class="eyebrow">WHAT YOU GET</span>
+<h2 class="sec">Two ways to learn internal medicine. Plus a few games.</h2>
 </div>
-<div class="products">
-<div class="product"><span class="pic" style="background:var(--navy)"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><h3>Question bank</h3><p>About 1,600 board-style questions with high-quality explanations: why every choice is right or wrong, a teaching pearl, and summary tables. Learning or exam mode, timed or untimed, by subject.</p><a class="more" href="qbank.html?sample">Try 40 questions free →</a></div>
-<div class="product"><span class="pic" style="background:var(--coral)"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M19 19v2H6"/></svg></span><h3>Printed book</h3><p>Boardside Notes: a high-quality printed review book covering every internal medicine subject, in the same plain, high-yield style. Built for the wards and the boards.</p><a class="more" href="#together">How to use it with the question bank ↓</a><span class="soon" style="font-size:14px;margin-top:-6px">Free cardiology sample: coming soon</span></div>
+<div class="wyg-grid">
+<div class="wyg-card main"><span class="lbl" style="color:var(--teal)">QUESTION BANK</span><h3>~1,600 board-style questions</h3><p>Written and reviewed by a board-certified internist.</p>
+<ul><li>Why every choice is right or wrong</li><li>A teaching pearl on every question</li><li>Learning or exam mode, timed or untimed</li><li>Flashcards from what you miss</li></ul><a href="qbank.html?sample">Try 10 questions free →</a></div>
+<div class="wyg-card main"><span class="lbl" style="color:var(--coral)">BOARDSIDE NOTES · PRINT</span><h3>The review book</h3><p>Every IM subject in the same plain, high-yield style, printed and shipped to you.</p>
+<ul><li>Matches the question bank, subject by subject</li><li>Built for the wards and the boards</li><li>Free 15-page cardiology sample</li></ul><a href="#together">How it pairs with the questions →</a></div>
+<div class="wyg-card games"><span class="lbl">FREE · PLAY NOW</span><h3>Gamified learning</h3><p>Daily crosswords, drug prices, landmark trials, ABGs, shock, and more. Free forever.</p><a href="games.html">Browse the games →</a></div>
 </div>
 </div>
 </section>
