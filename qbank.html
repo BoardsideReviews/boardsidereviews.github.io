@@ -686,6 +686,28 @@ body.dark .switch{background:#3a4d68}
 body.dark .gch,body.dark .gopt,body.dark .gsel,body.dark .gpin,body.dark .gl{background:#16253b;color:#e4ecf5;border-color:#2a3d58}
 body.dark .gcode,body.dark .gtimer{color:#e4ecf5}
 body.dark .gch .gf{background:#20324d}
+.pbar .gjoin,.pbar .gans{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
+.pbar .gjoin{background:#eef2f6;border-radius:999px;padding:5px 12px}
+body.dark .pbar .gjoin{background:#1c2b44;color:#c3d2e3}
+@media (max-width:1500px){.pbar .gjoin .gjl{display:none}}
+@media (max-width:1100px){.pbar .gjoin{display:none}}
+@media (max-width:1400px){.pbar .qpos small{display:none}}
+@media (max-width:640px){.pbar .gans{display:none}}
+.choice.glive{background-image:linear-gradient(90deg,rgba(13,112,112,.12) var(--gp),transparent var(--gp))!important}
+body.dark .choice.glive{background-image:linear-gradient(90deg,rgba(60,196,180,.16) var(--gp),transparent var(--gp))!important}
+.gwait{margin:6px 0 0;padding:12px 14px;border-radius:12px;background:#eef2f6;color:var(--muted);font-weight:600;text-align:center}
+.gwait.ok{background:var(--teal-soft);color:#085454}
+body.dark .gwait{background:#1c2b44;color:#c3d2e3}
+body.dark .gwait.ok{background:#0f3936;color:#bff0e8}
+.gurl{color:var(--navy)}
+body.dark .gurl{color:#e4ecf5}
+body.dark .gpill{background:#0f3936;color:#bff0e8}
+body.dark .gpill.gray{background:#1c2b44;color:#c3d2e3}
+body.dark .gqr{border-color:#2a3d58}
+body.dark .gic.wait{background:#1c2b44;color:#c3d2e3}
+body.dark .gbar,body.dark .gdots{}
+body.dark .gbar{background:#1c2b44}
+
 </style>
 </head>
 <body>
@@ -849,6 +871,7 @@ function setConf(q, level) {
 // "How sure are you?" row under the answer choices
 function confEl(q, locked) {
   var r = q.response;
+  if (P && P.group) return null;
   if (!SET.conf || locked || !r.selected) return null;
   var seg = h("div", { class: "seg", role: "group", "aria-label": "How sure are you?" }, CONF_LV.map(function (o) {
     return h("button", { type: "button", "aria-pressed": String(r.conf === o[0]), onclick: function () { setConf(q, o[0]); } }, o[1]);
@@ -1975,12 +1998,13 @@ function tick() {
   if (P.b.timed && remaining() <= 0) { stopClock(); toast("Time's up."); finishSet(true); }
 }
 function markDirty(q, soon) {
+  if (P && P.group) return;                                 // group sessions save nothing per person
   P.dirty[q.id] = q;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(flush, soon ? 50 : 700);
 }
 async function flush() {
-  if (!P) return;
+  if (!P || P.group) return;
   var items = Object.keys(P.dirty).map(function (k) { return P.dirty[k]; }); P.dirty = {};
   for (var j = 0; j < items.length; j++) {
     var q = items[j], r = q.response;
@@ -1996,7 +2020,7 @@ document.addEventListener("visibilitychange", function () { if (document.hidden 
 
 function renderPlayer(keep) {
   var q = cur(), n = P.qs.length, b = P.b, r = q.response;
-  var bar = h("div", { class: "pbar" }, h("div", { class: "wrap" }, [
+  var bar = P.group ? gBar() : h("div", { class: "pbar" }, h("div", { class: "wrap" }, [
     h("div", { class: "qpos" }, [h("span", { class: "qlong" }, "Question " + (P.i + 1) + " of " + n), h("span", { class: "qshort", "aria-hidden": "true" }, (P.i + 1) + " / " + n),
       h("small", null, (b.mode === "learning" ? "Learning" : "Exam") + (done() ? " · Review" : ""))]),
     done() ? null : h("span", { class: "clock", id: "clock", title: b.timed ? "Time left" : "Time spent" },
@@ -2012,10 +2036,10 @@ function renderPlayer(keep) {
   ]));
 
   setFootContext((q.reveal && q.reveal.num ? "Question ID: " + q.reveal.num + "\n" : "") + "Set: " + b.id + "\nQuestion " + (P.i + 1) + " of " + n + "\n\n");
-  var locked = done() || (b.mode === "learning" && r.submitted);
+  var locked = done() || (b.mode === "learning" && r.submitted) || (P.group && gLocked(q));
   var side = SET.layout === "side" && window.innerWidth >= 1000;
   var qcol = h("div", { class: "qcol" }, [
-    h("div", { class: "qtools" }, h("button", { class: "qflag", type: "button", "aria-pressed": String(!!r.flagged),
+    h("div", { class: "qtools" }, P.group ? null : h("button", { class: "qflag", type: "button", "aria-pressed": String(!!r.flagged),
       title: r.flagged ? "Unflag this question" : "Flag this question", "aria-label": r.flagged ? "Unflag this question" : "Flag this question",
       onclick: function () { r.flagged = !r.flagged; markDirty(q); renderPlayer(true); }, html: ICON.flag })),
     stemArea(q),
@@ -2027,11 +2051,12 @@ function renderPlayer(keep) {
   var exp = q.reveal ? explanationEl(q) : null;
   var main = side
     ? h("div", { class: "playwrap split" + (locked ? " locked" : "") }, [qcol, h("aside", { class: "side" }, exp ||
-        h("p", { class: "side-empty" }, b.mode === "learning" ? "Submit your answer to see the explanation here." : "Explanations appear here after you finish the set."))])
+        h("p", { class: "side-empty" }, P.group ? (G && G.role === "host" ? "Reveal the answer to show the explanation here." : "The explanation appears here when the host reveals the answer.")
+          : b.mode === "learning" ? "Submit your answer to see the explanation here." : "Explanations appear here after you finish the set."))])
     : h("div", { class: "playwrap" + (locked ? " locked" : "") }, [qcol, exp]);
   if (!SAMPLE) main.appendChild(watermark());
   P.seen = P.seen || {}; P.seen[P.i] = 1;
-  screen([bar, railEl(), h("div", { class: "pmain" }, main)], true, keep);
+  screen([bar, P.group ? null : railEl(), h("div", { class: "pmain" + (P.group ? " gplay" : "") }, main)], true, keep);
   placeRail();
   if (P.calc) mountCalc();
   if (P.labs) mountLabs();
@@ -2314,6 +2339,7 @@ function imageEl(q) {
 // answer choices: tap anywhere on a choice = choose, ✕ on the right = cross out
 // Share of learners who chose each option (first answers only, shown once 20 learners have answered).
 function choiceStats(q) {
+  if (P && P.group) return gStats(q);
   if (SAMPLE || !P || !q.reveal || !q.response.submitted) return null;
   P.stats = P.stats || {};
   var st = P.stats[q.id];
@@ -2429,13 +2455,14 @@ function choicesEl(q, locked) {
       else if (r.selected === L) { cls += " wrong"; verdict = "Your answer"; }
     }
     var isStruck = (r.struck || "").indexOf(L) >= 0;
-    list.appendChild(h("div", { class: cls }, [
+    var gp = P && P.group && cs ? pct(cs[L] || 0, cs.n) : null;       // group session: live share of the room
+    list.appendChild(h("div", { class: cls + (gp != null ? " glive" : ""), style: gp != null ? "--gp:" + gp + "%" : null }, [
       h("button", { class: "ct", type: "button", role: "radio", "aria-checked": String(r.selected === L), "aria-disabled": locked ? "true" : null,
         onclick: function () { if (!locked) select(q, L); } }, [
         h("span", { class: "cb", "aria-hidden": "true", html: "<i>" + ICON.check + "</i>" }),
         h("span", { class: "lbl" }, [h("b", null, L + "."), h("span", { class: "tx" }, text)])
       ]),
-      cs ? h("span", { class: "cpct", title: "Share of learners who chose " + L }, pct(cs[L] || 0, cs.n) + "%") : null,
+      cs ? h("span", { class: "cpct", title: (P.group ? "Share of the room who chose " : "Share of learners who chose ") + L }, pct(cs[L] || 0, cs.n) + "%") : null,
       verdict ? h("span", { class: "verdict" }, verdict) : null,
       h("button", { class: "cx", type: "button", "aria-pressed": String(isStruck),
         title: isStruck ? "Undo cross out" : "Cross out " + L, "aria-label": (isStruck ? "Undo cross out of " : "Cross out ") + L,
@@ -2458,6 +2485,7 @@ function strike(q, L) {
   markDirty(q); renderPlayer(true);
 }
 function actionsEl(q, locked) {
+  if (P.group) return gActions(q);
   var b = P.b, r = q.response, last = P.i === P.qs.length - 1;
   var prev = h("button", { class: "btn ghost", disabled: P.i === 0 ? true : null, onclick: function () { go(P.i - 1); } }, "← Previous");
   var next = h("button", { class: "btn ghost", disabled: last ? true : null, onclick: function () { go(P.i + 1); } }, "Next →");
@@ -2518,7 +2546,7 @@ async function finishSet(auto) {
 // explanation
 function explanationEl(q) {
   var rv = q.reveal, ex = rv.explain || {}, r = q.response, L = rv.answer;
-  var om = !r.selected, ok = !!rv.correct;
+  var om = !r.selected, ok = !!rv.correct, ghost = !!(P && P.group && G && G.role === "host");
   var reasons = h("div", { class: "reasons" });
   ["A", "B", "C", "D", "E"].forEach(function (k) {
     if (!q.body.choices[k]) return;
@@ -2542,11 +2570,16 @@ function explanationEl(q) {
   return h("section", { class: "exp", "aria-label": "Explanation" }, [
     h("div", { class: "subjtag", style: "margin-bottom:-6px" }, (rv.num ? "Question ID " + rv.num + " · " : "") + q.subject),
     h("div", { class: "verified" }, [h("span", { html: ICON.shield, style: "display:flex" }), "Reviewed and verified by Khaled M. Abdullah, MD"]),
-    h("div", { class: "verdictbar " + (om ? "om" : ok ? "ok" : "no") }, [
+    ghost ? h("div", { class: "verdictbar ok" }, [h("span", { class: "dot", html: ICON.ok }), h("span", null, "The answer is " + L + ". " + q.body.choices[L])])
+    : h("div", { class: "verdictbar " + (om ? "om" : ok ? "ok" : "no") }, [
       h("span", { class: "dot", html: om ? "–" : ok ? ICON.ok : ICON.no }),
-      h("span", null, (om ? "Omitted" : ok ? "Correct" : "Incorrect") + ". The answer is " + L + ". " + q.body.choices[L])
+      h("span", null, (om ? (P && P.group ? "No answer" : "Omitted") : ok ? "Correct" : "Incorrect") + ". The answer is " + L + ". " + q.body.choices[L])
     ]),
-    (function () { var cs = choiceStats(q); return cs ? h("p", { class: "cstat" }, pct(cs[L] || 0, cs.n) + "% of learners answered this correctly.") : null; })(),
+    (function () {
+      var cs = choiceStats(q); if (!cs) return null;
+      return h("p", { class: "cstat" }, P.group ? (cs.n ? pct(cs[L] || 0, cs.n) + "% of the room answered this correctly (" + cs.n + " answered)." : "No one in the room answered this one.")
+        : pct(cs[L] || 0, cs.n) + "% of learners answered this correctly.");
+    })(),
     (function () {
       var c = r.conf; if (!c || om) return null;
       var sureWrong = c === "sure" && !ok, luckyGuess = c === "guess" && ok;
@@ -2843,11 +2876,6 @@ function gNet(bad) {
   if (!bad && n) n.remove();
 }
 function gChoices(body) { var c = (body && body.choices) || {}; return ["A", "B", "C", "D", "E"].filter(function (L) { return c[L] != null && c[L] !== ""; }); }
-function gStemEls(body) {
-  var out = paras(body.stem).map(function (t) { return h("p", null, t); }).concat(resultsEl(body));
-  if (body.ask) out.push(h("p", { class: "gask" }, body.ask));
-  return h("div", { class: "gstem" }, out);
-}
 function gLeft() { return G && G.endsAt ? Math.max(0, Math.ceil((G.endsAt - Date.now()) / 1000)) : null; }
 function gTimerText() {
   var st = G.st;
@@ -2875,7 +2903,7 @@ async function gQuestion(qi, needAnswer) {
   var c = G.q[qi];
   if (c && (!needAnswer || c.answer)) return c;
   var d = await gRpc("qb_room_question", { p_room: G.room, p_qi: qi });
-  d.body = fParse(d.body); d.details = fParse(d.details);
+  d.body = fParse(d.body); d.explain = fParse(d.explain) || {};
   G.q[qi] = d; return d;
 }
 async function gApply(st) {
@@ -2887,12 +2915,90 @@ async function gApply(st) {
     try { await gQuestion(st.qi, st.status === "reveal"); }
     catch (e) { G.st = prev; if (!/not_yet/.test(e.message || "")) gNet(true); return; }
   }
-  if (big) { var same = prev && prev.qi === st.qi && prev.status === st.status; G.redraw = false; gDraw(same); }
-  else gLive();
+  if (big) {
+    var same = !!(prev && prev.qi === st.qi && (prev.status === st.status || (prev.status === "question" && st.status === "reveal")));
+    G.justRevealed = !!(prev && prev.qi === st.qi && prev.status === "question" && st.status === "reveal");
+    G.redraw = false; gDraw(same);
+  } else gLive();
 }
+// The question itself uses the same screen as an individual set (renderPlayer): tools, settings, night mode,
+// calculator, lab values, text size, highlighting, side-by-side or stacked explanation. P.group switches the
+// parts that differ: the top bar, the buttons under the choices, live answer counts, and nothing is saved.
 function gDraw(keep) {
-  if (G.st.status === "ended") { gStop(); return G.role === "host" ? gSummary() : gMemberEnded(); }
-  if (G.role === "host") gHostView(keep); else gMemberView(keep);
+  var st = G.st;
+  if (st.status === "ended") { gStop(); P = null; return G.role === "host" ? gSummary() : gMemberEnded(); }
+  if (st.status === "lobby") return G.role === "host" ? gHostLobby() : gMemberLobby();
+  gSyncP(); renderPlayer(keep);
+  if (G.justRevealed) {
+    G.justRevealed = false;
+    var ex = $(".exp"); if (ex && !$(".split")) ex.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+function gSyncP() {
+  var st = G.st, d = G.q[st.qi];
+  if (!P || !P.group || P.room !== G.room) {
+    P = { group: true, room: G.room, b: { id: G.room, mode: "learning", timed: false, status: "in_progress" },
+          qs: [], i: 0, dirty: {}, images: {}, calc: !!(P && P.calc), labs: false, nav: false, seen: {} };
+  }
+  var q = P.qs[st.qi];
+  if (!q || q.id !== d.id) {
+    var mine = G.mine[st.qi] || null;
+    q = P.qs[st.qi] = { id: d.id, subject: d.subject, body: d.body, has_image: false,
+      response: { selected: mine, struck: "", highlights: [], flagged: false, submitted: !!(mine || st.me_answered), time_sec: 0 } };
+  }
+  if (st.me_answered) q.response.submitted = true;
+  if (d.answer && !q.reveal) {
+    q.reveal = { answer: d.answer, explain: d.explain || {}, num: d.num,
+                 correct: q.response.submitted && q.response.selected ? q.response.selected === d.answer : false };
+  }
+  P.i = st.qi;
+}
+function gLocked(q) { return G.role === "host" || !!q.response.submitted || !!q.reveal; }
+// live answer counts for the choices: the host sees them during the question (unless hidden), everyone after the reveal
+function gStats(q) {
+  if (!G || !G.st || P.i !== G.st.qi) return null;
+  var show = G.role === "host" ? (G.bars || !!q.reveal) : !!q.reveal;
+  if (!show) return null;
+  var c = G.st.counts || {}, n = 0, out = { ready: true };
+  ["A", "B", "C", "D", "E"].forEach(function (L) { out[L] = c[L] || 0; n += out[L]; });
+  out.n = n; return out;
+}
+function gBar() {
+  var st = G.st, host = G.role === "host", rev = st.status === "reveal";
+  return h("div", { class: "pbar" }, h("div", { class: "wrap" }, [
+    h("div", { class: "qpos" }, [h("span", { class: "qlong" }, "Question " + (st.qi + 1) + " of " + st.n),
+      h("span", { class: "qshort", "aria-hidden": "true" }, (st.qi + 1) + " / " + st.n),
+      h("small", null, "Group session" + (host ? " · Host" : ""))]),
+    host ? h("span", { class: "gjoin", title: "Late arrivals join at " + JOIN_URL }, [h("span", { class: "gjl" }, JOIN_URL + " · "), "Code " + gFmtCode(st.code)]) : null,
+    host ? h("span", { class: "gans", id: "g-ans" }, st.answered + "/" + st.joined + " answered") : null,
+    st.timed && !rev ? h("span", { class: "clock", id: "g-timer", title: "Time left" }, gTimerText()) : null,
+    h("button", { class: "tbtn", "aria-pressed": String(!!P.calc), title: "Calculator", "aria-label": "Calculator", onclick: toggleCalc, html: ICON.calc }),
+    h("button", { class: "tbtn", "aria-pressed": String(!!P.labs), title: "Lab values", "aria-label": "Lab values", onclick: toggleLabs, html: ICON.flask }),
+    h("button", { class: "tbtn", title: "Text size", "aria-label": "Text size", onclick: openTextSize, html: ICON.zoom }),
+    fsSupported() ? h("button", { class: "tbtn", title: fsOn() ? "Exit full screen" : "Full screen", "aria-label": fsOn() ? "Exit full screen" : "Full screen",
+      onclick: toggleFullscreen, html: fsOn() ? ICON.unfull : ICON.full }) : null,
+    h("button", { class: "tbtn", title: "Settings", "aria-label": "Settings", onclick: openSettings, html: ICON.gear }),
+    host ? h("button", { class: "tbtn", onclick: gEndPrompt }, "End session") : h("button", { class: "tbtn", onclick: gLeave }, "Leave")
+  ]));
+}
+function gActions(q) {
+  var st = G.st, rev = st.status === "reveal", r = q.response;
+  if (G.role === "host") {
+    if (rev) return h("div", { class: "actions" }, [h("span", { class: "grow" }),
+      h("button", { class: "btn teal", onclick: function (e) { gControl("next", e.currentTarget); } }, st.qi + 1 < st.n ? "Next question →" : "See class results")]);
+    var bars = h("input", { type: "checkbox" }); bars.checked = G.bars;
+    bars.onchange = function () { G.bars = bars.checked; gLive(true); };
+    return h("div", { class: "actions" }, [
+      h("button", { class: "btn teal", onclick: function (e) { gControl("reveal", e.currentTarget); } }, "Reveal answer"),
+      st.timed ? h("button", { class: "btn ghost", onclick: function (e) { gControl(st.paused ? "resume" : "pause", e.currentTarget); } }, st.paused ? "Resume timer" : "Pause timer") : null,
+      h("span", { class: "grow" }),
+      h("label", { class: "optin", style: "align-items:center" }, [bars, h("span", null, "Show live answers")])]);
+  }
+  if (rev) return h("p", { class: "gwait" }, "Waiting for the host to start the next question.");
+  if (r.submitted) return h("p", { class: "gwait ok" }, "Your answer is in. Watch the screen for the reveal.");
+  return h("div", { class: "actions" }, [
+    h("button", { class: "btn teal", disabled: r.selected ? null : true, onclick: function (e) { gAnswer(q, e.currentTarget); } }, "Submit answer"),
+    h("span", { class: "grow" }), h("span", { class: "small muted" }, "Anonymous: only class totals are kept.")]);
 }
 function gStartTick() {
   clearInterval(G.tick);
@@ -2920,7 +3026,7 @@ async function gHost(kind, opts, btn) {
 }
 function gHostOpen(st) {
   gStop(); stopClock(); P = null;
-  G = { role: "host", room: st.room, q: {}, bars: true, details: false };
+  G = { role: "host", room: st.room, q: {}, mine: {}, bars: true };
   gUrl("host" + (SAMPLE ? "&sample" : ""));
   gStartTick(); gApply(st).then(function () { G.poll = setTimeout(gLoop, 1000); });
 }
@@ -2935,7 +3041,8 @@ async function gEndPrompt() {
   if (v) gControl("end");
 }
 function gHostRight() {
-  return [fsSupported() ? h("button", { class: "link", onclick: toggleFullscreen }, "Full screen") : null,
+  return [h("button", { class: "link", onclick: openSettings }, "Settings"),
+    fsSupported() ? h("button", { class: "link", onclick: toggleFullscreen }, "Full screen") : null,
     h("button", { class: "link", onclick: gEndPrompt }, "End session")];
 }
 function gLoadQr(cb) {
@@ -2952,70 +3059,34 @@ function gQr(box, code) {
     } catch (e) { box.textContent = ""; }
   });
 }
-function gHostView(keep) {
+function gHostLobby() {
   var st = G.st;
-  if (st.status === "lobby") {
-    var qr = h("div", { class: "gqr", "aria-label": "QR code to join" });
-    gQr(qr, st.code);
-    var startBtn = h("button", { class: "btn teal", onclick: function (e) {
-      if (!G.st.joined) { var m = $("#g-msg"); if (m) m.textContent = "No one has joined yet. Wait for people to enter the code."; return; }
-      gControl("start", e.currentTarget); } }, "Start session");
-    screen([gHeader(gHostRight()), h("main", { class: "wrap page gproj" }, h("div", { class: "stack" }, [
-      h("section", { class: "card" }, [
-        h("div", { class: "gtop" }, [h("span", { class: "gpill" }, st.title + " · " + st.n + " questions" + (st.timed ? " · 90 s each" : "")),
-          h("span", { class: "gpill gray" }, "Waiting to start")]),
-        h("div", { class: "globby" }, [
-          h("div", null, [
-            h("p", { class: "muted", style: "margin:0 0 6px;font-size:18px" }, ["Go to ", h("b", { style: "color:var(--navy)" }, JOIN_URL), " and enter"]),
-            h("div", { class: "gcode", "aria-label": "Room code " + st.code }, gFmtCode(st.code)),
-            h("p", { style: "margin:18px 0 0;font-size:20px" }, [h("b", { id: "g-joined" }, String(st.joined)), h("span", { id: "g-joined-t" }, st.joined === 1 ? " person joined" : " people joined")]),
-            h("div", { class: "gdots", id: "g-dots" }, gDots(st.joined))]),
-          qr]),
-        h("p", { class: "small muted", style: "margin:16px 0" }, "Names aren't shown. Each dot is one phone. Answers are anonymous: only class averages are kept."),
-        h("div", { class: "actions" }, [startBtn, h("button", { class: "btn ghost", onclick: gEndPrompt }, "Cancel")]),
-        h("p", { class: "err", id: "g-msg", "aria-live": "polite" })])
-    ]))]);
-    return;
-  }
-  var q = G.q[st.qi], rev = st.status === "reveal", body = q.body;
-  var counts = st.counts || {}, tot = 0; gChoices(body).forEach(function (L) { tot += counts[L] || 0; });
-  var rows = gChoices(body).map(function (L) {
-    var p = pct(counts[L] || 0, tot), show = rev || G.bars;
-    return h("div", { class: "gch" + (rev && L === q.answer ? " ok" : ""), id: "g-ch-" + L }, [
-      h("div", { class: "gf", style: "width:" + (show ? p : 0) + "%" }), h("span", { class: "gl" }, L),
-      h("span", { class: "gt" }, body.choices[L]), h("span", { class: "gp" }, show ? p + "%" : "")]);
-  });
-  var top = h("div", { class: "gtop" }, [
-    h("div", { style: "display:flex;gap:8px;flex-wrap:wrap" }, [h("span", { class: "gpill" }, "Question " + (st.qi + 1) + " of " + st.n),
-      h("span", { class: "gpill gray" }, q.subject), h("span", { class: "gpill gray" }, "Join: " + JOIN_URL + " · " + gFmtCode(st.code))]),
-    h("div", { style: "display:flex;align-items:center;gap:18px" }, [h("span", { class: "muted", id: "g-ans" }, st.answered + " of " + st.joined + " answered"),
-      st.timed && !rev ? h("span", { class: "gtimer", id: "g-timer" }, gTimerText()) : null])]);
-  var side = h("div", { class: "gchs" }, rows);
-  var kids = [top, h("div", { class: "gqgrid" }, [gStemEls(body), side])];
-  if (rev) {
-    side.appendChild(h("div", { class: "gpearl" }, [h("b", null, "Class: " + pct(counts[q.answer] || 0, tot) + "% correct" + (tot ? "" : " (no answers)") + ". "), q.pearl ? h("span", null, pearlNodes(q.pearl)) : null]));
-    if (q.details) {
-      var det = h("div", { class: "gdet", hidden: !G.details }, gChoices(body).map(function (L) {
-        return q.details[L] ? h("p", null, [h("b", null, L + ". "), q.details[L]]) : null; }));
-      kids.push(h("button", { class: "link", style: "margin-top:10px", onclick: function (e) { G.details = !G.details; det.hidden = !G.details; e.currentTarget.textContent = G.details ? "Hide why each choice" : "Show why each choice"; } }, G.details ? "Hide why each choice" : "Show why each choice"), det);
-    }
-    kids.push(h("div", { class: "actions", style: "margin-top:18px" }, [
-      h("button", { class: "btn teal", onclick: function (e) { G.details = false; gControl("next", e.currentTarget); } }, st.qi + 1 < st.n ? "Next question" : "See class results")]));
-  } else {
-    var bars = h("input", { type: "checkbox" }); bars.checked = G.bars;
-    bars.onchange = function () { G.bars = bars.checked; gDraw(true); };
-    kids.push(h("div", { class: "actions", style: "margin-top:18px;align-items:center" }, [
-      h("button", { class: "btn teal", onclick: function (e) { gControl("reveal", e.currentTarget); } }, "Reveal answer"),
-      st.timed ? h("button", { class: "btn ghost", onclick: function (e) { gControl(st.paused ? "resume" : "pause", e.currentTarget); } }, st.paused ? "Resume timer" : "Pause timer") : null,
-      h("label", { class: "optin", style: "margin-left:auto;align-items:center" }, [bars, h("span", null, "Show live answers")])]));
-  }
-  screen([gHeader(gHostRight()), h("main", { class: "wrap page gproj" }, h("section", { class: "card" }, kids))], false, keep);
+  var qr = h("div", { class: "gqr", "aria-label": "QR code to join" });
+  gQr(qr, st.code);
+  var startBtn = h("button", { class: "btn teal", onclick: function (e) {
+    if (!G.st.joined) { var m = $("#g-msg"); if (m) m.textContent = "No one has joined yet. Wait for people to enter the code."; return; }
+    gControl("start", e.currentTarget); } }, "Start session");
+  screen([gHeader(gHostRight()), h("main", { class: "wrap page gproj" }, h("div", { class: "stack" }, [
+    h("section", { class: "card" }, [
+      h("div", { class: "gtop" }, [h("span", { class: "gpill" }, st.title + " · " + st.n + " questions" + (st.timed ? " · 90 s each" : "")),
+        h("span", { class: "gpill gray" }, "Waiting to start")]),
+      h("div", { class: "globby" }, [
+        h("div", null, [
+          h("p", { class: "muted", style: "margin:0 0 6px;font-size:18px" }, ["Go to ", h("b", { class: "gurl" }, JOIN_URL), " and enter"]),
+          h("div", { class: "gcode", "aria-label": "Room code " + st.code }, gFmtCode(st.code)),
+          h("p", { style: "margin:18px 0 0;font-size:20px" }, [h("b", { id: "g-joined" }, String(st.joined)), h("span", { id: "g-joined-t" }, st.joined === 1 ? " person joined" : " people joined")]),
+          h("div", { class: "gdots", id: "g-dots" }, gDots(st.joined))]),
+        qr]),
+      h("p", { class: "small muted", style: "margin:16px 0" }, "Names aren't shown. Each dot is one phone. Answers are anonymous: only class averages are kept."),
+      h("div", { class: "actions" }, [startBtn, h("button", { class: "btn ghost", onclick: gEndPrompt }, "Cancel")]),
+      h("p", { class: "err", id: "g-msg", "aria-live": "polite" })])
+  ]))]);
 }
 function gDots(n) { var a = []; for (var i = 0; i < Math.min(n, 80); i++) a.push(h("i")); return a; }
-function gLive() {
+function gLive(force) {
   var st = G.st;
-  if (G.role !== "host") return;
   if (st.status === "lobby") {
+    if (G.role !== "host") return;
     var j = $("#g-joined"), jt = $("#g-joined-t"), d = $("#g-dots");
     if (j) j.textContent = String(st.joined);
     if (jt) jt.textContent = st.joined === 1 ? " person joined" : " people joined";
@@ -3023,15 +3094,13 @@ function gLive() {
     if (st.joined) { var m = $("#g-msg"); if (m) m.textContent = ""; }
     return;
   }
-  var a = $("#g-ans"); if (a) a.textContent = st.answered + " of " + st.joined + " answered";
-  var q = G.q[st.qi]; if (!q) return;
-  var counts = st.counts || {}, tot = 0; gChoices(q.body).forEach(function (L) { tot += counts[L] || 0; });
-  if (st.status === "question" && !G.bars) return;
-  gChoices(q.body).forEach(function (L) {
-    var row = $("#g-ch-" + L); if (!row) return;
-    var p = pct(counts[L] || 0, tot);
-    row.querySelector(".gf").style.width = p + "%"; row.querySelector(".gp").textContent = p + "%";
-  });
+  if (!P || !P.group || !$(".playwrap")) return;
+  var a = $("#g-ans"); if (a) a.textContent = st.answered + "/" + st.joined + " answered";
+  var key = JSON.stringify(st.counts || {}) + "|" + G.bars;
+  if (!force && key === G.liveKey) return;
+  G.liveKey = key;
+  var q = cur(), old = $(".choices");
+  if (q && old) old.replaceWith(choicesEl(q, gLocked(q)));
 }
 async function gSummary() {
   screen([gHeader(), h("main", { class: "wrap page" }, h("div", { class: "spin" }))]);
@@ -3112,49 +3181,23 @@ async function gLeave() {
   if (room) { try { await gRpc("qb_room_leave", { p_room: room }); } catch (e) {} }
   location.href = "qbank.html";
 }
-function gMemberView(keep) {
-  var st = G.st, right = [h("button", { class: "link", onclick: gLeave }, "Leave")];
-  var wrap = function (kids) { screen([gHeader(right), h("main", { class: "wrap page gphone" }, h("section", { class: "card" }, kids))], false, keep); };
-  if (st.status === "lobby") {
-    return wrap([h("div", { class: "gbig" }, [h("div", { class: "gic ok" }, "✓"), h("h1", null, "You're in"),
-      h("p", { class: "muted" }, [st.title + " · " + st.n + " questions", h("br"), "Waiting for the host to start. Keep this screen open."])])]);
-  }
-  var q = G.q[st.qi], body = q.body, mine = G.mine[st.qi] || null, inAlready = !!(mine || st.me_answered);
-  if (st.status === "reveal") {
-    var res = !inAlready ? "none" : mine ? (mine === q.answer ? "ok" : "no") : "in";
-    return wrap([
-      h("div", { class: "gtop" }, [h("span", { class: "gpill" }, "Question " + (st.qi + 1) + " of " + st.n)]),
-      h("div", { class: "gbig", style: "padding-top:4px" }, [
-        h("div", { class: "gic " + (res === "ok" ? "ok" : res === "no" ? "no" : "wait") }, res === "ok" ? "✓" : res === "no" ? "✕" : "–"),
-        h("h1", null, res === "ok" ? "Correct" : res === "no" ? "Not quite" : res === "in" ? "Answer revealed" : "No answer"),
-        h("p", { class: "muted" }, (res === "ok" ? "" : "The answer is " + q.answer + ": " + body.choices[q.answer] + ". ") + (mine ? "Only you can see this." : ""))]),
-      q.pearl ? h("div", { class: "gpearl" }, pearlNodes(q.pearl)) : null,
-      h("p", { class: "small muted", style: "text-align:center;margin:14px 0 0" }, "Next question coming up.")]);
-  }
-  var sel = G.sel[st.qi] || null;
-  var opts = gChoices(body).map(function (L) {
-    var on = inAlready ? mine === L : sel === L;
-    return h("button", { type: "button", class: "gopt", "aria-pressed": String(on), disabled: inAlready ? true : null,
-      onclick: function () { G.sel[st.qi] = L; gDraw(true); } }, [h("span", { class: "gl" }, L), h("span", null, body.choices[L])]);
-  });
-  var submit = h("button", { class: "btn teal", style: "width:100%", onclick: function (e) { gAnswer(e.currentTarget); } }, "Submit answer");
-  wrap([
-    h("div", { class: "gtop" }, [h("span", { class: "gpill" }, "Question " + (st.qi + 1) + " of " + st.n),
-      st.timed ? h("span", { class: "gtimer", id: "g-timer" }, gTimerText()) : null]),
-    gStemEls(body), h("div", null, opts),
-    inAlready ? h("p", { class: "fnote ok", style: "text-align:center" }, "Your answer is in. Watch the screen.")
-      : h("div", null, [submit, h("p", { class: "err", id: "g-perr", "aria-live": "polite" })])]);
+function gMemberLobby() {
+  var st = G.st;
+  screen([gHeader([h("button", { class: "link", onclick: openSettings }, "Settings"), h("button", { class: "link", onclick: gLeave }, "Leave")]),
+    h("main", { class: "wrap page gphone" }, h("section", { class: "card gbig" }, [
+      h("div", { class: "gic ok" }, "✓"), h("h1", null, "You're in"),
+      h("p", { class: "muted" }, [st.title + " · " + st.n + " questions", h("br"), "Waiting for the host to start. Keep this screen open."])]))]);
 }
-async function gAnswer(btn) {
-  var st = G.st, L = G.sel[st.qi], err = $("#g-perr");
-  if (!L) { if (err) err.textContent = "Pick an answer first."; return; }
+async function gAnswer(q, btn) {
+  var st = G.st, L = q.response.selected;
+  if (!L) return;
   btn.disabled = true; btn.textContent = "Sending…";
   try {
     var ns = await gRpc("qb_room_answer", { p_room: G.room, p_qi: st.qi, p_choice: L });
-    G.mine[st.qi] = L; G.redraw = true; await gApply(ns);
+    G.mine[st.qi] = L; q.response.submitted = true; G.redraw = true; await gApply(ns);
   } catch (e) {
-    if (/already/.test(e.message || "")) { G.mine[st.qi] = G.mine[st.qi] || null; G.redraw = true; gDraw(true); return; }
-    btn.disabled = false; btn.textContent = "Submit answer"; if (err) err.textContent = gFriendly(e);
+    if (/already/.test(e.message || "")) { q.response.submitted = true; renderPlayer(true); return; }
+    btn.disabled = false; btn.textContent = "Submit answer"; toast(gFriendly(e));
   }
 }
 function gMemberEnded() {

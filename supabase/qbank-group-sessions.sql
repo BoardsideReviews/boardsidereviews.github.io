@@ -271,17 +271,16 @@ begin
 end;
 $$;
 
--- one question of the room. Only the current one or earlier ones; the answer and pearl only after
--- that question is revealed; the full per-choice explanation only for the host.
+-- one question of the room. Only the current one or earlier ones; the answer and the full explanation
+-- (the same one learners see in the question bank) only after that question is revealed.
 create or replace function public.qb_room_question(p_room uuid, p_qi integer)
 returns json language plpgsql stable security definer set search_path = public as $$
-declare uid uuid := auth.uid(); r public.qb_rooms; q public.qb_questions; is_host boolean; shown boolean; j jsonb;
+declare uid uuid := auth.uid(); r public.qb_rooms; q public.qb_questions; shown boolean; j jsonb;
 begin
   if uid is null then raise exception 'not_signed_in'; end if;
   select * into r from public.qb_rooms where id = p_room;
   if r.id is null then raise exception 'no_room'; end if;
-  is_host := r.host = uid;
-  if not is_host and not exists (select 1 from public.qb_room_members m where m.room = r.id and m.user_id = uid) then
+  if r.host <> uid and not exists (select 1 from public.qb_room_members m where m.room = r.id and m.user_id = uid) then
     raise exception 'not_in_room';
   end if;
   if r.status = 'lobby' or p_qi < 0 or p_qi >= r.n or (p_qi > r.qi and r.status <> 'ended') then raise exception 'not_yet'; end if;
@@ -289,10 +288,9 @@ begin
   j := to_jsonb(q);
   shown := p_qi < r.qi or r.status in ('reveal', 'ended');
   return json_build_object(
-    'qi', p_qi, 'subject', q.subject, 'body', j -> 'body',
+    'qi', p_qi, 'id', q.id, 'num', j -> 'num', 'subject', q.subject, 'body', j -> 'body',
     'answer', case when shown then q.answer end,
-    'pearl', case when shown then j -> 'explain' -> 'pearl' end,
-    'details', case when shown and is_host then j -> 'explain' -> 'details' end);
+    'explain', case when shown then j -> 'explain' end);
 end;
 $$;
 
