@@ -99,6 +99,7 @@ async function boot(){
   if(!ok){app.innerHTML=`<h1>Admin</h1><div class="card"><span>${esc(u.email)} doesn't have admin access.</span><div><button class="btn ghost" data-a="out">Sign out</button></div></div>`;return}
   app.innerHTML=`<div class="row"><h1>Admin</h1><span class="muted">${esc(u.email)} · <button class="linkbtn" data-a="out">Sign out</button></span></div>
   <section class="card"><div class="row"><h2>Question bank</h2><a class="btn" href="admin-questions.html">Open the question editor</a></div><p class="muted" style="margin:0">Edit any question, its explanation, teaching pearl, references or image; add new questions; remove or restore questions. Changes go live when you confirm.</p></section>
+  <section class="card" id="hosts"><div class="row"><h2>Group session hosts</h2><span class="muted" id="hostcount"></span></div><p class="muted" style="margin:0">These accounts can host group sessions from the full question bank (for example a program’s chief residents). Anyone with a free account can already host the free sets. Add the email they sign in with; it works even before they create their account.</p><div class="row" style="justify-content:flex-start;align-items:flex-end;gap:10px"><label class="fld" style="flex:1;min-width:220px">Email<input type="email" id="hemail" placeholder="chief@program.edu" autocomplete="off"></label><label class="fld" style="flex:1;min-width:220px">Note (optional)<input type="text" id="hnote" maxlength="120" placeholder="Chief resident, Example IM program" style="flex:none"></label><button class="btn" data-host-add>Add host</button></div><div id="hconfirm"></div><div class="tablebox" id="hosttable"></div></section>
   <section class="card" id="mailing"><div class="row"><h2>Mailing list</h2><span class="row" style="gap:8px;justify-content:flex-end"><input type="search" id="mq" placeholder="Search name or email" aria-label="Search the mailing list" style="max-width:240px"><button class="btn ghost" data-csv="mailing">Download (CSV)</button></span></div><div id="mlsum" class="muted"></div><div class="tablebox" id="mltable"></div><div id="mlgone"></div></section>
   <section class="card"><div class="row"><h2>Website traffic</h2><a class="btn ghost" href="${GA_LINK}" target="_blank" rel="noopener">Open Google Analytics ↗</a></div><p class="muted" style="margin:0">Visitors, top pages and where traffic comes from are in Google Analytics (sign in as boardsidereviews@gmail.com).</p></section>
   <section class="card"><div class="row"><h2>How people heard about us</h2></div><div id="heard"></div></section>
@@ -107,13 +108,23 @@ async function boot(){
   <section class="card"><div class="row"><h2>Players</h2><input type="search" id="q" placeholder="Search name or email" aria-label="Search players"></div><div id="confirm"></div><div class="tablebox" id="players"></div></section>
   <section class="card"><h2>Blocked words</h2><p class="muted" style="margin:0">Names containing these are rejected. Adding a word also clears any current names that match. Red words are blocked even inside longer words; the rest only as a whole word, so real names like Hancock or Nazir still work.</p>
   <form id="wf" class="row" style="justify-content:flex-start"><input type="text" id="w" placeholder="Add a word" aria-label="Word to block" maxlength="30"><label class="chk"><input type="checkbox" id="wany"> Also inside longer words</label><button class="btn">Add</button></form><div class="words" id="words"></div></section>`;
+  ["#hemail","#hnote"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("[data-host-add]").click()}}));
   $("#q").addEventListener("input",e=>{q=e.target.value.toLowerCase();drawPlayers()});
   $("#mq").addEventListener("input",e=>{mq=e.target.value.toLowerCase();drawMailing()});
   $("#wf").addEventListener("submit",async e=>{e.preventDefault();const v=$("#w").value.trim().toLowerCase();if(!/^[a-z]{2,30}$/.test(v)){toast("Use 2–30 letters, no spaces.");return}
     try{await BLB.rpc("admin_add_blocked_word",{p_word:v,p_anywhere:$("#wany").checked});$("#w").value="";toast("Blocked “"+v+"”");await load()}catch(x){toast(BLB.friendly(x))}});
   await load();
 }
+let hosts=null;
+function hostMsg(x){const m=(x&&x.message)||"";if(/bad_email/.test(m))return "Enter a valid email address.";if(/owner_protected/.test(m))return "boardsidereviews@gmail.com is always a host.";if(/Could not find the function/i.test(m))return "Run the latest qbank-group-sessions.sql in Supabase first.";return BLB.friendly(x)}
+async function loadHosts(){try{hosts=await BLB.rpc("admin_room_hosts")}catch(x){hosts=null;$("#hosttable").innerHTML=`<p class="muted" style="padding:12px;margin:0">${esc(hostMsg(x))}</p>`;return}drawHosts()}
+function drawHosts(){
+  if(!hosts)return;
+  const n=hosts.filter(h=>!h.owner).length;$("#hostcount").textContent=n?n+(n===1?" host":" hosts")+" besides you":"Only you so far";
+  $("#hosttable").innerHTML=`<table><thead><tr><th>Email</th><th>Note</th><th>Account</th><th>Sessions hosted</th><th>Added</th><th></th></tr></thead><tbody>${hosts.map(h=>`<tr><td>${esc(h.email)}</td><td>${esc(h.note||"—")}</td><td>${h.has_account?"Yes":"Not yet"}</td><td>${h.sessions}</td><td>${dt(h.added_at)}</td><td class="acts">${h.owner?'<span class="muted">Always a host</span>':`<button class="btn danger" data-host-rm="${esc(h.email)}">Remove</button>`}</td></tr>`).join("")}</tbody></table>`;
+}
 async function load(){
+  loadHosts();
   try{[players,words]=await Promise.all([BLB.rpc("admin_list_players"),BLB.rpc("admin_list_blocked_words")])}catch(e){toast(BLB.friendly(e));return}
   drawPlayers();drawWords();
   try{accounts=await BLB.rpc("admin_accounts")}catch(e){accounts=null}
@@ -203,6 +214,14 @@ const ACTIONS={
   clear:{fn:"admin_clear_scores",args:id=>({p_user:id}),msg:"Delete all of this player's scores? This can't be undone.",done:"Scores cleared"}
 };
 document.addEventListener("click",async e=>{
+  const hb=e.target.closest("[data-host-add],[data-host-rm],[data-host-go],[data-host-no]");
+  if(hb){
+    if(hb.hasAttribute("data-host-add")){const em=$("#hemail").value.trim();if(!em){toast("Enter the host's email.");return}
+      hb.disabled=true;try{hosts=await BLB.rpc("admin_room_host_add",{p_email:em,p_note:$("#hnote").value.trim()});drawHosts();$("#hemail").value="";$("#hnote").value="";toast(em.toLowerCase()+" can now host full question bank sessions.")}catch(x){toast(hostMsg(x))}hb.disabled=false;return}
+    if(hb.hasAttribute("data-host-rm")){const em=hb.dataset.hostRm;$("#hconfirm").innerHTML=`<div class="card" style="margin:10px 0;border-color:#efc2b7"><span>Remove <b>${esc(em)}</b> as a host? They won't be able to host full question bank sessions, and any session of theirs that's open now ends.</span><div class="row" style="justify-content:flex-start;gap:8px;margin-top:8px"><button class="btn danger" data-host-go="${esc(em)}">Remove host</button><button class="btn ghost" data-host-no>Cancel</button></div></div>`;return}
+    if(hb.hasAttribute("data-host-no")){$("#hconfirm").innerHTML="";return}
+    if(hb.hasAttribute("data-host-go")){const em=hb.dataset.hostGo;hb.disabled=true;try{hosts=await BLB.rpc("admin_room_host_remove",{p_email:em});$("#hconfirm").innerHTML="";drawHosts();toast("Removed "+em+".")}catch(x){toast(hostMsg(x));hb.disabled=false}return}
+  }
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.csv){csv(b.dataset.csv);return}
   if(b.dataset.ml==="preview"){b.disabled=true;await mlPreview();b.disabled=false;return}

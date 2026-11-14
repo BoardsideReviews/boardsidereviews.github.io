@@ -18,10 +18,8 @@
 --     the moment the session ends, and open rooms close on their own after 4 hours.
 --   • Group answers are never saved to anyone's question bank account or stats.
 --
--- To let another account host full question bank sessions:
---   insert into public.qb_room_hosts (email) values ('chief@program.edu');
--- To take it away:
---   delete from public.qb_room_hosts where email = 'chief@program.edu';
+-- Who can host full question bank sessions: manage it on the admin page (Group session hosts).
+-- boardsidereviews@gmail.com is always a host and can't be removed there.
 
 -- ─────────────────────────────────────────────────────────────
 -- 1. TABLES
@@ -31,6 +29,7 @@ create table if not exists public.qb_room_hosts (
   added_at timestamptz not null default now()
 );
 insert into public.qb_room_hosts (email) values ('boardsidereviews@gmail.com') on conflict (email) do nothing;
+alter table public.qb_room_hosts add column if not exists note text;   -- e.g. 'Chief resident, Example IM program'
 
 create table if not exists public.qb_rooms (
   id          uuid primary key default gen_random_uuid(),
@@ -399,6 +398,58 @@ grant execute on function public.qb_room_can_host(), public.qb_room_subjects(),
   public.qb_room_create(text, text, text, integer, boolean), public.qb_room_mine(), public.qb_room_join(text),
   public.qb_room_poll(uuid), public.qb_room_question(uuid, integer), public.qb_room_answer(uuid, integer, text),
   public.qb_room_leave(uuid), public.qb_room_control(uuid, text), public.qb_room_summary(uuid) to authenticated;
+
+
+-- ─────────────────────────────────────────────────────────────
+-- 4. ADMIN PAGE: who can host full question bank sessions
+-- ─────────────────────────────────────────────────────────────
+create or replace function public.admin_room_hosts()
+returns json language plpgsql stable security definer set search_path = public, auth as $$
+begin
+  if not public.is_admin() then raise exception 'not_admin'; end if;
+  return (select coalesce(json_agg(json_build_object(
+            'email', h.email, 'note', h.note, 'added_at', h.added_at,
+            'has_account', exists (select 1 from auth.users u where lower(u.email) = lower(h.email)),
+            'owner', lower(h.email) = 'boardsidereviews@gmail.com',
+            'sessions', (select count(*) from public.qb_rooms r join auth.users u on u.id = r.host
+                         where lower(u.email) = lower(h.email) and r.kind = 'bank'))
+          order by (lower(h.email) = 'boardsidereviews@gmail.com') desc, h.added_at), '[]'::json)
+          from public.qb_room_hosts h);
+end;
+$$;
+
+create or replace function public.admin_room_host_add(p_email text, p_note text)
+returns json language plpgsql volatile security definer set search_path = public as $$
+declare e text := lower(trim(coalesce(p_email, '')));
+begin
+  if not public.is_admin() then raise exception 'not_admin'; end if;
+  if e !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' or length(e) > 254 then raise exception 'bad_email'; end if;
+  insert into public.qb_room_hosts (email, note) values (e, nullif(trim(coalesce(p_note, '')), ''))
+  on conflict (email) do update set note = coalesce(excluded.note, public.qb_room_hosts.note);
+  return public.admin_room_hosts();
+end;
+$$;
+
+-- removing a host also ends any full question bank session they have open
+create or replace function public.admin_room_host_remove(p_email text)
+returns json language plpgsql volatile security definer set search_path = public, auth as $$
+declare e text := lower(trim(coalesce(p_email, ''))); r record;
+begin
+  if not public.is_admin() then raise exception 'not_admin'; end if;
+  if e = 'boardsidereviews@gmail.com' then raise exception 'owner_protected'; end if;
+  delete from public.qb_room_hosts where lower(email) = e;
+  for r in select x.id from public.qb_rooms x join auth.users u on u.id = x.host
+           where lower(u.email) = e and x.kind = 'bank' and x.status <> 'ended' loop
+    perform public.qb_gs_close(r.id);
+  end loop;
+  return public.admin_room_hosts();
+end;
+$$;
+
+revoke execute on function public.admin_room_hosts(), public.admin_room_host_add(text, text),
+  public.admin_room_host_remove(text) from public, anon;
+grant execute on function public.admin_room_hosts(), public.admin_room_host_add(text, text),
+  public.admin_room_host_remove(text) to authenticated;
 
 select 'Group sessions are ready' as status,
        (select string_agg(email, ', ') from public.qb_room_hosts) as full_bank_hosts;
