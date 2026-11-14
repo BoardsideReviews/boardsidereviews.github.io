@@ -633,6 +633,17 @@ nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)
 .ig-handle small{color:var(--muted);font-size:13.5px}
 .ig-follow{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;background:var(--navy);color:#fff;text-decoration:none;font-weight:600;font-size:16px;border-radius:12px;padding:14px 22px}
 .ig-follow svg{width:20px;height:20px}
+.ig-btns{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.ig-row{display:flex;gap:10px;flex-wrap:wrap}
+@media (max-width:520px){.ig-btns{align-items:stretch}.ig-btns .ig-follow{align-self:stretch}.ig-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.ig-btns .ig-follow,.ig-row .ig-alt{justify-content:center}.ig-row .ig-alt{font-size:13.5px;padding:13px 4px;gap:6px;white-space:nowrap;min-width:0}.ig-row .ig-alt svg{width:16px;height:16px}}
+@media (max-width:370px){.ig-row{grid-template-columns:1fr}}
+.ig-alt{display:inline-flex;align-items:center;gap:9px;background:#fff;color:var(--navy);border:1px solid var(--line);text-decoration:none;font-weight:600;font-size:15px;border-radius:12px;padding:13px 16px;transition:border-color .2s}
+.ig-alt:hover{border-color:var(--teal)}
+.ig-alt svg{width:18px;height:18px;flex:none}
+.ig-safe{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:12px;padding:14px 16px;margin-top:4px}
+.ig-safe svg{width:22px;height:22px;flex:none;color:var(--teal);margin-top:1px}
+.ig-safe p{margin:0;font-size:14px;line-height:21px;color:var(--ink2)}
+.ig-safe b{color:var(--navy)}
 .ig-stage{position:relative;height:540px;display:flex;align-items:center;justify-content:center}
 .reel{position:absolute;width:262px;aspect-ratio:9/16;border-radius:22px;overflow:hidden;background:#0b2545;box-shadow:0 24px 50px rgba(11,37,69,.28);transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .7s,filter .7s;color:#fff;border:0;padding:0;cursor:pointer;font:inherit;text-align:left}
 .reel,.reel *{box-sizing:border-box}
@@ -661,7 +672,7 @@ nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)
 .ig-box iframe{width:100%;height:100%;border:0;display:block}
 .ig-x{position:absolute;top:-2px;right:-2px;transform:translate(30%,-30%);width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--navy);font-size:22px;line-height:1;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.3);z-index:2}
 .ig-load{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:14px}
-@media (max-width:900px){.ig{padding:64px 0}.ig .wrap{grid-template-columns:1fr;gap:28px}.ig-stage{height:500px}.reel{width:240px}.reel[data-pos="-1"]{transform:translateX(-150px) scale(.78)}.reel[data-pos="1"]{transform:translateX(150px) scale(.78)}.ig-x{transform:none;top:8px;right:8px}}
+@media (max-width:900px){.ig{padding:64px 0}.ig .wrap{grid-template-columns:minmax(0,1fr);gap:28px}.ig-stage{height:500px}.reel{width:240px}.reel[data-pos="-1"]{transform:translateX(-150px) scale(.78)}.reel[data-pos="1"]{transform:translateX(150px) scale(.78)}.ig-x{transform:none;top:8px;right:8px}}
 @media (prefers-reduced-motion:reduce){.reel{transition:none}}
 </style>
 <section id="instagram" class="ig" aria-label="Boardside Reviews on Instagram">
@@ -671,7 +682,10 @@ nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)
 <h2 class="sec">A board pearl in under a minute.</h2>
 <p>Quick questions, bedside pearls, and game previews. Tap a reel to watch it here, or follow along between study blocks.</p>
 <div class="ig-handle"><span class="ig-av"><span><svg viewBox="0 0 100 100"><path fill="#0B2545" d="M35.3 27H51.4a11.5 11.5 0 0 1 0 23H43v23h-7.7Q34.6 73 34.6 72.3V27.7Q34.6 27 35.3 27Z"/><path fill="#0D7070" d="M43 50h10.9a11.5 11.5 0 0 1 0 23H43Z"/></svg></span></span><span><b>@boardsidereviews</b><small>Board review for IM residents</small></span></div>
-<a class="ig-follow" href="https://www.instagram.com/boardsidereviews/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Follow on Instagram</a>
+<div class="ig-btns"><a class="ig-follow" href="https://www.instagram.com/boardsidereviews/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Follow on Instagram</a>
+<div class="ig-row"><a class="ig-alt" href="https://x.com/BoardsideReview" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.2 2.3h3.4l-7.4 8.4 8.7 11.5h-6.8l-5.3-7-6.1 7H1.3l7.9-9L.8 2.3h7l4.8 6.4 5.6-6.4zm-1.2 17.9h1.9L7.1 4.2H5.1l11.9 16z"/></svg>@BoardsideReview</a>
+<a class="ig-alt" href="https://www.youtube.com/@Khalemedic" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#e62117" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8z"/><path fill="#fff" d="M9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>Khalemedic</a></div></div>
+<div class="ig-safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z"/><path d="M8.5 12l2.4 2.4 4.6-4.8"/></svg><p><b>These are our only accounts.</b> We have no other social media. Boardside Reviews will never call or text you, and will never message you asking for payment, a password, or a login code. If someone says they're us anywhere else, it isn't us.</p></div>
 </div>
 <div class="ig-stage" id="igStage"><div class="ig-dots" id="igDots"></div></div>
 </div>
