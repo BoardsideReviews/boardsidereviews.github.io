@@ -620,6 +620,93 @@ nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)
 </div>
 </section>
 
+<style>
+.ig{background:var(--sky2);padding:88px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden}
+.ig .wrap{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:48px;align-items:center}
+.ig-copy{display:flex;flex-direction:column;gap:16px;max-width:460px}
+.ig-copy p{margin:0;color:var(--muted);font-size:17px;line-height:27px}
+.ig-handle{display:flex;align-items:center;gap:12px;margin-top:6px}
+.ig-av{width:52px;height:52px;border-radius:50%;padding:3px;background:conic-gradient(from 200deg,#f9ce34,#ee2a7b,#6228d7,#f9ce34)}
+.ig-av span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:#fff;border:2px solid #fff}
+.ig-av svg{width:30px;height:30px}
+.ig-handle b{display:block;font-size:16px;color:var(--navy)}
+.ig-handle small{color:var(--muted);font-size:13.5px}
+.ig-follow{display:inline-flex;align-items:center;gap:10px;align-self:flex-start;background:var(--navy);color:#fff;text-decoration:none;font-weight:600;font-size:16px;border-radius:12px;padding:14px 22px}
+.ig-follow svg{width:20px;height:20px}
+.ig-stage{position:relative;height:540px;display:flex;align-items:center;justify-content:center}
+.reel{position:absolute;width:262px;aspect-ratio:9/16;border-radius:22px;overflow:hidden;background:#0b2545;box-shadow:0 24px 50px rgba(11,37,69,.28);transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .7s,filter .7s;color:#fff;border:0;padding:0;cursor:pointer;font:inherit;text-align:left}
+.reel,.reel *{box-sizing:border-box}
+.reel[data-pos="0"]{transform:translateX(0) scale(1);z-index:3}
+.reel[data-pos="-1"]{transform:translateX(-215px) scale(.8);opacity:.6;filter:saturate(.7);z-index:2}
+.reel[data-pos="1"]{transform:translateX(215px) scale(.8);opacity:.6;filter:saturate(.7);z-index:2}
+.reel img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.reel .top{position:absolute;left:12px;right:12px;top:14px;display:flex;align-items:center;gap:7px;z-index:2;font-size:12px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.reel .top i{width:24px;height:24px;border-radius:50%;background:#fff;display:grid;place-items:center}
+.reel .top i svg{width:15px;height:15px}
+.reel .hook{position:absolute;left:22px;right:22px;top:31%;z-index:2;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:23px;line-height:1.15;letter-spacing:-.01em}
+.reel .hook em{font-style:normal;color:var(--teal-bright);display:block;margin-top:8px;font-size:17px}
+.reel .rplay{position:absolute;right:14px;top:14px;height:34px;padding:0 13px 0 10px;border-radius:17px;background:rgba(11,37,69,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;gap:6px;z-index:2;border:1.5px solid rgba(255,255,255,.7);color:#fff;font-size:12.5px;line-height:1;font-weight:700;letter-spacing:.02em;transition:transform .25s,opacity .4s;opacity:0}
+.reel[data-pos="0"] .rplay{opacity:1}
+.reel:hover .rplay{transform:scale(1.08)}
+.reel .rplay svg{width:13px;height:13px}
+.reel .cap{position:absolute;left:0;right:0;bottom:0;padding:48px 16px 16px;background:linear-gradient(transparent,rgba(0,0,0,.75));z-index:2;font-size:13.5px;line-height:1.35}
+.reel .cap small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--teal-bright);margin-bottom:4px}
+.reel:focus-visible{outline:3px solid var(--teal-bright);outline-offset:4px}
+.ig-dots{position:absolute;bottom:-6px;left:0;right:0;display:flex;gap:7px;justify-content:center}
+.ig-dots button{width:8px;height:8px;border-radius:50%;border:0;background:#c3cfdc;padding:0;cursor:pointer;transition:width .3s}
+.ig-dots button.on{background:var(--teal);width:22px;border-radius:5px}
+.ig-modal{position:fixed;inset:0;z-index:100;background:rgba(6,16,30,.78);display:none;align-items:center;justify-content:center;padding:16px}
+.ig-modal.open{display:flex}
+.ig-box{position:relative;width:min(400px,100%);height:min(732px,calc(100vh - 32px));background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.ig-box iframe{width:100%;height:100%;border:0;display:block}
+.ig-x{position:absolute;top:-2px;right:-2px;transform:translate(30%,-30%);width:40px;height:40px;border-radius:50%;border:0;background:#fff;color:var(--navy);font-size:22px;line-height:1;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.3);z-index:2}
+.ig-load{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:14px}
+@media (max-width:900px){.ig{padding:64px 0}.ig .wrap{grid-template-columns:1fr;gap:28px}.ig-stage{height:500px}.reel{width:240px}.reel[data-pos="-1"]{transform:translateX(-150px) scale(.78)}.reel[data-pos="1"]{transform:translateX(150px) scale(.78)}.ig-x{transform:none;top:8px;right:8px}}
+@media (prefers-reduced-motion:reduce){.reel{transition:none}}
+</style>
+<section id="instagram" class="ig" aria-label="Boardside Reviews on Instagram">
+<div class="wrap">
+<div class="ig-copy">
+<span class="eyebrow">ON INSTAGRAM</span>
+<h2 class="sec">A board pearl in under a minute.</h2>
+<p>Quick questions, bedside pearls, and game previews. Tap a reel to watch it here, or follow along between study blocks.</p>
+<div class="ig-handle"><span class="ig-av"><span><svg viewBox="0 0 100 100"><path fill="#0B2545" d="M35.3 27H51.4a11.5 11.5 0 0 1 0 23H43v23h-7.7Q34.6 73 34.6 72.3V27.7Q34.6 27 35.3 27Z"/><path fill="#0D7070" d="M43 50h10.9a11.5 11.5 0 0 1 0 23H43Z"/></svg></span></span><span><b>@boardsidereviews</b><small>Board review for IM residents</small></span></div>
+<a class="ig-follow" href="https://www.instagram.com/boardsidereviews/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Follow on Instagram</a>
+</div>
+<div class="ig-stage" id="igStage"><div class="ig-dots" id="igDots"></div></div>
+</div>
+<div class="ig-modal" id="igModal" role="dialog" aria-modal="true" aria-label="Instagram reel"><div class="ig-box"><button class="ig-x" type="button" aria-label="Close">&times;</button><div class="ig-load">Loading reel from Instagram…</div></div></div>
+</section>
+<script>
+(function(){
+  // To add a reel: put its poster in assets/reels/ and add a line here (code = the part after /p/ or /reel/ in the link).
+  const R=[
+    {code:"DfPtn-_iVhA",img:"assets/reels/lung-cancer-month.webp",tag:"LUNG CANCER AWARENESS",cap:"229,410 diagnoses this year. Who qualifies for screening?"},
+    {code:"Dfpk6Hqhsce",img:"assets/reels/cteph-which-test.webp",tag:"PULM · QUESTION",cap:"The test most of us order by reflex, and why it's the trap.",hook:"Still short of breath 3 months after a PE?<em>Which test first?</em>"},
+    {code:"DfIC0_JhIQa",img:"assets/reels/abg-blitz.webp",tag:"GAME PREVIEW · ABG BLITZ",cap:"3 minutes. How many gases can you crack?"}
+  ];
+  const logo='<svg viewBox="0 0 100 100"><path fill="#0B2545" d="M35.3 27H51.4a11.5 11.5 0 0 1 0 23H43v23h-7.7Q34.6 73 34.6 72.3V27.7Q34.6 27 35.3 27Z"/><path fill="#0D7070" d="M43 50h10.9a11.5 11.5 0 0 1 0 23H43Z"/></svg>';
+  const st=document.getElementById("igStage"),dots=document.getElementById("igDots"),md=document.getElementById("igModal"),box=md.querySelector(".ig-box");
+  const els=R.map((r,i)=>{const b=document.createElement("button");b.type="button";b.className="reel";b.setAttribute("aria-label","Play reel: "+r.cap);
+    b.innerHTML=`<img src="${r.img}" alt="" loading="lazy" decoding="async">${r.hook?`<div class="hook">${r.hook}</div>`:""}<span class="rplay"><svg viewBox="0 0 24 24" fill="#fff"><path d="M7 4.5v15l13-7.5z"/></svg>Watch</span><div class="cap"><small>${r.tag}</small>${r.cap}</div>`;
+    b.onclick=()=>{if(b.dataset.pos==="0")open(r);else go(i)};
+    st.appendChild(b);
+    const d=document.createElement("button");d.type="button";d.setAttribute("aria-label","Show reel "+(i+1));d.onclick=()=>go(i);dots.appendChild(d);
+    return b;});
+  let cur=0,t,seen=false;
+  function go(n){cur=(n+R.length)%R.length;els.forEach((e,i)=>{let p=i-cur;if(p>R.length/2)p-=R.length;if(p<-R.length/2)p+=R.length;e.dataset.pos=p;e.tabIndex=p===0?0:-1});
+    [...dots.children].forEach((d,i)=>d.classList.toggle("on",i===cur));clearTimeout(t);if(seen&&!md.classList.contains("open"))t=setTimeout(()=>go(cur+1),6000);}
+  function open(r){clearTimeout(t);const f=document.createElement("iframe");f.src="https://www.instagram.com/p/"+r.code+"/embed/";f.title="Instagram reel";f.allow="autoplay; encrypted-media; picture-in-picture";f.setAttribute("scrolling","no");
+    box.querySelectorAll("iframe").forEach(x=>x.remove());box.appendChild(f);md.classList.add("open");document.body.style.overflow="hidden";box.querySelector(".ig-x").focus();}
+  function close(){md.classList.remove("open");box.querySelectorAll("iframe").forEach(x=>x.remove());document.body.style.overflow="";els[cur].focus();go(cur);}
+  md.addEventListener("click",e=>{if(e.target===md||e.target.classList.contains("ig-x"))close()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&md.classList.contains("open"))close()});
+  if("IntersectionObserver" in window){new IntersectionObserver(es=>{seen=es[0].isIntersecting;if(seen)go(cur);else clearTimeout(t)},{threshold:.4}).observe(st)}
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)seen=false;
+  go(0);
+})();
+</script>
+
 <section class="founders" aria-label="Founders discount">
 <div class="wrap">
 <div class="founders-card">
