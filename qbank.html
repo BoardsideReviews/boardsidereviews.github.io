@@ -1660,7 +1660,8 @@ async function showHome() {
     ]),
     stats,
     act ? activityCard(act.days) : null,
-    h("div", { class: "grid2" }, [builder(), h("div", { class: "stack" }, [groupBankCard(canHost, hostSubjects), fcCard(fc), subjectCard(subs), confCard(confRows, "Your confidence"), setsCard(ov.blocks)])]),
+    h("div", { class: "grid2" }, [h("div", { class: "stack" }, [builder(), confCard(confRows, "Your confidence"), setsCard(ov.blocks)]),
+      h("div", { class: "stack" }, [groupBankCard(canHost, hostSubjects), fcCard(fc), subjectCard(subs)])]),
     resetCard()
   ]))]);
   gResumeBanner().then(function (b) { var st = $("main .stack"); if (b && st && !P && !G) st.insertBefore(b, st.firstChild); });
