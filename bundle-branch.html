@@ -215,11 +215,26 @@ function msToNext(){
 }
 function hms(ms){ const s = Math.max(0, Math.floor(ms/1000)); return [Math.floor(s/3600), Math.floor(s%3600/60), s%60].map(n=>String(n).padStart(2,"0")).join(":"); }
 
-/* ---------- today's puzzle ---------- */
+/* ---------- today's puzzle (boards load in chunks of 30) ---------- */
 const KEY = dayKey();
 const N = Math.max(0, dayNum(KEY));
 const PZL = N + 1;
-const P = BUNDLE[N % BUNDLE.length];
+function loadBoard(){
+  return new Promise((resolve, reject) => {
+    if (window.BUNDLE) return resolve(BUNDLE[N % BUNDLE.length]);   // older single-file format
+    const M = window.BUNDLE_META, idx = N % M.count, c = Math.floor(idx / M.size);
+    const done = () => resolve(window.BUNDLE_CHUNK[c][idx % M.size]);
+    if (window.BUNDLE_CHUNK && window.BUNDLE_CHUNK[c]) return done();
+    const sc = document.createElement("script");
+    sc.src = "bundle-data/c" + String(c).padStart(3, "0") + ".js?v=" + M.v;
+    sc.onload = done; sc.onerror = reject;
+    document.head.appendChild(sc);
+  });
+}
+(async () => {
+let P;
+try { P = await loadBoard(); }
+catch(e){ document.getElementById("status").textContent = "Today's board didn't load. Refresh to try again."; return; }
 const THEME = Object.keys(P.path);                 // all theme words incl. the bundle
 const EXTRA = new Set(P.x ? P.x.split(" ") : []);  // other valid words in this grid
 const owner = new Array(COLS*ROWS);                // cell -> theme word
@@ -523,6 +538,8 @@ dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 paint();
 if (S.done) results(false);
 if (!store.get("bb:seenRules", false) && !S.found.length) openRules();
+window.BB = { get P(){ return P; }, get S(){ return S; }, shareText };   // handy for debugging in the console
+})();
 </script>
 </body>
 </html>

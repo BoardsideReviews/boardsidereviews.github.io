@@ -1,0 +1,13 @@
+# Extra boards
+Cardiology|Heart sounds|HEARTSOUNDS|SPLITTING PARADOXICAL GALLOP CLICK OPENINGSNAP FRICTIONRUB SUMMATION|Fixed splitting of S2 suggests an atrial septal defect; paradoxical splitting suggests LBBB or severe aortic stenosis.
+Cardiology|Vasodilators|NITRATES|NITROGLYCERIN ISOSORBIDE HEADACHE TOLERANCE HYPOTENSION SILDENAFIL PRELOAD VENODILATION|Nitrates need a daily nitrate-free interval to prevent tolerance.
+Pulmonary|Interstitial patterns|LUNGPATTERNS|RETICULAR NODULAR MOSAIC TREEINBUD CRAZYPAVING CONSOLIDATION BULLAE|Crazy paving on CT is classic for pulmonary alveolar proteinosis, treated with whole-lung lavage.
+Pulmonary|Protein-filled alveoli|PROTEINOSIS|SURFACTANT GMCSF WHOLELUNG LAVAGE CRAZYPAVING AUTOIMMUNE SILICA|Autoimmune pulmonary alveolar proteinosis comes from anti-GM-CSF antibodies; inhaled GM-CSF can help.
+Infectious disease|Fungal meningitis|CRYPTOCOCCAL|MENINGITIS INDIAINK ANTIGEN AMPHOTERICIN FLUCYTOSINE OPENINGPRESSURE HIV|Cryptococcal meningitis often has a high opening pressure; serial lumbar punctures lower it and save lives.
+Infectious disease|Pneumocystis|PNEUMOCYSTIS|TRIMETHOPRIM SULFAMETHOXAZOLE PREDNISONE HYPOXEMIA LDH ATOVAQUONE PENTAMIDINE CYSTS|Add steroids to PJP treatment when the PaO2 is below 70 or the A–a gradient is 35 or more.
+GI|Esophageal varices|VARICEALBLEED|OCTREOTIDE CEFTRIAXONE BANDING TIPS TERLIPRESSIN BALLOON CARVEDILOL|Prophylactic antibiotics (ceftriaxone) lower infection and mortality in cirrhotic patients with GI bleeding.
+Hematology|Thrombosis sites|UNUSUALCLOTS|PORTALVEIN HEPATICVEIN CEREBRALVENOUS MESENTERIC RENALVEIN SPLANCHNIC JAKTWO|Clots in unusual sites (cerebral, splanchnic) should prompt testing for PNH, myeloproliferative neoplasms, and APS.
+Endocrine|Thyroid tests|THYROIDLABS|TSH FREETHYROXINE TRIIODOTHYRONINE THYROGLOBULIN TPO ANTIBODIES UPTAKE SCAN THYROTROPIN|TSH is the best single screening test for thyroid function, unless pituitary disease is suspected.
+Neurology|Nerve roots|RADICULOPATHY|DERMATOME MYOTOME SCIATICA DISC HERNIATION SPURLING STRAIGHTLEG FOOTDROP|L5 radiculopathy causes weak great toe extension and foot drop; S1 causes a lost ankle reflex.
+Nephrology|Tubule toxins|NEPHROTOXINS|AMINOGLYCOSIDES AMPHOTERICIN VANCOMYCIN CONTRAST CISPLATIN NSAIDS TENOFOVIR|Tenofovir disoproxil can cause Fanconi syndrome; tenofovir alafenamide is gentler on the kidneys.
+Critical care|Sedation scales|AGITATION|RASS CAMICU LIGHTSEDATION AWAKENING PAINSCORE DEXMEDETOMIDINE PROPOFOL|Target light sedation (RASS 0 to −2) in most ventilated patients; it shortens ventilation time.

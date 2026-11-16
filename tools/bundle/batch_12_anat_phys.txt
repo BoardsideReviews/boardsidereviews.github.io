@@ -1,0 +1,37 @@
+# Anatomy and physiology
+Anatomy|The pump's rooms|HEARTCHAMBERS|ATRIUM VENTRICLE SEPTUM APEX AURICLE MYOCARDIUM ENDOCARDIUM EPICARDIUM|The left ventricle wall is about three times thicker than the right because it pumps against systemic pressure.
+Anatomy|Skull bones|CRANIUM|FRONTAL PARIETAL TEMPORAL OCCIPITAL SPHENOID ETHMOID MANDIBLE MAXILLA ZYGOMATIC|An epidural hematoma usually comes from a torn middle meningeal artery under the temporal bone (the pterion).
+Anatomy|Rotator cuff|SHOULDER|SUPRASPINATUS INFRASPINATUS TERESMINOR SUBSCAPULARIS DELTOID ACROMION GLENOID LABRUM CLAVICLE|The supraspinatus is the most commonly torn rotator cuff tendon.
+Anatomy|Hand nerves|ARMNERVES|MEDIAN ULNAR RADIAL AXILLARY MUSCULOCUTANEOUS CARPALTUNNEL CLAWHAND WRISTDROP|Median nerve compression at the wrist (carpal tunnel) numbs the thumb, index, middle, and half the ring finger.
+Anatomy|Leg nerves|LEGNERVES|SCIATIC FEMORAL OBTURATOR PERONEAL TIBIAL SURAL FOOTDROP SAPHENOUS|Common peroneal nerve injury at the fibular neck causes foot drop and numbness on the top of the foot.
+Anatomy|Brachial plexus|PLEXUS|ROOTS TRUNKS DIVISIONS CORDS BRANCHES ERB KLUMPKE BRACHIAL|Klumpke palsy (C8–T1) causes a claw hand; Erb palsy (C5–C6) causes the 'waiter's tip' arm.
+Anatomy|Liver lobes and vessels|HEPATIC|PORTALVEIN HEPATICARTERY BILEDUCT LOBULE SINUSOID CAUDATE COUINAUD|The caudate lobe drains directly into the IVC, so it often enlarges in Budd-Chiari syndrome.
+Anatomy|Abdominal organs|VISCERA|LIVER SPLEEN PANCREAS KIDNEYS STOMACH GALLBLADDER DUODENUM ADRENALS|The spleen sits under ribs 9–11 on the left; a palpable spleen is at least twice normal size.
+Anatomy|Heart blood supply|PERFUSION|CORONARY DIASTOLE SUBENDOCARDIUM WATERSHED COLLATERALS AUTOREGULATION|Coronary arteries fill mostly during diastole, so tachycardia shortens filling time and worsens ischemia.
+Anatomy|Inner ear|EARANATOMY|COCHLEA VESTIBULE SEMICIRCULAR MALLEUS INCUS STAPES TYMPANIC EUSTACHIAN|BPPV comes from loose otoconia in the posterior semicircular canal; the Epley maneuver repositions them.
+Anatomy|Neck triangles|NECKANATOMY|THYROID TRACHEA CAROTID JUGULAR STERNOCLEIDOMASTOID CRICOID HYOID LARYNX|The cricothyroid membrane, between the thyroid and cricoid cartilages, is the site for an emergency surgical airway.
+Anatomy|Pelvic organs|PELVIS|BLADDER URETER PROSTATE UTERUS OVARY RECTUM VAGINA URETHRA SACRUM|The ureters cross over the iliac vessels at the pelvic brim, a common site for stones to lodge.
+Anatomy|Diaphragm openings|DIAPHRAGM|PHRENIC CAVAL ESOPHAGEAL AORTIC HIATUS THORACIC CRURA DOME|The phrenic nerve (C3–C5) keeps the diaphragm alive; a high cervical cord injury stops breathing.
+Anatomy|Mediastinum|MEDIASTINUM|THYMUS TERATOMA THYROID LYMPHOMA ANTERIOR POSTERIOR NEUROGENIC ESOPHAGUS|Anterior mediastinal masses: the four Ts (thymoma, teratoma, thyroid, terrible lymphoma).
+Physiology|Starling curve|CARDIACOUTPUT|PRELOAD AFTERLOAD CONTRACTILITY HEARTRATE STROKEVOLUME STARLING INOTROPY|Cardiac output = heart rate × stroke volume; stroke volume depends on preload, afterload, and contractility.
+Physiology|Oxygen delivery|OXYGENDELIVERY|HEMOGLOBIN SATURATION CARDIACOUTPUT DISSOLVED EXTRACTION MIXEDVENOUS|DO2 depends mostly on hemoglobin, saturation, and cardiac output; dissolved oxygen adds very little.
+Physiology|Shifting curve|DISSOCIATION|HEMOGLOBIN ACIDOSIS TEMPERATURE BOHR AFFINITY RIGHTSHIFT LEFTSHIFT|A right shift (acidosis, fever, high 2,3-DPG, high CO2) unloads oxygen to tissues.
+Physiology|Lung mechanics|COMPLIANCE|ELASTANCE SURFACTANT RECOIL HYSTERESIS RESISTANCE LAPLACE ALVEOLAR|Surfactant lowers surface tension so small alveoli don't collapse; its absence causes neonatal RDS.
+Physiology|Ventilation and perfusion|VQMATCHING|SHUNT DEADSPACE APEX BASE GRAVITY HYPOXIC VASOCONSTRICTION|Hypoxic pulmonary vasoconstriction diverts blood away from poorly ventilated lung units.
+Physiology|Kidney physiology|GLOMERULAR|FILTRATION AFFERENT EFFERENT ANGIOTENSIN PROSTAGLANDIN AUTOREGULATION CLEARANCE|ACE inhibitors dilate the efferent arteriole and NSAIDs constrict the afferent arteriole; together they drop GFR.
+Physiology|Hormone loop|RENINANGIOTENSIN|ALDOSTERONE ANGIOTENSIN RENIN JUXTAGLOMERULAR SODIUM POTASSIUM|Renin comes from juxtaglomerular cells in response to low renal perfusion and sympathetic tone.
+Physiology|Water hormone|VASOPRESSIN|ANTIDIURETIC AQUAPORIN OSMOLALITY THIRST COLLECTING HYPOTHALAMUS POSTERIOR|Vasopressin inserts aquaporin-2 channels in the collecting duct to reabsorb free water.
+Physiology|Electrical cells|ACTIONPOTENTIAL|DEPOLARIZATION REPOLARIZATION SODIUM POTASSIUM CALCIUM PLATEAU REFRACTORY|The cardiac action potential plateau (phase 2) comes from calcium influx through L-type channels.
+Physiology|Acid buffers|BUFFERS|BICARBONATE HEMOGLOBIN PHOSPHATE PROTEIN AMMONIUM CARBONIC ANHYDRASE|Bicarbonate is the main extracellular buffer; the kidneys excrete acid as ammonium and titratable acid.
+Physiology|Thermostat|THERMOREGULATION|HYPOTHALAMUS SHIVERING SWEATING VASODILATION FEVER PYROGENS CONVECTION|Fever raises the hypothalamic set point; hyperthermia overwhelms a normal set point, so antipyretics don't help it.
+Physiology|Gut hormones|GUTHORMONES|GASTRIN SECRETIN CHOLECYSTOKININ MOTILIN SOMATOSTATIN GHRELIN INCRETIN|Cholecystokinin contracts the gallbladder and releases pancreatic enzymes after fatty meals.
+Physiology|Glucose control|GLUCOSEBALANCE|INSULIN GLUCAGON GLYCOGEN GLUCONEOGENESIS KETONES CORTISOL EPINEPHRINE|In prolonged fasting, the brain shifts to ketones to spare protein breakdown.
+Physiology|Calcium control|CALCIUMBALANCE|PARATHYROID CALCITRIOL CALCITONIN PHOSPHATE BONE KIDNEY INTESTINE|PTH raises calcium by pulling it from bone, holding it in the kidney, and making calcitriol.
+Physiology|Clot to cleanup|HEMOSTASIS|PLATELETS ADHESION AGGREGATION FIBRIN VONWILLEBRAND THROMBIN FIBRINOLYSIS|Primary hemostasis is the platelet plug; secondary hemostasis is the fibrin mesh from the coagulation cascade.
+Physiology|Immune cells|IMMUNECELLS|NEUTROPHIL MACROPHAGE LYMPHOCYTE DENDRITIC NATURALKILLER EOSINOPHIL MASTCELL|Neutrophils are the first responders; their absence (neutropenia) predisposes to bacterial and fungal infection.
+Physiology|Complement|COMPLEMENT|CLASSICAL ALTERNATIVE LECTIN MEMBRANEATTACK NEISSERIA OPSONIZATION ANAPHYLATOXIN|Terminal complement deficiency (C5–C9) predisposes to recurrent Neisseria infections; vaccinate before eculizumab.
+Physiology|Antibody classes|ANTIBODIES|IMMUNOGLOBULIN PLACENTA PENTAMER DIMER MUCOSAL ALLERGY OPSONIN MEMORY ISOTYPE SECRETORY|IgG crosses the placenta; IgM is the first antibody made in a primary response.
+Physiology|Exercise physiology|EXERCISE|LACTATE ANAEROBIC THRESHOLD CARDIACOUTPUT VENTILATION MITOCHONDRIA|Cardiopulmonary exercise testing separates cardiac, pulmonary, and deconditioning causes of dyspnea.
+Physiology|Sleep stages|SLEEPSTAGES|REM NONREM SPINDLES KCOMPLEXES DELTAWAVES ATONIA DREAMING CIRCADIAN|REM sleep has muscle atonia; REM sleep behavior disorder (acting out dreams) often precedes Parkinson disease.
+Physiology|Cell injury|CELLDEATH|APOPTOSIS NECROSIS CASPASES COAGULATIVE LIQUEFACTIVE CASEOUS FIBRINOID|Caseous necrosis is the cheese-like pattern of tuberculosis; liquefactive necrosis happens in the brain.
+Physiology|Inflammation basics|INFLAMMATION|RUBOR CALOR DOLOR TUMOR CYTOKINES INTERLEUKIN HISTAMINE PROSTAGLANDINS EDEMA|Interleukin-6 drives the acute phase response, including CRP production in the liver.
