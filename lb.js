@@ -28,7 +28,7 @@
   function friendly(err) {
     if (!err) return "";
     var m = err.message || String(err);
-    if (/scores_cross_cover_once/.test(m)) return MESSAGES.already_posted;
+    if (/scores_cross_cover_once|scores_bundle_branch_once/.test(m)) return MESSAGES.already_posted;
     if (/scores_copay_once|copay_once/.test(m)) return MESSAGES.copay_once;
     if (/scores_endemic_once|endemic_once/.test(m)) return MESSAGES.endemic_once;
     if (/profiles_name_key_key|duplicate key/.test(m)) return "Someone already has that name. Try another.";

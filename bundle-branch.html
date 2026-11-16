@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LJQ2NG232B"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LJQ2NG232B');
+</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bundle Branch | Daily medical word search | Boardside Reviews</title>
+<meta name="description" content="A daily medical word puzzle. Trace the hidden theme words through a grid of letters, find the Bundle that runs edge to edge, and fill the whole board.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
+<script src="bundle-data.js"></script>
+<script src="lb-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script src="lb.js"></script>
+<script src="more-games.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Conduction-system palette: pale tissue, deep fiber ink, teal branches, amber bundle. */
+  --bg:#eef3f1;
+  --card:#ffffff;
+  --ink:#10302c;
+  --ink2:#34514c;
+  --muted:#6a807b;
+  --line:#d3e0dc;
+  --branch:#1aa39a;   --branch-bg:#cdeee9;
+  --bundle:#e9a21b;   --bundle-bg:#fbe7b8;
+  --sel:#10302c;
+  --hint:#7b5cd6;
+  --title:"Bricolage Grotesque",Inter,system-ui,sans-serif;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cpath d='M0 120c40 0 60-30 90-30s40 50 80 50 40-40 70-40M120 0c0 40 20 50 20 80M120 240c0-40-30-60-30-90' fill='none' stroke='%23d6e3df' stroke-width='2'/%3E%3C/svg%3E")}
+a{color:inherit}
+button{font:inherit;cursor:pointer;color:inherit}
+:focus-visible{outline:3px solid #2a5bd7;outline-offset:3px}
+.wrap{max-width:560px;margin:0 auto;padding:16px 14px 40px;display:flex;flex-direction:column;gap:14px}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.home{display:block;width:38px;height:38px;flex:0 0 38px}
+.home svg{width:38px;height:38px;display:block}
+.logo{margin:0;font-family:var(--title);font-weight:800;font-size:clamp(25px,6.4vw,32px);letter-spacing:-.025em;line-height:1;white-space:nowrap}
+.logo .br{color:var(--branch)}
+.sub{color:var(--muted);font-size:12.5px;margin-top:3px}
+.hud{display:flex;gap:6px;align-items:center;flex:none}
+.pill{font-weight:600;font-size:13px;background:var(--card);border:1px solid var(--line);padding:5px 10px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.iconbtn{background:var(--card);border:1px solid var(--line);border-radius:999px;width:34px;height:34px;display:grid;place-items:center;font-weight:700}
+
+.theme{background:var(--ink);color:#fff;border-radius:14px;padding:12px 16px 13px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:0 8px 20px rgba(16,48,44,.18)}
+.theme small{display:block;font-size:11px;font-weight:700;letter-spacing:.12em;color:#8fe0d8}
+.theme b{display:block;font-family:var(--title);font-weight:800;font-size:clamp(21px,5.6vw,26px);line-height:1.15;letter-spacing:-.01em}
+.theme .count{flex:none;text-align:right;font-size:12px;color:#b9d6d1}
+.theme .count b{font-family:var(--sans);font-size:20px;color:#fff}
+
+.status{height:40px;display:flex;align-items:center;justify-content:center;font-family:var(--title);font-weight:800;font-size:clamp(22px,6vw,28px);letter-spacing:.08em;color:var(--ink);text-align:center}
+.status.msg{font-family:var(--sans);font-weight:600;font-size:15px;letter-spacing:0;color:var(--ink2)}
+.status.bad{animation:shake .32s}
+@keyframes shake{25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}}
+
+.board{position:relative;width:min(100%,400px);margin:0 auto;aspect-ratio:6/8;touch-action:none;user-select:none;-webkit-user-select:none}
+.board svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(8,1fr)}
+.cell{display:grid;place-items:center;border:0;background:none;padding:0;position:relative;z-index:1;-webkit-tap-highlight-color:transparent}
+.cell span{width:76%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-family:var(--title);font-weight:800;font-size:clamp(18px,5.4vw,24px);background:transparent;transition:background .15s,color .15s,transform .12s}
+.cell.sel span{background:var(--sel);color:#fff;transform:scale(1.04)}
+.cell.found span{background:var(--branch);color:#fff}
+.cell.found.bun span{background:var(--bundle);color:#3b2600}
+.cell.hint span{box-shadow:0 0 0 3px var(--hint) inset}
+.cell.found.hint span{box-shadow:none}
+.cell:disabled{cursor:default}
+.ln{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ln.sel{stroke:var(--sel);stroke-width:13}
+.ln.w{stroke:var(--branch);stroke-width:15}
+.ln.b{stroke:var(--bundle);stroke-width:15}
+.pop{animation:pop .4s ease}
+@keyframes pop{40%{transform:scale(1.18)}}
+
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hintbtn{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;font-weight:700}
+.hintbtn .dots{display:flex;gap:4px}
+.hintbtn .dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.hintbtn .dots i.on{background:var(--hint)}
+.hintbtn.ready{border-color:var(--hint);color:var(--hint);box-shadow:0 0 0 3px rgba(123,92,214,.15)}
+.hintbtn:disabled{opacity:.55;cursor:default}
+.bar .note{font-size:12.5px;color:var(--muted);text-align:right;line-height:1.35}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px clamp(16px,4vw,24px);display:flex;flex-direction:column;gap:14px;animation:rise .35s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#res:focus{outline:none}
+#after{display:flex;flex-direction:column;gap:14px}
+.panel h2{margin:0;font-family:var(--title);font-weight:800;font-size:24px;letter-spacing:-.01em}
+.words{display:flex;flex-wrap:wrap;gap:6px}
+.words span{font-weight:700;font-size:13px;letter-spacing:.04em;padding:5px 10px;border-radius:999px;background:var(--branch-bg);color:#0b5f59}
+.words span.b{background:var(--bundle-bg);color:#7a4f00}
+.pearl{background:#f4faf8;border-left:4px solid var(--branch);border-radius:0 10px 10px 0;padding:11px 14px;font-size:15px;line-height:1.5}
+.pearl small{display:block;font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--branch);margin-bottom:2px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media (max-width:480px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.stat .v{font-weight:700;font-size:21px;font-variant-numeric:tabular-nums}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{background:var(--ink);color:#fff;border:0;border-radius:10px;padding:12px 18px;font-weight:600}
+.fine{font-size:13px;color:var(--muted)}
+.lbt{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14.5px}
+.lbt td{padding:7px 4px;border-bottom:1px solid var(--line)}
+.lbt td.num{text-align:right;font-weight:700}
+.lbt tr.me td{font-weight:700;color:var(--branch)}
+.lbnote{margin:0;font-size:13.5px;color:var(--ink2)}
+.lbnote b{color:var(--hint)}
+.rules{margin:0;padding-left:20px;display:grid;gap:8px}
+.rules b.w{color:var(--branch)} .rules b.b{color:#b07400} .rules b.h{color:var(--hint)}
+.demo{display:flex;gap:6px;justify-content:center;margin:2px 0 4px}
+.demo i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--title);font-weight:800;color:#fff;background:var(--branch)}
+.demo.b i{background:var(--bundle);color:#3b2600}
+dialog{border:0;border-radius:16px;padding:0;max-width:min(520px,94vw);box-shadow:0 30px 70px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(10,30,28,.55)}
+dialog .panel{border:0;animation:none}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:5}
+.toast.on{opacity:1}
+footer{color:var(--muted);font-size:12px;text-align:center;line-height:1.6}
+footer a{color:var(--ink2)}
+.bmg h3{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <a class="home" href="games.html" aria-label="Boardside Reviews games"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg></a>
+      <div>
+        <h1 class="logo">Bundle <span class="br">Branch</span></h1>
+        <div class="sub">Daily medical word search · Boardside Reviews</div>
+      </div>
+    </div>
+    <div class="hud">
+      <span class="pill" id="pzl">#1</span>
+      <span class="pill" id="clock" title="Solve time">0:00</span>
+      <button class="iconbtn" id="help" aria-label="How to play" title="How to play">?</button>
+    </div>
+  </header>
+
+  <section class="theme" aria-live="polite">
+    <div><small>TODAY'S THEME</small><b id="clue"></b></div>
+    <div class="count"><b id="nfound">0</b> of <span id="ntotal">0</span><br>found</div>
+  </section>
+
+  <div class="status" id="status" aria-live="polite"></div>
+
+  <div class="board" id="board">
+    <svg id="lines" viewBox="0 0 600 800" aria-hidden="true"></svg>
+    <div class="grid" id="grid" role="grid" aria-label="Letter grid"></div>
+  </div>
+
+  <div class="bar">
+    <button class="hintbtn" id="hintBtn" type="button" aria-describedby="hintNote"><span>Hint</span><span class="dots" id="dots"><i></i><i></i><i></i></span></button>
+    <div class="note" id="hintNote">Find 3 other words<br>of 4+ letters to earn a hint</div>
+  </div>
+
+  <div id="after"></div>
+
+  <footer>
+    Puzzles are written by Boardside Reviews for teaching. Pearls are not medical advice.<br>
+    © 2026 Boardside Reviews™ · Not affiliated with or endorsed by ABIM. Boardside Reviews™ is a trademark of Khaled M. Abdullah, MD.
+  </footer>
+</div>
+
+<dialog id="rulesDlg"><section class="panel">
+  <h2>How to play</h2>
+  <ol class="rules">
+    <li>Every day at midnight Pacific there's a new board. Everyone gets the same one.</li>
+    <li>Find the <b class="w">theme words</b> hidden in the letters. Drag across letters, or tap them one by one and tap the last letter again to submit. Words can bend in any direction, including diagonally.</li>
+    <li>One word is the <b class="b">Bundle</b>. It names the theme and runs from one side of the board to the other.</li>
+    <li>Theme words fill the board exactly. Every letter is used once, so when you're done, nothing is left over.</li>
+    <li>Stuck? Every 3 other real words you find (4+ letters) earn a <b class="h">hint</b> that outlines one theme word's letters.</li>
+    <li>Solve without a hint to post your time to the daily no-hint leaderboard. The clock starts at your first letter.</li>
+  </ol>
+  <div class="demo" aria-hidden="true"><i>B</i><i>R</i><i>A</i><i>N</i><i>C</i><i>H</i></div>
+  <div class="demo b" aria-hidden="true"><i>B</i><i>U</i><i>N</i><i>D</i><i>L</i><i>E</i></div>
+  <div class="row"><button class="btn" id="rulesOk">Let's play</button></div>
+</section></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- settings ---------- */
+const CONFIG = { launchDay: "2026-11-16", timeZone: "America/Los_Angeles", hintEvery: 3 };
+const COLS = 6, ROWS = 8;
+
+/* ---------- storage ---------- */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ---------- dates (California) ---------- */
+function dayKey(d = new Date()){ return new Intl.DateTimeFormat("en-CA",{timeZone:CONFIG.timeZone,year:"numeric",month:"2-digit",day:"2-digit"}).format(d); }
+function dayNum(key){ const [a,b,c] = key.split("-").map(Number), [x,y,z] = CONFIG.launchDay.split("-").map(Number); return Math.round((Date.UTC(a,b-1,c) - Date.UTC(x,y-1,z)) / 864e5); }
+function prevKey(key){ const [a,b,c] = key.split("-").map(Number); return new Date(Date.UTC(a,b-1,c) - 864e5).toISOString().slice(0,10); }
+function msToNext(){
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:CONFIG.timeZone,hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"}).formatToParts(new Date()).map(x=>[x.type,x.value]));
+  return (86400 - ((+p.hour % 24) * 3600 + (+p.minute) * 60 + (+p.second))) * 1000;
+}
+function hms(ms){ const s = Math.max(0, Math.floor(ms/1000)); return [Math.floor(s/3600), Math.floor(s%3600/60), s%60].map(n=>String(n).padStart(2,"0")).join(":"); }
+
+/* ---------- today's puzzle ---------- */
+const KEY = dayKey();
+const N = Math.max(0, dayNum(KEY));
+const PZL = N + 1;
+const P = BUNDLE[N % BUNDLE.length];
+const THEME = Object.keys(P.path);                 // all theme words incl. the bundle
+const EXTRA = new Set(P.x ? P.x.split(" ") : []);  // other valid words in this grid
+const owner = new Array(COLS*ROWS);                // cell -> theme word
+THEME.forEach(w => P.path[w].forEach(i => owner[i] = w));
+
+const blank = { key: KEY, g: P.g, found: [], extra: [], seq: [], bank: 0, earned: 0, hint: null, done: false, started: false, elapsed: 0, solveTime: null, posted: false };
+let S = store.get("bb:day:" + KEY, null);
+if (!S || S.g !== P.g) S = { ...blank };
+S = { ...blank, ...S };
+const stats = store.get("bb:stats", { played: 0, solved: 0, streak: 0, best: 0, last: null, clean: 0 });
+const save = () => store.set("bb:day:" + KEY, S);
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(()=>t.classList.remove("on"), 1800); }
+
+$("#pzl").textContent = "#" + PZL;
+$("#clue").textContent = P.t;
+$("#ntotal").textContent = THEME.length;
+
+/* ---------- clock (counts only while the page is visible) ---------- */
+function fmt(sec){ sec = Math.max(0, Math.floor(sec)); const h = Math.floor(sec/3600), m = Math.floor(sec%3600/60), x = sec%60; return (h ? h + ":" + String(m).padStart(2,"0") : m) + ":" + String(x).padStart(2,"0"); }
+let lastTick = performance.now();
+function running(){ return S.started && !S.done && document.visibilityState === "visible"; }
+function paintClock(){ $("#clock").textContent = fmt((S.done && S.solveTime != null ? S.solveTime * 1000 : S.elapsed) / 1000); }
+setInterval(() => {
+  const now = performance.now();
+  if (running()){ S.elapsed += now - lastTick; if (Math.floor(S.elapsed/5000) !== Math.floor((S.elapsed-(now-lastTick))/5000)) save(); }
+  lastTick = now; paintClock();
+}, 250);
+document.addEventListener("visibilitychange", () => { lastTick = performance.now(); save(); });
+function startClock(){ if (!S.started && !S.done){ S.started = true; lastTick = performance.now(); save(); } }
+
+/* ---------- board ---------- */
+const grid = $("#grid"), svg = $("#lines"), statusEl = $("#status");
+const cells = [];
+for (let i = 0; i < COLS*ROWS; i++){
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "cell"; b.dataset.i = i;
+  b.setAttribute("aria-label", P.g[i] + ", row " + (Math.floor(i/COLS)+1) + ", column " + (i%COLS+1));
+  b.innerHTML = "<span>" + P.g[i] + "</span>";
+  grid.appendChild(b); cells.push(b);
+}
+const cx = i => (i % COLS) * 100 + 50, cy = i => Math.floor(i / COLS) * 100 + 50;
+const adj = (a, b) => a !== b && Math.abs(a % COLS - b % COLS) <= 1 && Math.abs(Math.floor(a/COLS) - Math.floor(b/COLS)) <= 1;
+const isFound = i => S.found.includes(owner[i]);
+// a diagonal step a->b crosses another path if the opposite diagonal of that 2x2 square is already drawn
+function crossesFound(a, b){
+  const ra = Math.floor(a/COLS), ca = a%COLS, rb = Math.floor(b/COLS), cb = b%COLS;
+  if (ra === rb || ca === cb) return false;
+  const p = ra*COLS + cb, q = rb*COLS + ca;
+  return drawnEdges.has(p < q ? p+"-"+q : q+"-"+p);
+}
+let drawnEdges = new Set();
+
+function pathD(path){ return path.map((i,k) => (k ? "L" : "M") + cx(i) + " " + cy(i)).join(" "); }
+function drawLines(){
+  let h = ""; drawnEdges = new Set();
+  S.found.forEach(w => {
+    const p = P.path[w];
+    h += `<path class="ln ${w === P.b ? "b" : "w"}" d="${pathD(p)}"/>`;
+    for (let k = 1; k < p.length; k++){ const a = p[k-1], b = p[k]; drawnEdges.add(a < b ? a+"-"+b : b+"-"+a); }
+  });
+  if (sel.length > 1) h += `<path class="ln sel" d="${pathD(sel)}"/>`;
+  svg.innerHTML = h;
+}
+function paint(){
+  const hintCells = S.hint && !S.found.includes(S.hint) ? new Set(P.path[S.hint]) : new Set();
+  cells.forEach((c, i) => {
+    const f = isFound(i);
+    c.classList.toggle("found", f);
+    c.classList.toggle("bun", f && owner[i] === P.b);
+    c.classList.toggle("sel", sel.includes(i));
+    c.classList.toggle("hint", hintCells.has(i));
+    c.disabled = f || S.done;
+  });
+  drawLines();
+  $("#nfound").textContent = S.found.length;
+  const dots = [...$("#dots").children], prog = S.extra.length % CONFIG.hintEvery;
+  dots.forEach((d, k) => d.classList.toggle("on", S.bank > 0 || k < prog));
+  const hb = $("#hintBtn");
+  hb.disabled = S.done || S.bank < 1 || (S.hint && !S.found.includes(S.hint));
+  hb.classList.toggle("ready", !hb.disabled);
+  $("#hintNote").innerHTML = S.done ? "Board complete" :
+    (S.hint && !S.found.includes(S.hint)) ? "Outlined letters spell<br>one theme word" :
+    S.bank > 0 ? "Hint ready.<br>Tap to use it" :
+    `${CONFIG.hintEvery - prog} more word${CONFIG.hintEvery - prog === 1 ? "" : "s"} of 4+ letters<br>to earn a hint`;
+}
+
+/* ---------- status line ---------- */
+function showSel(){ statusEl.className = "status"; statusEl.textContent = sel.map(i => P.g[i]).join(""); }
+function say(msg, bad){
+  statusEl.className = "status msg" + (bad ? " bad" : "");
+  statusEl.textContent = msg;
+  clearTimeout(say.t); say.t = setTimeout(() => { if (!sel.length) statusEl.textContent = ""; }, 1600);
+}
+
+/* ---------- selection ---------- */
+let sel = [];
+function canAdd(i){
+  if (isFound(i) || sel.includes(i)) return false;
+  if (!sel.length) return true;
+  const last = sel[sel.length-1];
+  return adj(last, i) && !crossesFound(last, i);
+}
+function setSel(s){ sel = s; showSel(); paint(); }
+
+function submit(){
+  const word = sel.map(i => P.g[i]).join("");
+  const path = sel.slice();
+  setSel([]);
+  if (word.length < 4){ if (word.length) say("Too short", true); return; }
+  const tw = THEME.find(w => w === word && P.path[w].join() === path.join());
+  if (tw){
+    if (S.found.includes(tw)){ say("Already found"); return; }
+    S.found.push(tw); S.seq.push(tw === P.b ? "b" : "w");
+    if (S.hint === tw) S.hint = null;
+    save(); paint();
+    P.path[tw].forEach(i => { const s = cells[i].firstChild; s.classList.remove("pop"); void s.offsetWidth; s.classList.add("pop"); });
+    say(tw === P.b ? "Bundle found! " + prettyWord(tw) : prettyWord(tw));
+    if (S.found.length === THEME.length) finish(true);
+    return;
+  }
+  if (THEME.includes(word)){ say("Right word, wrong letters", true); return; }
+  if (EXTRA.has(word)){
+    if (S.extra.includes(word)){ say("Already counted"); return; }
+    S.extra.push(word);
+    if (S.extra.length % CONFIG.hintEvery === 0){ S.bank += 1; S.earned += 1; say("Hint earned!"); }
+    else say("Not a theme word, but it counts toward a hint");
+    save(); paint(); return;
+  }
+  say("Not in the word list", true);
+}
+function prettyWord(w){ return w; }
+
+/* pointer handling: drag to trace, or tap letters one at a time */
+const board = $("#board");
+let drag = null;
+function cellAt(x, y, strict){
+  const r = grid.getBoundingClientRect();
+  const c = Math.floor((x - r.left) / (r.width / COLS)), rw = Math.floor((y - r.top) / (r.height / ROWS));
+  if (c < 0 || c >= COLS || rw < 0 || rw >= ROWS) return -1;
+  if (strict){
+    // only count the inner part of a cell while dragging so diagonals are easy
+    const fx = ((x - r.left) / (r.width / COLS)) - c - .5, fy = ((y - r.top) / (r.height / ROWS)) - rw - .5;
+    if (fx*fx + fy*fy > .16) return -1;
+  }
+  return rw * COLS + c;
+}
+board.addEventListener("pointerdown", e => {
+  if (S.done) return;
+  const i = cellAt(e.clientX, e.clientY, false);
+  if (i < 0 || isFound(i)) return;
+  e.preventDefault();
+  startClock();
+  try{ board.setPointerCapture(e.pointerId); }catch(_){}
+  drag = { start: i, moved: false };
+});
+board.addEventListener("pointermove", e => {
+  if (!drag) return;
+  const i = cellAt(e.clientX, e.clientY, true);
+  if (i < 0) return;
+  if (!drag.moved){
+    if (i === drag.start) return;
+    // a drag starts a fresh word unless it begins on the last selected letter
+    drag.moved = true;
+    if (sel[sel.length-1] !== drag.start) setSel([drag.start]);
+  }
+  const last = sel[sel.length-1];
+  if (i === last) return;
+  if (sel.length > 1 && i === sel[sel.length-2]){ setSel(sel.slice(0,-1)); return; }
+  if (canAdd(i)) setSel([...sel, i]);
+});
+function tap(i){
+  if (sel.length && sel[sel.length-1] === i){ submit(); return; }      // tap the last letter again: submit
+  if (sel.includes(i)){ setSel(sel.slice(0, sel.indexOf(i) + 1)); return; } // tap an earlier letter: back up
+  if (sel.length && canAdd(i)){ setSel([...sel, i]); return; }
+  setSel([i]);
+}
+function endDrag(){
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (d.moved){ if (sel.length > 1) submit(); else setSel([]); return; }
+  tap(d.start);
+}
+board.addEventListener("pointerup", endDrag);
+board.addEventListener("pointercancel", () => { drag = null; });
+// keyboard: Enter/Space on a letter acts like a tap
+grid.addEventListener("keydown", e => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const b = e.target.closest(".cell"); if (!b || S.done) return;
+  e.preventDefault(); startClock();
+  tap(+b.dataset.i);
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && sel.length) setSel([]); });
+
+/* ---------- hints ---------- */
+$("#hintBtn").onclick = () => {
+  if (S.bank < 1 || S.done || (S.hint && !S.found.includes(S.hint))) return;
+  const left = THEME.filter(w => !S.found.includes(w));
+  const pick = left.find(w => w !== P.b) || left[0];
+  if (!pick) return;
+  S.bank -= 1; S.hint = pick; S.seq.push("h"); save(); setSel([]);
+  say("Outlined letters spell a theme word");
+};
+
+/* ---------- finish ---------- */
+function finish(fresh){
+  if (!S.done){ S.solveTime = Math.max(1, Math.round(S.elapsed / 1000)); }
+  S.done = true; save(); paintClock();
+  if (fresh && stats.last !== KEY){
+    const continuing = stats.last === prevKey(KEY);
+    stats.played += 1; stats.solved += 1;
+    stats.streak = continuing ? stats.streak + 1 : 1;
+    stats.best = Math.max(stats.best, stats.streak);
+    if (!S.seq.includes("h")) stats.clean += 1;
+    stats.last = KEY; store.set("bb:stats", stats);
+    if (window.gtag) gtag("event", "bundle_branch_solve", { puzzle: PZL, hints: S.seq.filter(x => x === "h").length });
+  }
+  paint(); results(fresh);
+}
+function curStreak(){ return (stats.last === KEY || stats.last === prevKey(KEY)) ? stats.streak : 0; }
+function shareText(){
+  const icon = { w: "🔷", b: "🟡", h: "💡" };
+  const line = S.seq.map(x => icon[x]).join("");
+  return `Bundle Branch #${PZL}\n“${P.t}”\n${line} ${fmt(S.solveTime || 0)}\nboardsidereviews.com/bundle-branch.html`;
+}
+function results(fresh){
+  const hints = S.seq.filter(x => x === "h").length;
+  $("#after").innerHTML = `
+  <section class="panel" id="res" tabindex="-1">
+    <h2>${hints ? "Board complete" : "Perfect board"}</h2>
+    <div class="words">${[P.b, ...P.w].map(w => `<span class="${w === P.b ? "b" : ""}">${esc(w)}</span>`).join("")}</div>
+    <div class="pearl"><small>BOARD PEARL</small>${esc(P.p)}</div>
+    <div class="stats">
+      <div class="stat"><div class="k">Streak</div><div class="v">${curStreak()}</div></div>
+      <div class="stat"><div class="k">Solved</div><div class="v">${stats.solved}</div></div>
+      <div class="stat"><div class="k">No-hint</div><div class="v">${stats.clean}</div></div>
+      <div class="stat"><div class="k">Next board</div><div class="v" id="cd">${hms(msToNext())}</div></div>
+    </div>
+    <div class="row"><button class="btn" id="share">Copy result</button><span class="fine">${fmt(S.solveTime || 0)} · ${hints ? hints + " hint" + (hints > 1 ? "s" : "") + " used" : "no hints"} · ${S.extra.length} bonus word${S.extra.length === 1 ? "" : "s"}</span></div>
+  </section>
+  <section class="panel" data-lb hidden>
+    <h2>Today's no-hint board</h2>
+    <p class="lbnote">Fastest solves <b>without a hint</b>. Your first board of the day is the one that counts. Ties go to whoever posted first.</p>
+    <div class="row" id="postRow">${hints ? `<span class="fine">You used a hint today, so this board can't be posted. Come back tomorrow and go hint-free.</span>` : `<button class="btn" type="button" id="lbsubmit">Post my time</button><span class="fine" id="postNote"></span>`}</div>
+    <div id="lb" class="fine">Loading…</div>
+    <a class="fine" href="leaderboard.html#bundle-branch">Full leaderboard →</a>
+  </section>
+  <div id="more"></div>`;
+  $("#share").onclick = async () => {
+    try{ await navigator.clipboard.writeText(shareText()); toast("Result copied"); }catch(e){ toast("Copy blocked here"); }
+  };
+  clearInterval(results.iv);
+  results.iv = setInterval(() => { const el = $("#cd"); if (!el) return; el.textContent = hms(msToNext()); if (dayKey() !== KEY) location.reload(); }, 1000);
+  if (window.BLB && BLB.enabled) document.querySelectorAll("[data-lb]").forEach(el => el.hidden = false);
+  const pb = $("#lbsubmit");
+  if (pb){ if (S.posted) pb.outerHTML = '<span class="fine">Posted</span>'; else pb.onclick = postTime; }
+  loadLB();
+  if (window.BoardsideMore) BoardsideMore.mount($("#more"), "bundle-branch");
+  statusEl.className = "status msg"; statusEl.textContent = hints ? "Every letter used. Nice work." : "Every letter used, no hints. Perfect.";
+  if (fresh){ const r = $("#res"); setTimeout(() => { r.focus({preventScroll:true}); r.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"}); }, 700); }
+}
+
+/* ---------- leaderboard (shared Boardside board, lb.js) ---------- */
+const GAME = "bundle-branch";
+const hasLB = () => !!(window.BLB && BLB.enabled && BLB.boardTime);
+async function postTime(){
+  const b = $("#lbsubmit"), note = $("#postNote");
+  b.disabled = true; b.textContent = "Posting…"; note.textContent = "";
+  try{
+    const name = await BLB.dialog({ title: "Post your time" });
+    if (!name){ b.disabled = false; b.textContent = "Post my time"; return; }
+    await BLB.submit(GAME, KEY, S.solveTime, S.solveTime);
+    S.posted = true; save();
+    b.outerHTML = '<span class="fine">Posted as ' + esc(name) + '</span>';
+    loadLB();
+  }catch(e){
+    if (/already_posted|scores_bundle_branch_once/.test(e && e.message || "")){ S.posted = true; save(); }
+    b.disabled = false; b.textContent = "Post my time"; note.textContent = BLB.friendly(e);
+  }
+}
+async function loadLB(){
+  const box = $("#lb"); if (!box) return;
+  if (!hasLB()){ box.textContent = "The leaderboard couldn't load. Refresh to try again."; return; }
+  try{
+    const rows = await BLB.boardTime(GAME, KEY, 10);
+    if (!rows.length){ box.textContent = "No one has posted a no-hint time yet today. Be first."; return; }
+    box.innerHTML = `<table class="lbt"><tbody>${rows.map(r => `<tr class="${r.is_me ? "me" : ""}"><td>${r.rank}</td><td>${esc(r.display_name)}${r.is_me ? " (you)" : ""}</td><td class="num">${fmt(r.seconds)}</td></tr>`).join("")}</tbody></table>`;
+  }catch(e){ box.textContent = BLB.friendly(e); }
+}
+
+/* ---------- rules ---------- */
+const dlg = $("#rulesDlg");
+function openRules(){ if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open",""); }
+$("#help").onclick = openRules;
+$("#rulesOk").onclick = () => { dlg.close ? dlg.close() : dlg.removeAttribute("open"); store.set("bb:seenRules", true); };
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+
+/* ---------- boot ---------- */
+paint();
+if (S.done) results(false);
+if (!store.get("bb:seenRules", false) && !S.found.length) openRules();
+</script>
+</body>
+</html>

@@ -108,6 +108,7 @@ tr.mine td{background:var(--teal-soft)}
 const BOARDS=[
   {id:"cross-cover",group:"CROSS-COVER",label:"Cross-Cover",game:"cross-cover",play:"crossword.html",time:true},
   {id:"copay-noway",group:"CO-PAY OR NO WAY",label:"Co-Pay or No Way",game:"copay-noway",play:"copay.html",daily:true},
+  {id:"bundle-branch",group:"BUNDLE BRANCH",label:"No-hint solves",game:"bundle-branch",play:"bundle-branch.html",time:true,rule:"Fastest solve without a hint wins; each player's first board of the day counts."},
   {id:"endemic",group:"ENDEMIC",label:"Endemic",game:"endemic",play:"endemic.html",daily:true,unit:"Score",noun:"scores",what:"pin",fmt:v=>Number(v).toLocaleString(),rule:"Highest score wins; each player's first pin of the day counts."},
   {id:"rhythm-rush",group:"RHYTHM RUSH",label:"Rhythm Rush",game:"rhythm-rush",variant:"1-min",play:"rhythm-rush.html",points:true},
   {id:"night-float-standard",group:"IM NIGHT FLOAT",label:"Standard night",game:"night-float",variant:"standard",play:"night-float.html"},
@@ -155,9 +156,9 @@ async function drawBoard(){
     const v=laDate(ago); let rows;
     try{rows=await BLB.boardTime(cur.game,v,100)}
     catch(e){box.innerHTML=`<div class="empty"><b>Couldn't load the leaderboard.</b><span>${esc(BLB.friendly(e))}</span><button class="btn ghost" data-a="retry">Try again</button></div>`;return}
-    if(!rows.length){box.innerHTML=`<div class="empty"><b>No times ${ago?"for yesterday's puzzle":"yet today"}.</b><span>${ago?"Today's puzzle is waiting.":"Solve today's puzzle clean and take the top spot."}</span><a class="btn" href="crossword.html">Play today's puzzle</a></div>`;return}
+    if(!rows.length){box.innerHTML=`<div class="empty"><b>No times ${ago?"for yesterday's puzzle":"yet today"}.</b><span>${ago?"Today's puzzle is waiting.":"Solve today's puzzle clean and take the top spot."}</span><a class="btn" href="${cur.play}">Play today's puzzle</a></div>`;return}
     box.innerHTML=`<table><thead><tr><th>#</th><th>Player</th><th class="num">Time</th><th class="num hide-sm">Posted</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.is_me?"mine":""}"><td class="rank">${r.rank<=3?`<span class="medal m${r.rank}">${r.rank}</span>`:r.rank}</td><td class="name">${esc(r.display_name)}${r.is_me?`<span class="you">YOU</span>`:""}</td><td class="num pct">${fmtTime(r.seconds)}</td><td class="num hide-sm">${fmtClock(r.achieved_at)}</td></tr>`).join("")}</tbody></table>`;
-    $("#note").textContent=`Puzzle for ${new Date(v+"T12:00:00Z").toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",timeZone:"UTC"})}. Fastest clean solve wins; each player's first post counts. Ties go to whoever posted first.`;
+    $("#note").textContent=`Puzzle for ${new Date(v+"T12:00:00Z").toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",timeZone:"UTC"})}. ${cur.rule||"Fastest clean solve wins; each player's first post counts."} Ties go to whoever posted first.`;
     return;
   }
   if(cur.daily){
