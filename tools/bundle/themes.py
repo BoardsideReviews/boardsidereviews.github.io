@@ -322,3 +322,18 @@ dict(a="Infectious disease", t="Wild bugs", b="ATYPICALS",
      w=["MYCOPLASMA","LEGIONELLA","CHLAMYDOPHILA","COXIELLA","PSITTACI","TULAREMIA"],
      p="Mycoplasma pneumonia can cause cold agglutinin hemolysis and bullous myringitis, and it doesn't respond to beta-lactams because it has no cell wall."),
 ]
+
+# ---- extra batches: one theme per line, "Area|Clue|BUNDLE|WORD WORD ...|Pearl" ----
+import os as _os, glob as _glob
+def _load_batches():
+    out = []
+    for f in sorted(_glob.glob(_os.path.join(_os.path.dirname(__file__), 'batch_*.txt'))):
+        for ln in open(f, encoding='utf-8'):
+            ln = ln.strip()
+            if not ln or ln.startswith('#'): continue
+            a, t, b, w, p = [x.strip() for x in ln.split('|')]
+            ws = [x for x in w.split() if len(x) >= 4]
+            if len(ws) != len(w.split()): print('note: dropped short words in', b, [x for x in w.split() if len(x) < 4])
+            out.append(dict(a=a, t=t, b=b, w=ws, p=p))
+    return out
+THEMES += _load_batches()
