@@ -99,6 +99,7 @@ async function boot(){
   if(!ok){app.innerHTML=`<h1>Admin</h1><div class="card"><span>${esc(u.email)} doesn't have admin access.</span><div><button class="btn ghost" data-a="out">Sign out</button></div></div>`;return}
   app.innerHTML=`<div class="row"><h1>Admin</h1><span class="muted">${esc(u.email)} · <button class="linkbtn" data-a="out">Sign out</button></span></div>
   <section class="card" id="mygame"><div class="row"><h2>My game</h2><span class="muted" id="gameinfo"></span></div><p class="muted" style="margin:0">The Way I Remember It. Only admin accounts can open it; the game file isn't on the public site or in the code. Saves stay in this browser.</p><div class="row" style="justify-content:flex-start;gap:8px"><button class="btn" data-game="play">Play</button><label class="btn ghost" style="cursor:pointer">Upload a new version<input type="file" id="gamefile" accept=".html,text/html" hidden></label></div></section>
+  ${OWNER===String(u.email||"").toLowerCase()?`<section class="card" id="shower"><div class="row"><h2>Baby Shower Showdown</h2><span class="muted" id="showerinfo"></span></div><p class="muted" style="margin:0">Private true-or-false game for the fellows' baby shower. Only boardsidereviews@gmail.com sees this; the game and photos aren't on the public site or in the code. Best on one big screen, with you tapping the answers.</p><div class="row" style="justify-content:flex-start;gap:8px"><button class="btn" data-shower="play">Play</button><label class="btn ghost" style="cursor:pointer">Upload a new version<input type="file" id="showerfile" accept=".html,text/html" hidden></label></div></section>`:""}
   <section class="card"><div class="row"><h2>Question bank</h2><a class="btn" href="admin-questions.html">Open the question editor</a></div><p class="muted" style="margin:0">Edit any question, its explanation, teaching pearl, references or image; add new questions; remove or restore questions. Changes go live when you confirm.</p></section>
   <section class="card" id="hosts"><div class="row"><h2>Group session hosts</h2><span class="muted" id="hostcount"></span></div><p class="muted" style="margin:0">These accounts can host group sessions from the full question bank (for example a program’s chief residents). Anyone with a free account can already host the free sets. Add the email they sign in with; it works even before they create their account.</p><div class="row" style="justify-content:flex-start;align-items:flex-end;gap:10px"><label class="fld" style="flex:1;min-width:220px">Email<input type="email" id="hemail" placeholder="chief@program.edu" autocomplete="off"></label><label class="fld" style="flex:1;min-width:220px">Note (optional)<input type="text" id="hnote" maxlength="120" placeholder="Chief resident, Example IM program" style="flex:none"></label><button class="btn" data-host-add>Add host</button></div><div id="hconfirm"></div><div class="tablebox" id="hosttable"></div></section>
   <section class="card" id="mailing"><div class="row"><h2>Mailing list</h2><span class="row" style="gap:8px;justify-content:flex-end"><input type="search" id="mq" placeholder="Search name or email" aria-label="Search the mailing list" style="max-width:240px"><button class="btn ghost" data-csv="mailing">Download (CSV)</button></span></div><div id="mlsum" class="muted"></div><div class="tablebox" id="mltable"></div><div id="mlgone"></div></section>
@@ -117,6 +118,7 @@ async function boot(){
   $("[data-game=play]").addEventListener("click",playGame);
   $("#gamefile").addEventListener("change",uploadGame);
   gameInfo();
+  if($("#shower")){$("[data-shower=play]").addEventListener("click",()=>playPrivate("baby-shower","Baby Shower Showdown"));$("#showerfile").addEventListener("change",e=>uploadPrivate(e,"baby-shower",h=>/Baby Shower Showdown/.test(h)&&/QUESTIONS/.test(h),"#showerinfo"));fileInfo("baby-shower","#showerinfo")}
   await load();
 }
 // ---- My game: stored privately in Supabase (admin_private_files), never in this repo ----
@@ -131,6 +133,24 @@ async function playGame(){
     if(w){w.document.open();w.document.write(html);w.document.close()}
     else{location.href=URL.createObjectURL(new Blob([html],{type:"text/html"}))}
   }catch(x){if(w)w.close();toast(gameMsg(x))}
+}
+const OWNER="boardsidereviews@gmail.com";
+async function fileInfo(name,sel){const el=$(sel);if(!el)return;try{const r=await BLB.rpc("admin_private_file_info",{p_name:name});const i=r&&r[0];el.textContent=i?`Uploaded ${dt(i.updated_at)} · ${Math.round(i.bytes/1024)} KB`:"Not uploaded yet"}catch(x){el.textContent=gameMsg(x)}}
+async function playPrivate(name,title){
+  const w=window.open("","_blank");
+  if(w){w.document.write('<body style="margin:0;background:#fdf7f2;color:#8a819c;font:20px system-ui;display:grid;place-items:center;height:100vh">Loading '+title+'…</body>')}
+  try{
+    const html=await BLB.rpc("admin_get_private_file",{p_name:name});
+    if(!html){if(w)w.close();toast("Upload the game file first.");return}
+    if(w){w.document.open();w.document.write(html);w.document.close()}
+    else{location.href=URL.createObjectURL(new Blob([html],{type:"text/html"}))}
+  }catch(x){if(w)w.close();toast(gameMsg(x))}
+}
+async function uploadPrivate(e,name,looksRight,sel){
+  const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
+  const html=await f.text();
+  if(!looksRight(html)){toast("That doesn't look like the right game file.");return}
+  try{await BLB.rpc("admin_set_private_file",{p_name:name,p_body:html});toast("Game uploaded.");fileInfo(name,sel)}catch(x){toast(gameMsg(x))}
 }
 async function uploadGame(e){
   const f=e.target.files&&e.target.files[0];e.target.value="";if(!f)return;
