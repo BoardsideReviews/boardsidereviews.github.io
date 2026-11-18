@@ -107,6 +107,7 @@
   // Games: sign in with a Boardside Reviews account (email + password) or create one
   // (name, email, password, mailing-list choice, then a 6-digit code to verify the email).
   // These are the same accounts as the question bank. Admin pages keep the email-code sign-in.
+  // game-gate.js opens this dialog too (createTitle / signInTitle / playIntro set its wording).
   var css = '\
 .blb-back{position:fixed;inset:0;z-index:1000;background:rgba(8,16,30,.62);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto}\
 .blb-card{color-scheme:light;width:min(440px,100%);margin:auto 0;background:#fff;color:#0b2545;border-radius:18px;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.35);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column;gap:14px;text-align:left}\
@@ -190,13 +191,13 @@
         return f;
       }
       function busy(b, on, label) { b.disabled = on; b.textContent = label; }
-      var intro = opts.title && /post/i.test(opts.title)
+      var intro = opts.playIntro || (opts.title && /post/i.test(opts.title)
         ? "Your score goes on the leaderboard under a display name you choose."
-        : "Sign in to see where you rank on the leaderboards.";
+        : "Sign in to see where you rank on the leaderboards.");
 
       // ── account: create ──
       function stepCreate(prefill) {
-        card.innerHTML = '<h2 id="blb-title">' + esc(opts.title || "Join the leaderboard") + '</h2>' +
+        card.innerHTML = '<h2 id="blb-title">' + esc(opts.createTitle || opts.title || "Join the leaderboard") + '</h2>' +
           '<div class="blb-tabs" role="group"><button type="button" aria-pressed="true">Create account</button><button type="button" aria-pressed="false" data-go="in">Sign in</button></div>' +
           '<p>' + intro + ' Create your free Boardside Reviews account. It also unlocks the 80 free board questions.</p>' +
           '<form novalidate><div class="blb-two"><label>First name<input id="blb-f" autocomplete="given-name" maxlength="60"></label>' +
@@ -241,7 +242,7 @@
 
       // ── account: sign in ──
       function stepSignIn(prefill) {
-        card.innerHTML = '<h2 id="blb-title">' + esc(opts.title || "Sign in") + '</h2>' +
+        card.innerHTML = '<h2 id="blb-title">' + esc(opts.signInTitle || opts.title || "Sign in") + '</h2>' +
           '<div class="blb-tabs" role="group"><button type="button" aria-pressed="false" data-go="new">Create account</button><button type="button" aria-pressed="true">Sign in</button></div>' +
           '<p>Sign in with your Boardside Reviews account.</p>' +
           '<form novalidate><label>Email<input id="blb-e" type="email" autocomplete="email"></label>' +
