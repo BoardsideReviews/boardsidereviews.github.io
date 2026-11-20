@@ -15,8 +15,9 @@ jobs:
     steps:
       - name: Ping Supabase
         run: |
-          curl -sf -X POST "https://kugxnegnzikqwbmxadkj.supabase.co/rest/v1/rpc/get_leaderboard" \
+          # Leaderboards now need a signed-in account, so ping a tiny
+          # read-only function that signed-out visitors may still call.
+          curl -sS --fail-with-body -X POST "https://kugxnegnzikqwbmxadkj.supabase.co/rest/v1/rpc/qb_email_verified" \
             -H "apikey: sb_publishable_dUWbUHrSpZctTNT0vhPqag_Qw-PJlpb" \
             -H "Content-Type: application/json" \
-            -d '{"p_game":"abg-blitz","p_variant":"default","p_days":null,"p_limit":1}' \
-            > /dev/null && echo "Supabase pinged OK"
+            -d '{}' && echo && echo "Supabase pinged OK"
