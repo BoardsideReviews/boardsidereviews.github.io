@@ -218,7 +218,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
 <body>
 <div class="wrap">
   <header class="top">
-    <a class="brand" href="/#games" aria-label="Boardside Reviews games"><small>Boardside Reviews<sup style="font-size:.5em;font-weight:600;vertical-align:super;line-height:0;margin-left:1px">&trade;</sup> · ID</small><b>Don't <i>Shrug</i> the <em>Bug</em></b></a>
+    <a class="brand" href="games.html" aria-label="Back to all games"><small>Boardside Reviews<sup style="font-size:.5em;font-weight:600;vertical-align:super;line-height:0;margin-left:1px">&trade;</sup> · ID</small><b>Don't <i>Shrug</i> the <em>Bug</em></b></a>
     <button class="iconbtn" id="mute" type="button" aria-label="Mute sound"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path id="waves" d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg></button>
   </header>
 
@@ -268,7 +268,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offse
         <li><b>LV 13+</b><i style="background:var(--t5)"></i><span><strong>Attending rounds</strong> · best management</span></li>
       </ol>
       <p class="rules">3 antibiotic discs. A miss costs one, drops a level, and the culture grows.<br>Answer fast for a speed bonus. 5 in a row earns a streak bonus.</p>
-      <div class="ctas"><button class="go violet" id="startBtn" type="button">Start the culture</button><a class="home" href="/#games">← All games</a></div>
+      <div class="ctas"><button class="go violet" id="startBtn" type="button">Start the culture</button><a class="home" href="games.html">← All games</a></div>
     </div>
   </div>
 </div>
@@ -847,7 +847,7 @@ function endGame(){
     <div class="rline"><span>Personal best</span><b>${high.toLocaleString()}</b></div>
     ${lb?(S.score>0?`<div class="submit" id="postBox"><button class="go violet" type="button" id="postBtn">Post score</button><span class="postnote">Sign in with your email once. Only your display name is shown.</span></div>`:'<p class="postnote">Score above zero to post.</p>'):''}
     ${lb?'<div class="lb" id="lb"><h3>Leaderboard</h3><div class="empty">Loading…</div></div>':''}
-    <div class="rbtns"><button class="go" id="againBtn" type="button">New culture</button><a class="home" href="/#games">← All games</a></div>`;
+    <div class="rbtns"><button class="go" id="againBtn" type="button">New culture</button><a class="home" href="games.html">← All games</a></div>`;
   $('#endScreen').hidden=false; if(window.BoardsideMore)BoardsideMore.mount($('#endPanel'),'bug-drug');
   const bs=$('#bigscore'),t0=performance.now();
   (function step(now){const k=Math.min(1,(now-t0)/1100);bs.textContent=Math.round(S.score*(1-Math.pow(1-k,3))).toLocaleString();if(k<1)requestAnimationFrame(step);})(t0);
