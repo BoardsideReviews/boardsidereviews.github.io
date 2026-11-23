@@ -356,7 +356,7 @@ nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)
 .h-ctas{display:flex;gap:12px;flex-wrap:wrap}
 .h-small{margin:0;font-size:14px;color:var(--muted)}
 
-/* ── the stage: question → book → game, one 12-second loop ── */
+/* ── the stage: question → flashcard → book → game, one 16.5-second loop ── */
 .h-stage{position:relative;height:620px}
 .h-q{position:absolute;right:0;top:0;width:min(364px,64%);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 70px rgba(11,37,69,.16);padding:22px;display:flex;flex-direction:column;gap:11px;z-index:5}
 .h-q .tp{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--teal)}
@@ -376,6 +376,22 @@ nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)
 .s-pearl .h-pearl{opacity:1;transform:none}
 .s-hl .h-pearl{box-shadow:0 0 0 3px rgba(13,112,112,.22)}
 
+.h-fc{position:absolute;left:0;top:34px;width:calc(100% - min(364px,64%) - 22px);max-width:240px;background:#fff;border:1px solid #cfe3e0;border-radius:16px;box-shadow:0 22px 48px rgba(11,37,69,.16);padding:14px 14px 12px;display:flex;flex-direction:column;gap:10px;z-index:6;opacity:0;transform:translateX(40px) scale(.94) rotate(-2deg);transition:opacity .5s,transform .6s cubic-bezier(.3,0,.2,1),box-shadow .5s}
+.s-fc .h-fc{opacity:1;transform:rotate(-2deg)}
+.fc-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 6px;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--teal)}
+.fc-new{letter-spacing:0;font-size:10.5px;color:var(--navy);background:var(--teal-soft);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.fc-q{margin:0;font-size:14px;line-height:21px;color:var(--navy);font-weight:500}
+.fc-cz{display:inline-grid;vertical-align:baseline}
+.fc-cz>span{grid-area:1/1;border-radius:6px;padding:0 7px;transition:opacity .35s}
+.fc-blank{background:#eef2f6;color:var(--muted);font-size:11.5px;font-weight:600;border:1px dashed #b7c4d3}
+.fc-ans{background:var(--teal-soft);color:var(--teal);font-weight:700;opacity:0}
+.s-rev .fc-blank{display:none}
+.s-rev .fc-ans{opacity:1}
+.fc-rate{display:flex;gap:6px;opacity:0;max-height:0;margin-top:-10px;overflow:hidden;transition:opacity .4s,max-height .45s,margin-top .45s}
+.s-rev .fc-rate{opacity:1;max-height:40px;margin-top:0}
+.fc-rate span{flex:1;text-align:center;font-size:12px;font-weight:600;color:var(--ink2);border:1px solid var(--line);border-radius:8px;padding:5px 0;transition:background .3s,color .3s,border-color .3s}
+.s-good .fc-rate .gd{background:var(--teal);border-color:var(--teal);color:#fff}
+.fc-src{margin:0;font-size:11px;color:var(--muted)}
 .h-cursor{position:absolute;width:24px;height:24px;z-index:8;left:70%;top:92%;opacity:0;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3));transition:left 1.05s cubic-bezier(.45,0,.2,1),top 1.05s cubic-bezier(.45,0,.2,1),opacity .4s;pointer-events:none}
 .c-on .h-cursor{opacity:1}
 .s-click .h-cursor{animation:tap .32s ease}
@@ -444,7 +460,7 @@ nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)
 
 @media (max-width:980px){.h2026 .wrap{grid-template-columns:1fr;gap:36px}.h-stage{max-width:540px;width:100%;margin:0 auto}}
 @media (min-width:521px) and (max-width:1180px){.h-bookw{width:170px}.h-booktag{left:146px}}
-@media (max-width:520px){.s-open .h-bookw{z-index:6}.h2026 .wrap{padding-top:32px}.h-copy .lede{font-size:17px;line-height:26px}.h-stage{height:760px}.h-q{width:100%;padding:18px}.h-bookw{width:150px;left:4px;bottom:40px}.h-booktag{left:110px;bottom:24px;z-index:5}.h-game{width:196px;right:0}.gt-wrap{height:84px}}
+@media (max-width:520px){.s-open .h-bookw{z-index:6}.h2026 .wrap{padding-top:32px}.h-copy .lede{font-size:17px;line-height:26px}.h-stage{height:760px}.h-q{width:100%;padding:18px}.h-bookw{width:150px;left:4px;bottom:40px}.h-booktag{left:110px;bottom:24px;z-index:5}.h-game{width:196px;right:0}.gt-wrap{height:84px}.h-stage{height:900px}.h-fc{left:auto;right:0;top:470px;width:52%;max-width:220px}}
 </style>
 <section class="h2026" id="hero">
 <div class="wrap">
@@ -459,15 +475,21 @@ nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)
 </div>
 <p class="h-small">Founders price for the first 100 buyers. Waitlist members hear 48 hours before launch.</p>
 </div>
-<div class="h-stage s-c s-b s-pearl" id="hstage" aria-hidden="true">
+<div class="h-stage s-c s-b s-pearl s-fc s-rev" id="hstage" aria-hidden="true">
 <div class="h-q">
 <div class="tp"><span>PULMONARY &amp; CRITICAL CARE</span><span>Q 7 / 20</span></div>
 <p class="stem">A 64-year-old man with COPD has pH 7.28, PaCO₂ 62, and is drowsy but protecting his airway. <b>Next step?</b></p>
 <div class="h-opt"><b>A</b>Intubate now</div>
-<div class="h-opt bx"><b>B</b>High-flow nasal oxygen<span class="why">✕ Why not</span></div>
+<div class="h-opt bx"><b>B</b>High-flow nasal oxygen<span class="why">✕ Your pick</span></div>
 <div class="h-opt c"><b>C</b>Noninvasive ventilation (BiPAP)<span class="why">✓ Correct</span></div>
 <div class="h-opt"><b>D</b>Repeat ABG in 2 hours</div>
 <div class="h-pearl"><strong>Pearl: </strong>hypercapnic COPD exacerbation with pH 7.25–7.35 → BiPAP first.</div>
+</div>
+<div class="h-fc">
+<div class="fc-top"><span>FLASHCARD</span><span class="fc-new">New from your miss</span></div>
+<p class="fc-q">Hypercapnic COPD exacerbation, pH 7.25–7.35: start <span class="fc-cz"><span class="fc-blank">tap to reveal</span><span class="fc-ans">BiPAP</span></span> first.</p>
+<div class="fc-rate"><span>Again</span><span class="gd">Good</span><span>Great</span></div>
+<p class="fc-src">Pulm &amp; Critical Care · Q 7</p>
 </div>
 <svg class="h-cursor" viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L16 20l-3 1.4-3.4-7.3L4 18z" fill="#fff" stroke="#0b2545" stroke-width="1.6" stroke-linejoin="round"/></svg>
 <div class="h-bookw">
@@ -496,31 +518,36 @@ nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)
   function nextGame(){th[gi].classList.remove("on");nm[gi].classList.remove("on");gi=(gi+1)%th.length;th[gi].classList.add("on");nm[gi].classList.add("on")}
   if(matchMedia("(prefers-reduced-motion: reduce)").matches){ setInterval(nextGame,4000); return; }
   var C=st.classList, on=function(){for(var i=0;i<arguments.length;i++)C.add(arguments[i])}, off=function(){for(var i=0;i<arguments.length;i++)C.remove(arguments[i])};
-  var cur=st.querySelector(".h-cursor"), T={q:st.querySelector(".h-opt.c"),book:st.querySelector(".h-bookw"),game:st.querySelector(".gt-wrap")};
+  var cur=st.querySelector(".h-cursor"), T={wrong:st.querySelector(".h-opt.bx"),fc:st.querySelector(".fc-cz"),good:st.querySelector(".fc-rate .gd"),book:st.querySelector(".h-bookw"),game:st.querySelector(".gt-wrap")};
   function moveTo(el,fx,fy){var r=el.getBoundingClientRect(),s=st.getBoundingClientRect();cur.style.left=(r.left-s.left+r.width*fx)+"px";cur.style.top=(r.top-s.top+r.height*fy)+"px"}
   function click(){off("s-click");void cur.offsetWidth;on("s-click")}
-  // One 13-second loop. The cursor visits each one in turn and clicks: question → book → game.
+  // One 16.5-second loop: pick a wrong answer → a flashcard is made from the miss → reveal it → book → game.
   var steps=[
-    [0,    function(){off("s-c","s-b","s-pearl","s-open","s-hl","s-game","s-click");on("c-on");moveTo(T.game,.55,.5)}],
-    [500,  function(){moveTo(T.q,.45,.55)}],
-    [1650, function(){click();on("s-c")}],
-    [2250, function(){on("s-b")}],
-    [2850, function(){on("s-pearl")}],
-    [3600, function(){moveTo(T.book,.62,.42)}],
-    [4750, function(){click();on("s-open")}],
-    [5800, function(){on("s-hl")}],
-    [7900, function(){off("s-hl","s-open")}],
-    [8300, function(){moveTo(T.game,.55,.5)}],
-    [9450, function(){click();on("s-game");nextGame()}],
-    [10600,function(){off("s-game")}],
-    [11400,function(){off("s-pearl","s-b","s-c")}]
+    [0,    function(){off("s-c","s-b","s-pearl","s-fc","s-rev","s-good","s-open","s-hl","s-game","s-click");on("c-on");moveTo(T.game,.55,.5)}],
+    [500,  function(){moveTo(T.wrong,.45,.55)}],
+    [1650, function(){click();on("s-b")}],
+    [2150, function(){on("s-c")}],
+    [2700, function(){on("s-pearl")}],
+    [3300, function(){on("s-fc")}],
+    [4100, function(){moveTo(T.fc,.5,.6)}],
+    [5250, function(){click();on("s-rev")}],
+    [6100, function(){moveTo(T.good,.5,.6)}],
+    [7250, function(){click();on("s-good")}],
+    [8000, function(){moveTo(T.book,.62,.42)}],
+    [9150, function(){click();on("s-open")}],
+    [10200,function(){on("s-hl")}],
+    [12100,function(){off("s-hl","s-open")}],
+    [12500,function(){moveTo(T.game,.55,.5)}],
+    [13650,function(){click();on("s-game");nextGame()}],
+    [14800,function(){off("s-game")}],
+    [15600,function(){off("s-pearl","s-b","s-c","s-fc","s-rev","s-good")}]
   ];
   var t0=null, idx=0, raf;
   function tick(now){
     if(t0===null){t0=now;idx=0}
     var t=now-t0;
     while(idx<steps.length&&t>=steps[idx][0]){steps[idx][1]();idx++}
-    if(t>=13000){t0=now;idx=0}
+    if(t>=16500){t0=now;idx=0}
     raf=requestAnimationFrame(tick);
   }
   // Pause while the stage is off screen (saves battery) and restart cleanly when it returns.
@@ -528,6 +555,84 @@ nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)
   io.observe(st);
 })();
 </script>
+
+<style>
+.pz{border-bottom:1px solid #e3ebf3;background:#fff}
+.pz .wrap{padding-top:72px;padding-bottom:72px;display:flex;flex-direction:column;gap:32px}
+.pz-head{display:flex;flex-direction:column;gap:12px;max-width:880px}
+.pz-head p{margin:0;color:var(--muted);font-size:17px;line-height:26px}
+.pz-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.pz-c{border:1px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:14px;background:#fff;box-shadow:0 10px 30px rgba(11,37,69,.05)}
+.pz-tag{align-self:flex-start;font-size:11.5px;font-weight:700;letter-spacing:.06em;border-radius:999px;padding:4px 10px;color:var(--teal);background:var(--teal-soft)}
+.pz-tag.res{color:#fff;background:var(--navy)}
+.pz-c h3{margin:0;font-family:'Plus Jakarta Sans',sans-serif;font-size:21px;letter-spacing:-.01em;line-height:1.2;color:var(--navy)}
+.pz-c p{margin:0;color:var(--muted);font-size:15px;line-height:23px}
+.pz-v{background:var(--sky2);border:1px solid #e3ebf3;border-radius:14px;padding:14px;height:150px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.pz-fc{background:#fff;border:1px solid #cfe3e0;border-radius:12px;padding:12px;font-size:13.5px;line-height:20px;color:var(--navy);transform:rotate(-1.5deg);box-shadow:0 8px 18px rgba(11,37,69,.08)}
+.pz-fc small{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--teal);margin-bottom:4px}
+.pz-fc mark{background:var(--teal-soft);color:var(--teal);font-weight:700;border-radius:5px;padding:0 5px}
+.pz-rate{display:flex;gap:6px}
+.pz-rate span{flex:1;text-align:center;font-size:11.5px;font-weight:600;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 0}
+.pz-rate span.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.pz-room{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
+.pz-room b{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;color:var(--navy);letter-spacing:.06em;background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px 8px}
+.pz-bar{display:grid;grid-template-columns:18px 1fr 34px;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--navy)}
+.pz-bar i{display:block;height:9px;border-radius:5px;background:#dfe6ee}
+.pz-bar i.t{background:var(--teal)}
+.pz-bar em{font-style:normal;color:var(--muted);font-weight:600;text-align:right}
+.pz-sub{display:grid;grid-template-columns:86px 1fr 30px;align-items:center;gap:8px;font-size:12px;color:var(--ink2);font-weight:600}
+.pz-sub span{position:relative;height:9px;border-radius:5px;background:#e3e9f0}
+.pz-sub span i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--teal)}
+.pz-sub em{font-style:normal;text-align:right;color:var(--navy);font-weight:700}
+.pz-foot{margin:0;font-size:14.5px;color:var(--ink2);background:var(--sky2);border:1px solid #e3ebf3;border-radius:14px;padding:14px 18px}
+.pz-foot a{color:var(--teal);font-weight:600;text-decoration:none}
+@media (max-width:980px){.pz-grid{grid-template-columns:1fr}.pz-v{height:auto}}
+@media (max-width:520px){.pz .wrap{padding-top:52px;padding-bottom:52px}}
+</style>
+<section class="pz" id="personal" aria-labelledby="pz-h">
+<div class="wrap">
+<div class="pz-head">
+<span class="eyebrow">BUILT INTO THE QUESTION BANK</span>
+<h2 class="sec" id="pz-h">Personal for you. Powerful for your class.</h2>
+<p>The question bank learns from every answer. Your misses turn into flashcards, and residency programs get live group sessions and class averages to plan teaching around.</p>
+</div>
+<div class="pz-grid">
+<div class="pz-c">
+<span class="pz-tag">EVERY LEARNER</span>
+<div class="pz-v" aria-hidden="true">
+<div class="pz-fc"><small>FLASHCARD · FROM YOUR MISS</small>Hypercapnic COPD, pH 7.25–7.35: start <mark>BiPAP</mark> first.</div>
+<div class="pz-rate"><span>Again</span><span class="on">Good</span><span>Great</span></div>
+</div>
+<h3>Personalized flashcards</h3>
+<p>Miss a question and its teaching pearl becomes a flashcard with the key words hidden. Rate it Again, Good or Great, and it comes back right before you'd forget it.</p>
+</div>
+<div class="pz-c">
+<span class="pz-tag res">RESIDENCY PLAN</span>
+<div class="pz-v" aria-hidden="true">
+<div class="pz-room"><span>Noon conference · 18 joined</span><b>4821</b></div>
+<div class="pz-bar"><span>A</span><i style="width:22%"></i><em>11%</em></div>
+<div class="pz-bar"><span>B</span><i style="width:44%"></i><em>22%</em></div>
+<div class="pz-bar"><span>C</span><i class="t" style="width:100%"></i><em>61%</em></div>
+<div class="pz-bar"><span>D</span><i style="width:12%"></i><em>6%</em></div>
+</div>
+<h3>Live group sessions</h3>
+<p>Put questions on the big screen at noon conference. Residents answer on their phones and the room sees the results live. Answers stay anonymous.</p>
+</div>
+<div class="pz-c">
+<span class="pz-tag res">RESIDENCY PLAN · CHIEFS</span>
+<div class="pz-v" aria-hidden="true">
+<div class="pz-sub">Nephrology<span><i style="width:53%"></i></span><em>53%</em></div>
+<div class="pz-sub">Heme/Onc<span><i style="width:55%"></i></span><em>55%</em></div>
+<div class="pz-sub">Neurology<span><i style="width:56%"></i></span><em>56%</em></div>
+<div class="pz-sub">Cardiology<span><i style="width:64%"></i></span><em>64%</em></div>
+</div>
+<h3>Class insights for chiefs</h3>
+<p>Chief residents see the class average by subject, topic and PGY year, so lectures go where the class needs them. Never any one resident's scores.</p>
+</div>
+</div>
+<p class="pz-foot">Group sessions and class insights come together when a residency gets the question bank for the whole class. Program leaders: <a href="mailto:partners@boardsidereviews.com">partners@boardsidereviews.com</a></p>
+</div>
+</section>
 
 <style>
 .wyg .wrap{padding-top:96px;padding-bottom:40px;display:flex;flex-direction:column;gap:36px}
