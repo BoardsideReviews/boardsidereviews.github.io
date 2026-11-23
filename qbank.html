@@ -1033,7 +1033,8 @@ function friendly(err) {
 // first 10 questions of each set and may answer 10 questions in total; a free, verified account
 // unlocks all 80 and the Cardiology notes PDF. Progress is kept in this browser, per account.
 var SAMPLE = /[?&]sample(=|&|$)/.test(location.search);
-var LOGIN_RETURN = /[?&]login(=|&|$)/.test(location.search);      // came from the homepage Login button: go back home after signing in
+var LOGIN_RETURN = /[?&]login(=|&|$)/.test(location.search);      // came from a Login button: go back to that page after signing in
+var LOGIN_BACK = /[?&]login=games(&|$)/.test(location.search) ? "games.html" : "/";   // Gamified Learning page sends ?login=games
 var ACCOUNT_OPEN = (location.search.match(/[?&]account=(profile|password|payments|billing)/) || [])[1] || null;   // homepage account menu
 var FREE = { sets: null, data: {} };              // set list + loaded sets (questions with answers)
 var ANON_LIMIT = 10;
@@ -3402,7 +3403,7 @@ async function boot() {
   FREE.data = {};
   if (user && !(user.user_metadata && user.user_metadata.account_ready)) return showFinishAccount(user);
   if (user && !user.user_metadata.heard_asked && PREVIEW_EMAILS.indexOf(S.email) < 0) return showHeardAbout(user);
-  if (user && LOGIN_RETURN) { location.replace("/"); return; }
+  if (user && LOGIN_RETURN) { location.replace(LOGIN_BACK); return; }
   if (!user && LOGIN_RETURN) return showLogin();
   if (user) { var m = await sb.rpc("qb_me"); S.me = m.error ? null : m.data; }
   if (GROUP_JOIN) { if (user && GROUP_CODE) return gJoin(GROUP_CODE); return gJoinScreen(GROUP_CODE); }   // boardsidereviews.com/join
