@@ -265,9 +265,13 @@ nav .links a.dd-all{display:block;margin-top:4px;padding:10px;border-top:1px sol
 nav.open .nav-toggle span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 nav.open .nav-toggle span:nth-child(2){opacity:0}
 nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+/* Phones and iPads in portrait: logo + login/account + ☰ on one row */
 @media (max-width:640px){
-  nav{flex-wrap:nowrap;position:relative;gap:10px;padding:10px 16px}
+  nav{padding:10px 16px}
   nav .logo-word{font-size:18px}
+}
+@media (max-width:1023px){
+  nav{flex-wrap:nowrap;position:relative;gap:10px}
   .nav-toggle{display:grid}
   nav .links{margin-left:auto;flex-wrap:nowrap}
   nav:not(.open) .links > :not(#login-btn):not(.acct){display:none}
@@ -284,6 +288,16 @@ nav.open .nav-toggle span:nth-child(3){transform:translateY(-7px) rotate(-45deg)
 }
 /* Small phones: account button becomes a round initial badge so logo + account + ☰ always fit */
 .acct-ini,.acct-name{display:none}
+/* Phones and iPads: the account button is a round initial badge so the header stays on one row */
+@media (max-width:1179px){
+  .acct-btn{width:40px;height:40px;padding:0;justify-content:center;border-radius:50%;font:700 16px 'Plus Jakarta Sans',Inter,sans-serif;color:var(--teal);background:#e2f3f1;border-color:#b9d9d6}
+  .acct-btn .acct-txt,.acct-btn .acct-caret{display:none}
+  .acct-ini{display:inline}
+  .acct-name{display:block;font-size:14.5px;font-weight:700;color:var(--navy);margin-bottom:2px}
+  nav.open .acct-btn{width:auto;height:auto;padding:8px 12px 8px 14px;border-radius:999px;font:600 14.5px Inter,system-ui,sans-serif;color:var(--navy);background:#fff;border-color:var(--line)}
+  nav.open .acct-btn .acct-txt,nav.open .acct-btn .acct-caret{display:inline}
+  nav.open .acct-ini{display:none}
+}
 @media (max-width:440px){
   nav{gap:8px;padding:10px 14px}
   nav .logo{gap:10px}
