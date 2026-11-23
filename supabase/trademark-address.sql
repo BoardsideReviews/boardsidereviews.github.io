@@ -57,7 +57,7 @@ declare
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#e2f3f1;border:1px solid #bfe3df;border-radius:12px;">
 <tr><td style="padding:16px 18px;font-family:Inter,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#33465f;">
 <p style="margin:0 0 4px 0;font-family:'Plus Jakarta Sans',Inter,Arial,Helvetica,sans-serif;font-size:16px;font-weight:800;color:#0d7070;">You're on the launch waitlist.</p>
-The full question bank (about 1,600 questions) and the Boardside Notes book open soon. I'll email you 48 hours before launch and again when we're live, so you have a chance at the founders price.
+The full question bank (1,800+ questions) and the Boardside Notes book open soon. I'll email you 48 hours before launch and again when we're live, so you have a chance at the founders price.
 </td></tr></table>
 </td></tr>
 {{MAILING_BLOCK}}
@@ -101,7 +101,7 @@ returns text language sql immutable as $fn$
     '2. Read every explanation. Each answer choice is explained, so the wrong ones teach as much as the right one.',
     '3. Play between shifts. ABG Blitz, Vent Lab, Hemodynamic Roulette and more in Gamified Learning.', '',
     'Start practicing: https://www.boardsidereviews.com/qbank.html?sample', '',
-    'You''re on the launch waitlist. The full question bank (about 1,600 questions) and the Boardside Notes book open soon. I''ll email you 48 hours before launch and again when we''re live, so you have a chance at the founders price.', '',
+    'You''re on the launch waitlist. The full question bank (1,800+ questions) and the Boardside Notes book open soon. I''ll email you 48 hours before launch and again when we''re live, so you have a chance at the founders price.', '',
     case when p_mailing then 'Thank you for joining the mailing list, too. Expect an occasional teaching email: high-yield pearls and new free material. No spam, and you can unsubscribe anytime.' || E'\n' end,
     'If anything is unclear, wrong, or could be better, just reply to this email. I read every one.', '',
     'With gratitude,', 'Khaled M. Abdullah, MD', 'Founder, Boardside Reviews', '',
