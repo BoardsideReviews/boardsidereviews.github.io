@@ -12,7 +12,7 @@
   gtag('config', 'G-LJQ2NG232B');
 </script>
 <title>Co-Pay or No Way · Boardside Reviews</title>
-<meta name="description" content="A daily higher-or-lower game for medication prices. Pick which drug costs more or less per day, using what U.S. pharmacies pay (NADAC). One run a day, one wrong pick ends it.">
+<meta name="description" content="A daily medication price game. Ten head-to-head pairs: pick which drug costs more per day, using what U.S. pharmacies pay (NADAC). Score out of 10, new set every day.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%20role%3D%22img%22%20aria-label%3D%22Boardside%20Reviews%20mark%22%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2250%22%20r%3D%2242%22%20fill%3D%22%23fff%22%20stroke%3D%22%230B2545%22%20stroke-width%3D%227%22/%3E%3Cpath%20fill%3D%22%230B2545%22%20d%3D%22M35.326%2C27.0%20H51.38%20A11.5%2C11.5%200%200%201%2051.38%2C50%20H43.008%20V73.0%20H35.326%20Q34.59%2C73.0%2034.59%2C72.264%20V27.736%20Q34.59%2C27.0%2035.326%2C27.0%20Z%22/%3E%3Cpath%20fill%3D%22%230D7070%22%20d%3D%22M43.008%2C50%20H53.91%20A11.5%2C11.5%200%200%201%2053.91%2C73.0%20H43.008%20Z%22/%3E%3C/svg%3E">
 <script src="lb-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
@@ -185,12 +185,12 @@ footer a{color:#c8d4ec}
       <a class="home" href="games.html" aria-label="Boardside Reviews games"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#0B2545" stroke-width="7"/><path fill="#0B2545" d="M35.326,27.0 H51.38 A11.5,11.5 0 0 1 51.38,50 H43.008 V73.0 H35.326 Q34.59,73.0 34.59,72.264 V27.736 Q34.59,27.0 35.326,27.0 Z"/><path fill="#0D7070" d="M43.008,50 H53.91 A11.5,11.5 0 0 1 53.91,73.0 H43.008 Z"/></svg></a>
       <div>
         <h1 class="logo">Co-Pay <span>or No Way</span></h1>
-        <div class="sub">Daily drug price higher-or-lower · Boardside Reviews</div>
+        <div class="sub">10 daily drug-price showdowns · Boardside Reviews</div>
       </div>
     </div>
     <div class="hud">
       <span class="pill" id="pzl">#1</span>
-      <span class="pill">Streak <b id="streak">0</b></span>
+      <span class="pill">Score <b id="score">0/10</b></span>
       <button class="iconbtn" id="mute" aria-label="Mute sounds" title="Sound on/off">♪</button>
     </div>
   </header>
@@ -236,35 +236,30 @@ function hms(ms){ const s = Math.max(0, Math.floor(ms/1000)); return [Math.floor
 function hash(str){ let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i=0;i<str.length;i++){ const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909); h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909); return (h2>>>0) * 4294967296 + (h1>>>0); }
 function rng(seed){ let a = seed >>> 0; return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1 | a); t = t + Math.imul(t ^ t>>>7, 61 | t) ^ t; return ((t ^ t>>>14) >>> 0) / 4294967296; }; }
 
-/* ---------- daily run (same for everyone) ---------- */
+/* ---------- daily set (same for everyone) ---------- */
 const BY_ID = Object.fromEntries(DATA.drugs.map(d=>[d.id,d]));
-function minRatio(r){ return r < 4 ? 3 : r < 10 ? 2 : r < 20 ? 1.5 : 1.25; }
-// A chain of drugs: each round compares the current drug (left) with the next one (right, hidden).
-// answer "lt" = left costs less than right, "gt" = left costs more.
+const ROUNDS = 10;
+// How far apart the two prices must be in each round: easy first, close calls at the end.
+function gapFor(r){ return r < 3 ? [3, 25] : r < 6 ? [2, 8] : r < 8 ? [1.5, 4] : [1.25, 2.2]; }
+const stem = d => d.name.split(" ")[0].toLowerCase();
+// Ten separate head-to-heads, 20 different drugs. answer "a" = left costs more, "b" = right costs more.
 function buildRun(key){
-  const R = rng(hash("copay-noway-v2:" + key));
+  const R = rng(hash("copay-noway-v3:" + key));
   const pool = DATA.drugs.slice();
   for (let i = pool.length-1; i > 0; i--){ const j = Math.floor(R()*(i+1)); [pool[i],pool[j]] = [pool[j],pool[i]]; }
-  let anchor = pool.splice(pool.findIndex(d => d.perDay >= 0.3 && d.perDay <= 30), 1)[0];
   const rounds = [];
-  for (let r = 0; pool.length; r++){
-    const up = R() < 0.5;
-    let pick = null;
-    for (const [higher, ratio] of [[up, minRatio(r)], [!up, minRatio(r)], [up, 1.25], [!up, 1.25]]){
-      const list = pool.filter(c => higher ? c.perDay >= anchor.perDay * ratio : c.perDay <= anchor.perDay / ratio);
-      if (!list.length) continue;
-      if (r < 6) pick = list[Math.floor(R()*list.length)];
-      else {
-        list.sort((x,y) => Math.abs(Math.log(x.perDay/anchor.perDay)) - Math.abs(Math.log(y.perDay/anchor.perDay)));
-        const top = list.slice(0, Math.min(5, list.length));
-        pick = top[Math.floor(R()*top.length)];
-      }
-      break;
+  for (let r = 0; r < ROUNDS; r++){
+    const [lo, hi] = gapFor(r);
+    let pair = null;
+    for (let i = 0; i < pool.length && !pair; i++){
+      const a = pool[i];
+      const fits = pool.filter(c => c !== a && stem(c) !== stem(a) && c.perDay !== a.perDay && (() => { const k = Math.max(a.perDay,c.perDay)/Math.min(a.perDay,c.perDay); return k >= lo && k <= hi; })());
+      if (fits.length) pair = [a, fits[Math.floor(R()*fits.length)]];
     }
-    if (!pick) break;
-    pool.splice(pool.indexOf(pick), 1);
-    rounds.push({ a: anchor.id, c: pick.id, answer: anchor.perDay < pick.perDay ? "lt" : "gt" });
-    anchor = pick;
+    if (!pair) break;
+    pool.splice(pool.indexOf(pair[0]), 1); pool.splice(pool.indexOf(pair[1]), 1);
+    if (R() < 0.5) pair.reverse();
+    rounds.push({ a: pair[0].id, b: pair[1].id, answer: pair[0].perDay > pair[1].perDay ? "a" : "b" });
   }
   return rounds;
 }
@@ -304,17 +299,16 @@ const sfx = {
 const KEY = dayKey();
 const RUN = buildRun(KEY);
 const PZL = puzzleNo(KEY);
-let S = store.get("cp2:day:" + KEY, null) || { key: KEY, r: 0, picks: [], started: null, ended: null, done: false };
-const stats = store.get("cp2:stats", { played: 0, best: 0, last: null });
-const deviceId = store.get("cp2:device", null) || (() => { const id = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)); store.set("cp2:device", id); return id; })();
-const save = () => store.set("cp2:day:" + KEY, S);
-const streakNow = () => S.picks.filter(p => p.ok).length;
+let S = store.get("cp3:day:" + KEY, null) || { key: KEY, r: 0, picks: [], started: null, ended: null, done: false };
+const stats = store.get("cp3:stats", { played: 0, best: 0, last: null });
+const save = () => store.set("cp3:day:" + KEY, S);
+const scoreNow = () => S.picks.filter(p => p.ok).length;
 
 const $ = s => document.querySelector(s);
 const app = $("#app");
 $("#pzl").textContent = "#" + PZL;
 $("#asof").textContent = new Date(DATA.meta.asOf + "T12:00:00Z").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric",timeZone:"UTC"});
-function hud(){ $("#streak").textContent = streakNow(); $("#mute").textContent = muted ? "×" : "♪"; $("#mute").setAttribute("aria-label", muted ? "Turn sound on" : "Mute sounds"); }
+function hud(){ $("#score").textContent = scoreNow() + "/" + RUN.length; $("#mute").textContent = muted ? "×" : "♪"; $("#mute").setAttribute("aria-label", muted ? "Turn sound on" : "Mute sounds"); }
 $("#mute").onclick = () => { muted = !muted; store.set("cp2:muted", muted); hud(); };
 function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(()=>t.classList.remove("on"), 1800); }
 
@@ -325,11 +319,11 @@ function intro(){
     <h2>Which drug costs more per day?</h2>
     <ol class="rules">
       <li><span>Every drug is priced per day at a standard adult dose, using what U.S. pharmacies pay for it (NADAC), before insurance.</span></li>
-      <li><span>You see one drug’s price. The new drug’s price is hidden. <b>Tap the one that costs more.</b></span></li>
-      <li><span>Get it right and the new drug always becomes the next one to compare against, even if it was the cheaper one.</span></li>
-      <li><span>One wrong pick ends your run. Everyone gets the same drugs today, and a new run starts at midnight Pacific.</span></li>
+      <li><span>Each round is a brand-new pair of drugs with both prices hidden. <b>Tap the one that costs more.</b></span></li>
+      <li><span>${RUN.length} rounds, ${RUN.length} picks. A wrong pick doesn't end the game: you finish all ${RUN.length} and get a score out of ${RUN.length}.</span></li>
+      <li><span>The prices get closer as you go. Everyone gets the same ${RUN.length} pairs today, and a new set starts at midnight Pacific.</span></li>
     </ol>
-    <div class="row"><button class="btn" id="go">Start today’s run</button><span class="fine">${DATA.meta.count} drugs in the pool</span></div>
+    <div class="row"><button class="btn" id="go">Start today’s ${RUN.length}</button><span class="fine">${DATA.meta.count} drugs in the pool</span></div>
   </section>`;
   $("#go").onclick = () => { S.started = Date.now(); save(); sfx.tick(); play(); };
 }
@@ -355,16 +349,16 @@ function cardHTML(d, opts){
 
 function play(){
   hud();
-  if (S.r >= RUN.length){ finish(true); return; }
-  const rd = RUN[S.r], A = BY_ID[rd.a], C = BY_ID[rd.c];
+  if (S.r >= RUN.length){ finish(); return; }
+  const rd = RUN[S.r], A = BY_ID[rd.a], B = BY_ID[rd.b];
   app.innerHTML = `
-    <div class="prompt">Which costs <span class="word">more</span> per day?<small>Tap the drug that costs more. The new drug’s price is hidden.</small></div>
+    <div class="prompt">Which costs <span class="word">more</span> per day?<small>Round ${S.r + 1} of ${RUN.length} · both prices are hidden</small></div>
     <div class="board live" id="board">
-      ${cardHTML(A, {show:true, pick:"gt"})}
+      ${cardHTML(A, {show:false, cls:"enter", pick:"a"})}
       <div class="vs" aria-hidden="true">VS</div>
-      ${cardHTML(C, {show:false, cls:"enter", pick:"lt"})}
+      ${cardHTML(B, {show:false, cls:"enter", pick:"b"})}
     </div>
-    <div class="verdict" id="verdict"><span class="fine" style="color:#9fb0d0">Round ${S.r + 1}</span></div>`;
+    <div class="verdict" id="verdict"><span class="fine" style="color:#9fb0d0">Tap a card to lock in your pick.</span></div>`;
   app.querySelectorAll("button.card").forEach(el => el.onclick = () => choose(el.dataset.s));
 }
 
@@ -379,99 +373,101 @@ function choose(sign){
   if (S.done || S.picks.length > S.r) return;
   const rd = RUN[S.r], ok = sign === rd.answer;
   S.picks.push({ r: S.r, s: sign, ok });
-  if (!ok){ S.done = true; S.ended = Date.now(); }
+  S.r += 1;
+  const last = S.r >= RUN.length;
+  if (last){ S.done = true; S.ended = Date.now(); }
   save();
-  const A = BY_ID[rd.a], C = BY_ID[rd.c];
+  const A = BY_ID[rd.a], B = BY_ID[rd.b];
   const board = $("#board");
   board.classList.remove("live");
   const more = '<span class="morestamp">COSTS MORE</span>';
-  const aPicked = sign === "gt";
-  board.innerHTML = cardHTML(A, {show:true, note:true, stamp: rd.answer === "gt" ? more : "", cls: (aPicked ? "picked " : "") + (aPicked ? (ok ? "ok" : "bad shake") : "dim")}) +
+  const cls = side => sign === side ? "picked " + (ok ? "ok" : "bad shake") : "dim";
+  board.innerHTML = cardHTML(A, {show:true, note:true, stamp: rd.answer === "a" ? more : "", cls: cls("a")}) +
     `<div class="vs" aria-hidden="true">VS</div>` +
-    cardHTML(C, {show:true, note:true, stamp: rd.answer === "lt" ? more : "", cls: (!aPicked ? "picked " : "") + (!aPicked ? (ok ? "ok" : "bad shake") : "")});
-  const cs = board.querySelectorAll(".sticker")[1]; countUp(cs, C.perDay);
+    cardHTML(B, {show:true, note:true, stamp: rd.answer === "b" ? more : "", cls: cls("b")});
+  const st = board.querySelectorAll(".sticker"); countUp(st[0], A.perDay); countUp(st[1], B.perDay);
   hud();
-  const ratio = Math.max(A.perDay, C.perDay) / Math.min(A.perDay, C.perDay);
+  const ratio = Math.max(A.perDay, B.perDay) / Math.min(A.perDay, B.perDay);
   const gap = ratio >= 10 ? `${Math.round(ratio)}×` : `${ratio.toFixed(1)}×`;
+  const hi = rd.answer === "a" ? A : B;
+  ok ? sfx.ok() : sfx.bad();
+  if (last){ stats.played += 1; stats.best = Math.max(stats.best, scoreNow()); stats.last = KEY; store.set("cp3:stats", stats); }
   const v = $("#verdict");
-  if (ok){
-    sfx.ok();
-    v.innerHTML = `<span><b style="color:#7ee2b0">Correct.</b> ${gap} difference. ${esc(C.name)} is the next one to beat.</span><button class="btn" id="next">Next round</button>`;
-    S.r += 1; save();
-    const nx = $("#next"); nx.focus({preventScroll:true});
-    nx.onclick = () => { sfx.tick(); play(); };
-  } else {
-    sfx.bad();
-    stats.played += 1; stats.best = Math.max(stats.best, streakNow()); stats.last = KEY; store.set("cp2:stats", stats);
-    v.innerHTML = `<span><b style="color:#ff8a8c">Run over.</b> ${gap} difference.</span><button class="btn" id="res">See results</button>`;
-    const rb = $("#res"); rb.focus({preventScroll:true}); rb.onclick = () => finish(false);
-  }
+  v.innerHTML = `<span>${ok ? '<b style="color:#7ee2b0">Correct.</b>' : '<b style="color:#ff8a8c">Not this time.</b>'} ${esc(hi.name)} costs ${gap} as much.</span><button class="btn" id="next">${last ? "See your score" : "Next round"}</button>`;
+  const nx = $("#next"); nx.focus({preventScroll:true});
+  nx.onclick = () => { sfx.tick(); last ? finish() : play(); };
 }
 
-function shareText(perfect){
-  const n = streakNow(), sq = S.picks.map(p => p.ok ? "🟩" : "🟥");
-  const shown = sq.length > 20 ? sq.slice(0, 19).join("") + `…+${sq.length - 19}` : sq.join("");
-  return `Co-Pay or No Way #${PZL} 💊 Streak ${n}${perfect ? " (perfect!)" : ""}\n${shown}\nboardsidereviews.com`;
+function shareText(){
+  const n = scoreNow(), sq = S.picks.map(p => p.ok ? "🟩" : "🟥").join("");
+  return `Co-Pay or No Way #${PZL} 💊 ${n}/${RUN.length}${n === RUN.length ? " (perfect!)" : ""}\n${sq}\nboardsidereviews.com`;
 }
 
-function finish(perfect){
-  if (!S.done){ S.done = true; S.ended = S.ended || Date.now(); save();
-    if (perfect){ stats.played += 1; stats.best = Math.max(stats.best, streakNow()); stats.last = KEY; store.set("cp2:stats", stats); } }
+function verdictLine(n, t){
+  if (n === t) return "Perfect. You know your pharmacy shelf.";
+  if (n >= t - 2) return "Excellent. Formulary committee material.";
+  if (n >= t / 2) return "Solid. A few prices fooled you.";
+  return "Prices are tricky. Tomorrow's a new set.";
+}
+
+function finish(){
+  if (!S.done){ S.done = true; S.ended = S.ended || Date.now(); save(); }
   hud();
-  const n = streakNow(), t = S.started && S.ended ? S.ended - S.started : 0;
+  const n = scoreNow(), total = RUN.length, t = S.started && S.ended ? S.ended - S.started : 0;
   const rows = S.picks.map(p => {
-    const rd = RUN[p.r], A = BY_ID[rd.a], C = BY_ID[rd.c];
+    const rd = RUN[p.r], A = BY_ID[rd.a], B = BY_ID[rd.b];
+    const hi = rd.answer === "a" ? A : B, lo = rd.answer === "a" ? B : A;
     return `<div class="rv"><span class="m ${p.ok ? "ok" : "bad"}">${p.ok ? "✓" : "✗"}</span><span class="q">${p.r + 1}</span>
-      <span>${(() => { const hi = rd.answer === "gt" ? A : C, lo = rd.answer === "gt" ? C : A; return `<b>${esc(hi.name)}</b> <span class="mono">${money(hi.perDay)}</span> costs more than ${esc(lo.name)} <span class="mono">${money(lo.perDay)}</span>`; })()}</span></div>`;
+      <span><b>${esc(hi.name)}</b> <span class="mono">${money(hi.perDay)}</span> costs more than ${esc(lo.name)} <span class="mono">${money(lo.perDay)}</span></span></div>`;
   }).join("");
   app.innerHTML = `
   <section class="panel">
-    <div class="big"><span class="n">${n}</span><span class="l">${perfect ? "Perfect run. You cleared the whole shelf." : n === 1 ? "correct pick in a row" : "correct picks in a row"}</span></div>
+    <div class="big"><span class="n">${n}/${total}</span><span class="l">${verdictLine(n, total)}</span></div>
     <div class="stats">
       <div class="stat"><div class="k">Puzzle</div><div class="v">#${PZL}</div></div>
       <div class="stat"><div class="k">Time</div><div class="v">${hms(t).replace(/^00:/,"")}</div></div>
-      <div class="stat"><div class="k">Your best</div><div class="v">${stats.best}</div></div>
-      <div class="stat"><div class="k">Next run in</div><div class="v" id="cd">${hms(msToNext())}</div></div>
+      <div class="stat"><div class="k">Your best</div><div class="v">${stats.best}/${total}</div></div>
+      <div class="stat"><div class="k">Next set in</div><div class="v" id="cd">${hms(msToNext())}</div></div>
     </div>
     <div class="row"><button class="btn" id="share">Copy result</button></div>
   </section>
   <section class="panel">
     <h2>Today’s leaderboard</h2>
-    <p class="fine">Longest streak wins. Ties go to whoever posted first.</p>
-    <div class="row" id="postRow"><button class="btn" type="button" id="lbsubmit">Post my streak</button><span class="fine" id="postNote"></span></div>
+    <p class="fine">Highest score out of ${total} wins. Ties go to whoever posted first.</p>
+    <div class="row" id="postRow"><button class="btn" type="button" id="lbsubmit">Post my score</button><span class="fine" id="postNote"></span></div>
     <div id="lb" class="fine">Loading…</div>
     <a class="fine" href="leaderboard.html#copay-noway">Full leaderboard →</a>
   </section>
   <section class="panel">
-    <h2>Your run</h2>
+    <h2>Your ${total} picks</h2>
     <div class="review">${rows || '<span class="fine">No picks yet.</span>'}</div>
     <p class="fine">Check any price yourself: search the “Look up” text in the <a href="https://www.medicaid.gov/medicaid/prescription-drugs/pharmacy-pricing/index.html">NADAC data</a> (file as of ${$("#asof").textContent}).</p>
   </section>
   <div id="more"></div>`;
-  $("#share").onclick = async () => { try{ await navigator.clipboard.writeText(shareText(perfect)); toast("Result copied"); }catch(e){ toast("Copy blocked here. Select and copy: " + shareText(perfect).split("\n")[0]); } };
+  $("#share").onclick = async () => { try{ await navigator.clipboard.writeText(shareText()); toast("Result copied"); }catch(e){ toast("Copy blocked here. Select and copy: " + shareText().split("\n")[0]); } };
   clearInterval(finish.iv); finish.iv = setInterval(() => { const el = $("#cd"); if (!el) return clearInterval(finish.iv); const ms = msToNext(); el.textContent = hms(ms); if (dayKey() !== KEY) location.reload(); }, 1000);
   const pb = $("#lbsubmit");
   if (!hasLB()) { $("#postRow").hidden = true; }
-  else if (store.get("cp2:posted:" + KEY, false)) { pb.outerHTML = '<span class="posted fine">Posted</span>'; }
-  else pb.onclick = () => postStreak(n);
+  else if (store.get("cp2:posted:" + KEY, false) || store.get("cp3:posted:" + KEY, false)) { pb.outerHTML = '<span class="posted fine">Posted</span>'; }
+  else pb.onclick = () => postScore(n);
   if (window.BoardsideMore) BoardsideMore.mount($("#more"), GAME);
   loadLB();
 }
 
 /* ---------- leaderboard (shared Boardside board, lb.js) ---------- */
 const hasLB = () => !!(window.BLB && BLB.enabled && BLB.boardPoints);
-async function postStreak(n){
+async function postScore(n){
   const b = $("#lbsubmit"), note = $("#postNote");
   b.disabled = true; b.textContent = "Posting…"; note.textContent = "";
   try{
-    const name = await BLB.dialog({ title: "Post your streak", intro: "We'll email you a 6-digit code to verify it's you. No password needed." });
-    if (!name){ b.disabled = false; b.textContent = "Post my streak"; return; }
-    await BLB.submit(GAME, KEY, n, Math.max(1, n));
-    store.set("cp2:posted:" + KEY, true);
+    const name = await BLB.dialog({ title: "Post your score", intro: "We'll email you a 6-digit code to verify it's you. No password needed." });
+    if (!name){ b.disabled = false; b.textContent = "Post my score"; return; }
+    await BLB.submit(GAME, KEY, n, RUN.length);
+    store.set("cp3:posted:" + KEY, true);
     b.outerHTML = '<span class="posted fine">Posted as ' + esc(name) + '</span>';
     loadLB();
   }catch(e){
-    b.disabled = false; b.textContent = "Post my streak";
+    b.disabled = false; b.textContent = "Post my score";
     note.textContent = BLB.friendly(e);
   }
 }
@@ -481,14 +477,14 @@ async function loadLB(){
   try{
     const rows = await BLB.boardPoints(GAME, KEY, null, 10);
     if (!rows.length){ box.textContent = "No one has posted yet today. Be first."; return; }
-    box.innerHTML = `<table class="lb"><thead><tr><th>#</th><th>Player</th><th style="text-align:right">Streak</th></tr></thead><tbody>${
-      rows.map(r => `<tr${r.is_me ? ' style="font-weight:700"' : ""}><td>${r.rank}</td><td>${esc(r.display_name)}${r.is_me ? " (you)" : ""}</td><td class="num">${r.best_score}</td></tr>`).join("")}</tbody></table>`;
+    box.innerHTML = `<table class="lb"><thead><tr><th>#</th><th>Player</th><th style="text-align:right">Score</th></tr></thead><tbody>${
+      rows.map(r => `<tr${r.is_me ? ' style="font-weight:700"' : ""}><td>${r.rank}</td><td>${esc(r.display_name)}${r.is_me ? " (you)" : ""}</td><td class="num">${r.best_score}/${RUN.length}</td></tr>`).join("")}</tbody></table>`;
   }catch(e){ box.textContent = BLB.friendly(e); }
 }
 
 /* ---------- boot ---------- */
 hud();
-if (S.done) finish(S.r >= RUN.length && S.picks.every(p=>p.ok));
+if (S.done) finish();
 else if (S.started) play();
 else intro();
 </script>

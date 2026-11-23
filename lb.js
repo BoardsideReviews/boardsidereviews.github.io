@@ -22,7 +22,7 @@
     stale_puzzle: "This puzzle's board is closed. Times post for today's puzzle only.",
     too_quick: "That time is too fast to post.",
     bad_time: "That time couldn't be posted.",
-    copay_once: "You've already posted today's streak. Your first run of the day is the one that counts.",
+    copay_once: "You've already posted today's score. Your first game of the day is the one that counts.",
     endemic_once: "You've already posted today's score. Your first pin of the day is the one that counts."
   };
   function friendly(err) {

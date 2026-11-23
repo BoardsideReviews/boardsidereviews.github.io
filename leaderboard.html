@@ -108,7 +108,7 @@ tr.mine td{background:var(--teal-soft)}
 // Boards shown on this page. Add a line here when a new game gets a leaderboard.
 const BOARDS=[
   {id:"cross-cover",group:"CROSS-COVER",label:"Cross-Cover",game:"cross-cover",play:"crossword.html",time:true},
-  {id:"copay-noway",group:"CO-PAY OR NO WAY",label:"Co-Pay or No Way",game:"copay-noway",play:"copay.html",daily:true},
+  {id:"copay-noway",group:"CO-PAY OR NO WAY",label:"Co-Pay or No Way",game:"copay-noway",play:"copay.html",daily:true,unit:"Score",noun:"scores",fmt:v=>v+"/10",rule:"Highest score out of 10 wins; each player's first game of the day counts."},
   {id:"bundle-branch",group:"BUNDLE BRANCH",label:"No-hint solves",game:"bundle-branch",play:"bundle-branch.html",time:true,rule:"Fastest solve without a hint wins; each player's first board of the day counts."},
   {id:"endemic",group:"ENDEMIC",label:"Endemic",game:"endemic",play:"endemic.html",daily:true,unit:"Score",noun:"scores",what:"pin",fmt:v=>Number(v).toLocaleString(),rule:"Highest score wins; each player's first pin of the day counts."},
   {id:"rhythm-rush",group:"RHYTHM RUSH",label:"Rhythm Rush",game:"rhythm-rush",variant:"1-min",play:"rhythm-rush.html",points:true},
