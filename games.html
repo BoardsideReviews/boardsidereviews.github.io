@@ -52,8 +52,9 @@ header nav a.acct-item,.acct-item{display:flex;flex-direction:column;align-items
 .acct-out b{color:#b9432c}
 .acct-ini,.acct-name{display:none}
 @media (max-width:640px){.acct-menu{position:fixed;left:16px;right:16px;top:auto;min-width:0}.acct-w{display:none}.acct-btn{padding:8px 12px 8px 14px;font-size:14.5px}header nav a.btn{padding:9px 14px}}
-@media (max-width:440px){
-  header nav a.nav-home{display:none}
+@media (max-width:440px){header nav a.nav-home{display:none}}
+/* Phones and iPads: the account button is a round initial badge so the header never runs off-screen */
+@media (max-width:1100px){
   .acct-btn{width:40px;height:40px;padding:0;justify-content:center;border-radius:50%;font:700 16px 'Plus Jakarta Sans',Inter,sans-serif;color:var(--teal);background:#e2f3f1;border-color:#b9d9d6}
   .acct-btn .acct-txt,.acct-btn .acct-caret{display:none}
   .acct-ini{display:inline}
