@@ -1448,7 +1448,7 @@ function showSignup(prefill) {
     h("label", { class: "field" }, ["Email", email])
   ].concat(pws.nodes).concat([
     waitlistNote(), h("label", { class: "optin" }, [optin, h("span", null, "Also add me to the Boardside Reviews mailing list for occasional teaching emails and updates. You can unsubscribe anytime.")]),
-    err, btn,
+    privacyNote(), err, btn,
     h("button", { class: "link", type: "button", onclick: function () { showLogin(email.value.trim()); } }, "Already have an account? Sign in")
   ]));
   form.onsubmit = async function (e) {
@@ -1481,6 +1481,11 @@ function profileData(first, last, optin) {
            waitlist: true, waitlist_at: new Date().toISOString() };
 }
 // Everyone with an account is on the launch waitlist; the mailing list is a separate, unticked choice.
+function privacyNote() {
+  return h("p", { class: "muted", style: "margin:0;font-size:13px" }, ["By creating an account, you agree to our ",
+    h("a", { href: "terms.html", target: "_blank", rel: "noopener" }, "Terms of Use"), " and ",
+    h("a", { href: "privacy.html", target: "_blank", rel: "noopener" }, "Privacy Policy"), "."]);
+}
 function waitlistNote() {
   return h("div", { class: "wlnote" }, [h("b", null, "You'll be on the launch waitlist. "),
     "Creating an account adds you to the Boardside Reviews waitlist: we'll email you 48 hours before launch and again when we're live, so you can catch the founders price."]);
@@ -1581,7 +1586,7 @@ function showFinishAccount(user) {
     h("div", { class: "row2" }, [h("label", { class: "field" }, ["First name", first]), h("label", { class: "field" }, ["Last name", last])])
   ].concat(pws.nodes).concat([
     waitlistNote(), h("label", { class: "optin" }, [optin, h("span", null, "Also add me to the Boardside Reviews mailing list for occasional teaching emails and updates. You can unsubscribe anytime.")]),
-    err, btn,
+    privacyNote(), err, btn,
     h("button", { class: "link", type: "button", onclick: signOut }, "Sign out")
   ]));
   form.onsubmit = async function (e) {
